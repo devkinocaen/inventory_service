@@ -1,0 +1,10 @@
+.DS_Store
+test*.html
+css_content.txt
+*.zip
+*copie.*
+work
+venv
+*.bkp
+*bkp.*
+__pycache__
