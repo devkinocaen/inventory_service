@@ -10,6 +10,7 @@ CREATE TABLE app_config (
     id SERIAL PRIMARY KEY,
     app_name TEXT NOT NULL,
     schema_version TEXT NOT NULL,
+    viewer_allowed BOOL DEFAULT FALSE,
     last_update TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
@@ -22,12 +23,13 @@ CREATE TABLE person (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(150),
-    phone VARCHAR(30)
+    phone VARCHAR(30),
+    UNIQUE (first_name, last_name)
 );
 
 CREATE TABLE organization (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
+    name VARCHAR(150) NOT NULL UNIQUE,
     referent_id INT REFERENCES person(id)
 );
 
@@ -37,7 +39,7 @@ CREATE TABLE organization (
 
 CREATE TABLE storage_location (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
+    name VARCHAR(150) NOT NULL UNIQUE,
     address TEXT DEFAULT ''
 );
 
@@ -92,7 +94,7 @@ CREATE TABLE reservable_status (
 
 CREATE TABLE size_type (
     id SERIAL PRIMARY KEY,
-    type TEXT NOT NULL UNIQUE,      -- Exemple : 'Chaussure EU', 'Vêtement US', 'One-size'
+    type TEXT NOT NULL UNIQUE      -- Exemple : 'Chaussure EU', 'Vêtement US', 'One-size'
 );
 
 CREATE TABLE size (
@@ -137,6 +139,26 @@ CREATE TABLE reservable_style_link (
 );
 
 -- ===========================
+-- Lots de costumes
+-- ===========================
+
+CREATE TABLE reservable_batch (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    description TEXT DEFAULT '',
+    owner_id INT REFERENCES organization(id) NOT NULL,
+    manager_id INT REFERENCES organization(id) NOT NULL,
+    status_id INT REFERENCES reservable_status(id)
+);
+
+-- Lien N:N : objets <-> lot
+CREATE TABLE reservable_batch_link (
+    batch_id INT NOT NULL REFERENCES reservable_batch(id) ON DELETE CASCADE,
+    reservable_id INT NOT NULL REFERENCES reservable(id) ON DELETE CASCADE,
+    PRIMARY KEY (batch_id, reservable_id)
+);
+
+-- ===========================
 -- Booking reference (réservation externe)
 -- ===========================
 
@@ -152,7 +174,7 @@ CREATE TABLE booking_reference (
 
 CREATE TABLE reservable_booking (
     id SERIAL PRIMARY KEY,
-    reservable_id INT REFERENCES reservable(id) NOT NULL,
+    reservable_batch_id INT REFERENCES reservable_batch(id) NOT NULL,
     renter_organization_id INT REFERENCES organization(id) NOT NULL,
     booking_reference_id INT REFERENCES booking_reference(id) NOT NULL,
     start_date TIMESTAMP NOT NULL,
@@ -160,7 +182,7 @@ CREATE TABLE reservable_booking (
     period tsrange GENERATED ALWAYS AS (tsrange(start_date, end_date, '[]')) STORED,
     CHECK (end_date > start_date),
     EXCLUDE USING gist (
-        reservable_id WITH =,
+        reservable_batch_id WITH =,
         period WITH &&
     )
 );
@@ -197,16 +219,21 @@ FOR EACH ROW EXECUTE FUNCTION check_reservable_category_consistency();
 -- Index pour tables volumineuses
 -- ===========================
 
-CREATE INDEX IF NOT EXISTS idx_reservable_booking_reservable
-    ON reservable_booking(reservable_id);
+-- Réservations sur lots
+CREATE INDEX IF NOT EXISTS idx_reservable_booking_batch
+    ON reservable_booking(reservable_batch_id);
+
+-- Liens styles <-> objets
 CREATE INDEX IF NOT EXISTS idx_style_link_reservable
     ON reservable_style_link(reservable_id);
 CREATE INDEX IF NOT EXISTS idx_style_link_style
     ON reservable_style_link(style_id);
-    
+
 -- L’index GIST sur period gère déjà les chevauchements
-CREATE INDEX IF NOT EXISTS idx_reservable_booking_reservable_start
-    ON reservable_booking(reservable_id, start_date);
+CREATE INDEX IF NOT EXISTS idx_reservable_booking_batch_start
+    ON reservable_booking(reservable_batch_id, start_date);
+
+-- Autres index de filtrage
 CREATE INDEX IF NOT EXISTS idx_reservable_booking_renter
     ON reservable_booking(renter_organization_id);
 CREATE INDEX IF NOT EXISTS idx_reservable_booking_booking_ref

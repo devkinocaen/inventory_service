@@ -24,9 +24,9 @@ ON CONFLICT (name) DO NOTHING;
 -- ===========================================
 INSERT INTO storage_location (name, address)
 VALUES
-  ('Koenig'),
-  ('Costumerie Amavada'),
-  ('Maison de l''asso Kinocaen')
+  ('Koenig', 'quartier Koenig, Bretteville sur Odon'),
+  ('Costumerie Amavada', '9 Rue Neuve Bourg l''Abbé, 14000 Caen'),
+  ('Maison de l''asso Kinocaen', '31 rue Norrey, 14000 Caen')
 ON CONFLICT (name) DO NOTHING;
 
 -- ===========================================
@@ -52,14 +52,14 @@ ON CONFLICT (name) DO NOTHING;
 -- ===========================================
 -- Types de tailles
 -- ===========================================
-INSERT INTO size_type (name)
+INSERT INTO size_type (type)
 VALUES
   ('Âge'),          -- bébé / 4 - 6 ans / 8 - 10 ans / adulte...
   ('Vêtement EU'),  -- tailles standard européennes (36, 38, 40…)
   ('Vêtement US'),  -- tailles US (XS, S, M, L…)
   ('Chaussure EU'), -- pointure européenne
   ('Chaussure US')  -- pointure américaine
-ON CONFLICT (name) DO NOTHING;
+ON CONFLICT (type) DO NOTHING;
 
 -- ===========================================
 -- Styles visuels (époques principales et usages, centrés sur la France)

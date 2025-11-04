@@ -1,0 +1,203 @@
+/* ==== Modal MAG Projet ==== */
+.edit-project-mag-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow: auto; /* scroll vertical si contenu dépasse la fenêtre */
+}
+
+.edit-project-mag-modal.hidden {
+  display: none;
+}
+
+.edit-project-mag-modal .modal-content {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 130%;          /* largeur augmentée d’environ 30% */
+  max-width: 1560px;    /* proportionnel au 130% de ton ancien 1200px */
+  max-height: 90vh;     /* hauteur max 90% de la fenêtre */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;     /* scroll vertical si nécessaire */
+  overflow-x: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* ==== Form Fields ==== */
+.edit-project-mag-modal label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.edit-project-mag-modal input[type="text"],
+.edit-project-mag-modal input[type="color"],
+.edit-project-mag-modal textarea,
+.edit-project-mag-modal select {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.edit-project-mag-modal textarea {
+  resize: vertical;
+}
+
+/* ==== Projet + Référent ==== */
+.project-referent-row {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Chaque colonne (projet, référent) */
+.project-referent-row .project-select,
+.project-referent-row .referent-info {
+  display: flex;
+  align-items: center;  /* centre verticalement */
+  gap: 0.5rem;
+}
+
+.project-referent-row label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 80px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* Inputs / select */
+.project-referent-row input,
+.project-referent-row select {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  min-width: 180px;
+}
+
+/* ==== Tableaux ==== */
+.table-container {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.styled-table th, .styled-table td {
+  border: 1px solid #ddd;
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.styled-table th {
+  background-color: #f0f0f0;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.styled-table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+/* ==== Champs couleur / notes ==== */
+.mag-color-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mag-color-row label {
+  flex: 0 0 150px;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.mag-color-row input[type="color"] {
+  width: 60px;
+  height: 30px;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+#mag_notes {
+  min-height: 80px;
+}
+
+/* ==== Footer ==== */
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.modal-actions .footer-buttons {
+  display: flex;
+  justify-content: space-between; /* bouton gauche à gauche, droit à droite */
+  align-items: center;
+  width: 100%;
+}
+
+.footer-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.left-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.right-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+/* ==== Scrollables tableaux spécifiques ==== */
+#liste-emprunts, #team-members {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* ==== Checkboxes ==== */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ==== Full-width field containers ==== */
+.full-width {
+  width: 100%;
+  margin-bottom: 1rem;
+}

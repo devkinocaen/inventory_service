@@ -24,7 +24,6 @@ SQL_SCRIPTS_DIR="$ROOT_DIR/sql"
 
 : "${PSQL:?Veuillez définir la commande psql dans config.sh}"
 : "${ROOT_DIR:?Veuillez définir ROOT_DIR dans config.sh}"
-: "${DB_CLIENT:?Veuillez définir DB_CLIENT dans config.sh}"
 : "${DBUSER:?Veuillez définir DBUSER dans config.sh}"
 
 # Entier de contrôle : lancer les étapes <= STEP
@@ -38,22 +37,24 @@ if ! [[ "$STEP" =~ ^[0-9]+$ ]]; then
 fi
 
 # Vérifie que les fichiers SQL existent
-for f in "$SQL_SCRIPTS_DIR/create_tabs.sql" "$SQL_SCRIPTS_DIR/init_tabs.sql" "$SQL_SCRIPTS_DIR/create_triggers.sql" "$SQL_SCRIPTS_DIR/realign_serials.sql";  do
+for f in "$SQL_SCRIPTS_DIR/init_db.sql" "$SQL_SCRIPTS_DIR/init_db.sql" "$SQL_SCRIPTS_DIR/create_triggers.sql" "$SQL_SCRIPTS_DIR/realign_serials.sql";  do
     [ -f "$f" ] || { echo "❌ Fichier SQL introuvable : $f"; exit 1; }
 done
 
 
+echo PSQL: $PSQL
 
 # Étape 1 : Création des tables
 if [ "$STEP" -le 1 ]; then
+    bash "$CURRENT_SCRIPT_DIR/delete_schema.sh" $DB_CONFIG
     echo "▶ Étape 1 : Création des tables..."
     echo "🔹 Current PostgreSQL user: ${DBUSER}"
     $PSQL -c "SELECT current_user;"
     $PSQL -c "SET ROLE ${DBUSER};"
     $PSQL -c "SELECT current_user;"
 
-    $PSQL -f "$SQL_SCRIPTS_DIR/create_tabs.sql"
-    $PSQL -f "$SQL_SCRIPTS_DIR/init_tabs.sql"
+    $PSQL -f "$SQL_SCRIPTS_DIR/schema.sql"
+    $PSQL -f "$SQL_SCRIPTS_DIR/init_db.sql"
     echo "📋 Tables existantes dans le schema public :"
     $PSQL -c "\dt public.*"
 fi
