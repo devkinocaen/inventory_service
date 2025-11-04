@@ -1,5 +1,3 @@
-import { LOG_LEVEL } from './constants.js';
-
 
 export async function setStatusMsg(statusMsg, message, isSuccess) {
   if (!statusMsg) return;
@@ -30,22 +28,6 @@ export function clearStatusMsg(statusMsg) {
   statusMsg.classList.remove('status-success', 'status-error');
 }
 
-
-export function logError(...args) {
-  if (LOG_LEVEL >= 1) console.error('[ERROR]', ...args);
-}
-
-export function logWarn(...args) {
-  if (LOG_LEVEL >= 2) console.warn('[WARN]', ...args);
-}
-
-export function logInfo(...args) {
-  if (LOG_LEVEL >= 3) console.info('[INFO]', ...args);
-}
-
-export function logDebug(...args) {
-  if (LOG_LEVEL >= 4) console.debug('[DEBUG]', ...args);
-}
 
 
 export function formatDateTime(isoString) {

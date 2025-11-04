@@ -1,3 +1,4 @@
+// libs/auth/jwt.js
 
 export function parseJwt(token) {
   try {

@@ -5,12 +5,10 @@
  */
 export const ROLES = {
   dev: {
-    redirect: './pages/home.html?user=admin',
     canRead: 'all',
     canWrite: 'all',
   },
   admin: {
-    redirect: './pages/home.html?user=admin',
     canRead: 'all',
     canWrite: [
       'app_config',
@@ -22,7 +20,6 @@ export const ROLES = {
     ],
   },
   prod: {
-    redirect: './pages/home.html?user=prod',
     canRead: 'all',
     canWrite: [
       'app_config',
@@ -37,7 +34,6 @@ export const ROLES = {
     ],
   },
   lab: {
-    redirect: './pages/home.html?user=lab',
     canRead: 'all',
     canWrite: [
       'app_config',
@@ -50,7 +46,6 @@ export const ROLES = {
     ],
   },
   mag: {
-    redirect: './pages/home.html?user=mag',
     canRead: 'all',
     canWrite: [
       'app_config',
@@ -60,7 +55,6 @@ export const ROLES = {
     ],
   },
   viewer: {
-    redirect: './pages/home.html?user=viewer',
     canRead: 'all',
     canWrite: null,
   },
@@ -72,7 +66,6 @@ export const ROLES = {
  * @returns {string}
  */
 export function getRedirectByRole(role) {
-//  return ROLES[role]?.redirect || './pages/home.html';
     return './pages/home.html';
 }
 

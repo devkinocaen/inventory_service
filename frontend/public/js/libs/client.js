@@ -1,7 +1,7 @@
-import { wakeUpFirstAvailable, startWakeupRoutine } from "../../ui/wakeup.js";
-import { decodeUnicode } from "../../helpers.js";
-import { parseJwt, isTokenExpired } from "../jwt.js";
-import { resizeImageToMaxSize } from '../../image_utils.js';
+import { wakeUpFirstAvailable, startWakeupRoutine } from "./ui/wakeup.js";
+import { decodeUnicode } from "./helpers.js";
+import { parseJwt, isTokenExpired } from "./auth/jwt.js";
+import { resizeImageToMaxSize } from './image_utils.js';
 
 export async function initClient() {
 // 🌞 Premier wake-up (avec fallback éventuel)
@@ -427,35 +427,6 @@ token: null, // JWT stocké après login
         }
 
         return data;
-    },
-
-
-    // ==============================
-    // ITINÉRAIRE (Graphhopper / OSRM via backend)
-    // ==============================
-    async itineraire({ start, end, vehicle = "car", engine = "graphhopper" }, DEBUG = false) {
-      if (!start || !end) throw new Error("Les coordonnées 'start' et 'end' sont obligatoires");
-
-      const params = new URLSearchParams({
-        start: Array.isArray(start) ? start.join(",") : start,
-        end: Array.isArray(end) ? end.join(",") : end,
-        vehicle,
-        engine
-      });
-
-      const url = `${this.baseUrl}/itineraire?${params.toString()}`;
-      if (DEBUG) console.log("🚗 Appel itinéraire →", url);
-
-      const res = await fetch(url);  // plus de header Authorization
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Erreur itinéraire (${res.status}): ${text}`);
-      }
-
-      const data = await res.json();
-      if (DEBUG) console.log("✅ Réponse itinéraire:", data);
-
-      return data;
     },
 
     // ==============================

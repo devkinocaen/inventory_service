@@ -1,7 +1,9 @@
-import client, { signIn } from './libs/client.js';
-import { getRedirectByRole } from './libs/clients/roles.js';
-import { parseJwt } from './libs/clients/jwt.js';
+import { initClient } from './libs/client.js';
+import { getRedirectByRole } from './libs/auth/roles.js';
+import { parseJwt } from './libs/auth/jwt.js';
 import { wakeUpFirstAvailable, startWakeupRoutine } from "./libs/ui/wakeup.js";
+
+const client = await initClient();
 
 /**
  * Réinitialise complètement la session client et le localStorage
@@ -162,7 +164,7 @@ if (!dbSelect) {
          }
 
         // 🌐 Connexion via le client
-        const accessToken = await signIn.call(client, email, password);
+        const accessToken = await client.signIn(email, password);
 
         if (!accessToken) {
           alert("❌ Email ou mot de passe incorrect");
