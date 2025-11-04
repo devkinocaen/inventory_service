@@ -52,6 +52,7 @@ CREATE TABLE reservable_style (
 );
 
 CREATE TYPE reservable_gender AS ENUM ('male', 'female', 'unisex');
+CREATE TYPE privacy_type AS ENUM ('hidden', 'private', 'public');
 
 -- ===========================
 -- Catégories et Sous-catégories
@@ -84,6 +85,25 @@ CREATE TABLE reservable_status (
     name VARCHAR(50) NOT NULL UNIQUE
 );
 
+
+-- ===========================
+-- Tailles
+-- ===========================
+
+CREATE TABLE size_type (
+    id SERIAL PRIMARY KEY,
+    type TEXT NOT NULL UNIQUE,      -- Exemple : 'Chaussure EU', 'Vêtement US', 'One-size'
+);
+
+CREATE TABLE size (
+    id SERIAL PRIMARY KEY,
+    size_type_id INT NOT NULL REFERENCES size_type(id),
+    label TEXT NOT NULL,           -- '39', 'M', '40', etc.
+    description TEXT DEFAULT '',   -- optionnel : précisions sur la taille
+    UNIQUE(size_type_id, label)
+);
+
+
 -- ===========================
 -- Objets réservable
 -- ===========================
@@ -98,7 +118,9 @@ CREATE TABLE reservable (
     storage_location_id INT REFERENCES storage_location(id),
     category_id INT REFERENCES reservable_category(id),
     subcategory_id INT REFERENCES reservable_subcategory(id),
+    size_id INT REFERENCES size(id), 
     gender reservable_gender DEFAULT 'unisex',
+    privacy privacy_type DEFAULT 'private',
     price_per_day NUMERIC(10,2) DEFAULT 0,
     description TEXT DEFAULT '',
     photos JSONB DEFAULT '[]'::jsonb

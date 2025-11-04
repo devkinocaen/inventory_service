@@ -1,0 +1,27 @@
+# --- Core Flask app ---
+Flask==3.1.2
+flask-cors==6.0.1
+bcrypt==4.3.0
+PyJWT==2.10.1
+python-dateutil==2.8.2
+
+# --- Database ---
+psycopg[binary]==3.2.10
+
+# --- Google API / Drive ---
+google-api-python-client==2.100.0
+google-auth==2.35.0
+google-auth-oauthlib==1.2.1
+
+# --- Logging & Utils ---
+requests==2.32.3
+
+# Utilitaires Flask / Upload
+Werkzeug>=3.1.0
+
+# --- WSGI Server pour Render ---
+gunicorn==22.0.0
+
+# --- Image processing ---
+#Pillow==11.3.0  # Pour lire et gérer les images (détection du format, transparence PNG/GIF, etc.)
+Pillow

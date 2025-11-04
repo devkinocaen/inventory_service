@@ -1,0 +1,17 @@
+[
+    {
+        "baseid": "COSTUMERIE_CAEN_NEON",
+        "dbname": "neondb",
+        "basename": "Costumerie Caen",
+        "issuer":"https://neon.com",
+        "host": "p-holy-block-ag8lqoi2-pooler.c-2.eu-central-1.aws.neon.tech",
+        "port": 5432,
+        "user": "neondb_owner",
+        "password": "npg_MxNvplK3dbs5",
+        "auth_role": "authenticated",
+        "anon_role": "anon",
+        "gdrive_backup_id": "1kfO-0aB_MwOjKoK1TqSQ0Dw1g2rA4Jjl",
+        "gdrive_inventory_id": "1nyEJv2gn0zmjXS_Bs4kBjP3KQSyQ2zKP",
+        "gdrive_token": "token_dev.json"
+    }
+]
