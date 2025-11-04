@@ -1,0 +1,34 @@
+/* --- Import des CSS spécifiques aux pages --- */
+@import './pages/import.css';
+@import './pages/login.css';
+@import './pages/magasin.css';
+@import './pages/planning_magasin.css';
+@import './pages/planning_participants.css';
+@import './pages/planning_lab.css';
+@import './pages/planning_prod.css';
+@import './pages/edit_block_projection.css';
+@import './pages/modal_edit_project_lab.css';
+@import './pages/modal_edit_project_mag.css';
+@import './pages/modal_edit_project_prod.css';
+@import './pages/modal_edit_participant.css';
+@import './pages/modal_edit_equipment.css';
+@import './pages/modal_photos.css';
+@import './pages/modal_equipment_photos.css';
+@import './pages/reservation_magasin.css';
+@import './pages/reservation_station.css';
+@import './pages/reception_lab.css';
+@import './pages/projection.css';
+@import './pages/participants.css';
+@import './pages/filmotheque.css';
+@import './pages/map.css';
+@import './pages/screening_dashboard.css';
+@import './pages/repertoire.css';
+@import './pages/config.css';
+@import './pages/modal_map.css';
+@import './pages/modal_location_filters.css';
+@import './pages/modal_location_categories.css';
+
+
+
+
+

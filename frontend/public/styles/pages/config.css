@@ -1,0 +1,60 @@
+/* 🔹 Base configuration session */
+.config-session-page {
+  font-family: Arial, sans-serif;
+}
+.config-session-container {
+  width: 100% !important;
+  max-width: 800px !important;  /* ou la largeur que tu veux */
+  box-sizing: border-box !important;
+}
+
+/* === Fix alignement config-row === */
+.config-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-bottom: 1em !important;
+}
+
+.config-row label {
+  display: block !important;
+  flex: 0 0 180px !important;
+  text-align: right !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+}
+
+.config-row select {
+  flex: 0 0 250px !important;
+  height: 36px !important;
+  padding: 0 8px !important;
+  box-sizing: border-box !important;
+}
+
+.config-row .edit-button {
+  flex-shrink: 0 !important;
+  height: 36px !important;
+}
+
+/* 🔹 Facultatif : pour bien isoler les autres labels en dehors des .config-row */
+body.config-session-page > label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+
+.config-session-page .config-row .edit-button {
+  background-color: #4caf50 !important;
+  color: white !important;
+  border: 1px solid #ccc !important;
+}
+
+.config-session-page .config-row .record-button {
+  background-color: #2196f3 !important;
+  color: white !important;
+  border: 1px solid #1976d2 !important;
+}
+

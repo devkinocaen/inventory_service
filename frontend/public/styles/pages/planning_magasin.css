@@ -1,0 +1,67 @@
+/* Conteneur scrollable spécifique au planning */
+.planning-wrapper {
+  position: relative; /* nécessaire pour positionner le trait absolu */
+  overflow-x: auto;   /* scroll horizontal si trop large */
+}
+
+/* Trait rouge "maintenant" */
+.planning-now-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: red;
+  z-index: 10;
+  pointer-events: none; /* pour ne pas gêner les clics */
+}
+
+/* Table planning */
+#planning-table {
+  border-collapse: collapse;
+  width: max-content; /* permet au scroll horizontal de fonctionner */
+}
+
+/* Première colonne (Matériel) */
+#planning-table th:first-child,
+#planning-table td:first-child {
+  position: sticky;
+  left: 0;            /* reste collé à gauche */
+  background: #fff;   /* pour que le texte soit lisible par-dessus le scroll */
+  z-index: 2;         /* au-dessus des autres cellules */
+  border-right: 1px solid #ccc; /* séparation visuelle */
+}
+
+/* Header jours et horaires doivent rester au-dessus */
+#planning-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f5f5f5;
+  z-index: 3;
+}
+
+/* Coin top-left (intersection première colonne + header) */
+#planning-table thead th:first-child {
+  z-index: 5;   /* au-dessus de la colonne sticky et du reste du header */
+}
+
+/* Cellules horaires */
+#planning-table th.time-slot {
+  text-align: center;
+}
+
+/* Cellules de réservation */
+td.resa {
+  background-color: #d9f0ff;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* Cellules disponibles */
+td.equipment-available {
+  background-color: #f9f9f9;
+}
+
+/* Optionnel : style hover */
+#planning-table td:hover {
+  background-color: #eee;
+}

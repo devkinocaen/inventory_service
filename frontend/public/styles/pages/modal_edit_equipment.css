@@ -1,0 +1,107 @@
+/* =========================================
+   MODAL ÉQUIPEMENT - LABELS À GAUCHE
+   ========================================= */
+#equipment-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5); /* overlay semi-transparent */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px; /* espace en haut pour que le modal ne colle pas */
+  z-index: 1000;
+  overflow: auto;
+}
+
+/* Contenu du modal avec fond blanc */
+#equipment-modal .modal-content {
+  max-width: 800px; /* élargi de 100px */
+  width: 100%;
+  margin: 50px auto;
+  background: #fff;
+  padding: 25px 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+
+
+.equipment-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Champ label + input alignés en 2 colonnes */
+.equipment-modal-field {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.equipment-modal-field label {
+  font-weight: 600;
+  text-align: right;
+  padding-right: 10px;
+}
+
+.equipment-modal-field .form-field,
+.equipment-modal-field textarea,
+.equipment-modal-field select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Groupe radios */
+.equipment-modal-radio-group {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.equipment-modal-radio-group label {
+  font-weight: normal;
+  text-align: left;
+}
+
+/* Boutons */
+.equipment-modal-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.equipment-modal-footer {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+/* Ligne regroupant plusieurs champs */
+.equipment-modal-row {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Chaque champ garde label à gauche et input à droite */
+.equipment-modal-row .equipment-modal-field {
+  flex: 1; /* chaque bloc prend la même largeur */
+  display: grid;
+  grid-template-columns: 100px 1fr; /* label + champ */
+  align-items: center;
+  gap: 10px;
+}
+
+.equipment-modal-row .equipment-modal-field label {
+  font-weight: 600;
+  text-align: right;
+  padding-right: 5px;
+}

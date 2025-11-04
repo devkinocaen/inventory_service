@@ -1,0 +1,195 @@
+/* ==============================
+   CSS spécifique à la page Magasin
+   ============================== */
+
+/* ----- Conteneur principal du formulaire ----- */
+#add-equipment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px 0;
+}
+
+#add-equipment-section h2 {
+  margin-bottom: 10px;
+}
+
+/* ----- Card du formulaire ----- */
+#add-equipment-section .form-card {
+  border: 1px solid var(--color-border);
+  padding: 15px;
+  border-radius: 6px;
+  background-color: #fafafa;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* ----- Colonnes ----- */
+#add-equipment-section .form-columns {
+  display: flex;
+  gap: 2rem;
+}
+
+#add-equipment-section .form-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ----- Groupes de champs ----- */
+#add-equipment-section .form-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#add-equipment-section .form-group label.form-label-left {
+  width: 140px; /* largeur fixe pour aligner toutes les labels */
+  text-align: right;
+  flex-shrink: 0;
+  font-weight: bold;
+}
+
+#add-equipment-section .form-group input,
+#add-equipment-section .form-group select,
+#add-equipment-section .form-group textarea {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+#add-equipment-section textarea {
+  min-height: 60px;
+}
+
+/* ----- Propriétaire / Gestionnaire ----- */
+#add-equipment-section .magasin-form-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+#add-equipment-section .magasin-form-label {
+  width: 120px;
+  text-align: right;
+  font-weight: bold;
+}
+
+/* Wrapper pour aligner checkbox + select */
+#add-equipment-section .magasin-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+#add-equipment-section .magasin-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem; /* label collé au checkbox */
+}
+
+#add-equipment-section .magasin-form-input {
+  flex: 1; /* prend tout l'espace restant */
+  min-width: 120px;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+}
+
+/* ----- Bouton ----- */
+#add-equipment-section .record-button {
+  width: 200px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: none;
+  background-color: var(--color-primary);
+  color: #fff;
+  cursor: pointer;
+}
+
+/* ----- Messages ----- */
+#add-equipment-section #mag-form_message {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 10px;
+  color: var(--color-primary);
+}
+
+/* ----- Responsive ----- */
+@media (max-width: 720px) {
+  #add-equipment-section .form-columns {
+    flex-direction: column;
+  }
+
+  #add-equipment-section .form-group,
+  #add-equipment-section .magasin-form-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #add-equipment-section .form-group label.form-label-left,
+  #add-equipment-section .magasin-form-label {
+    width: auto;
+    text-align: left;
+  }
+
+  #add-equipment-section .magasin-input-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #add-equipment-section .magasin-form-input {
+    width: 100%;
+  }
+}
+
+/* Conteneur des filtres */
+.filters {
+  display: flex;
+  flex-wrap: nowrap;        /* reste sur une seule ligne */
+  gap: 1rem;
+  align-items: center;      /* centre verticalement */
+  width: 100%;              /* prend toute la largeur */
+}
+
+/* Chaque filtre avec label à gauche */
+.filters .filter-field {
+  display: flex;
+  flex-direction: row;      /* label + select sur la même ligne */
+  align-items: center;      /* centre verticalement */
+  gap: 0.5rem;
+  flex: 1;                  /* prend une part égale de largeur */
+  min-width: 150px;
+}
+
+/* Label du filtre */
+.filters .filter-field label {
+  flex: 0 0 120px;          /* largeur fixe suffisante pour "Gestionnaire :" */
+  text-align: right;
+  font-weight: bold;
+}
+
+/* Select du filtre */
+.filters .filter-field select {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  font-size: 1rem;
+}
+
+/* Bouton supprimer */
+.filters button {
+  flex-shrink: 0;
+  padding: 0.4rem 1rem;
+  align-self: center;       /* centre verticalement */
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Configuration Session</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<div id="loadingOverlay" style="
+    display:none;
+    position:fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    font-size: 1.5em;
+    text-align:center;
+    padding-top:20%;
+    z-index:9999;
+">
+    ⏳ Patienter quelques minutes...
+</div>
+<body class="config-session-page">
+  <div class="config-session-container">
+    <h2>Configurer la session</h2>
+
+    <div class="config-row">
+      <label for="eventSelect">Événement :</label>
+      <select id="eventSelect">
+        <option disabled selected>Chargement...</option>
+      </select>
+      <button id="btnEditEvent" class="edit-button" disabled>Éditer</button>
+    </div>
+    <div class="config-row">
+      <label for="sessionSelect">Session :</label>
+      <select id="sessionSelect" disabled>
+        <option disabled selected>Sélectionnez un événement d'abord</option>
+      </select>
+      <button id="btnEditSession" class="edit-button" disabled>Éditer</button>
+      </div>
+    <div>
+        <label>
+          <input type="checkbox" id="sessionJourCheckbox" />
+          Utiliser la session du jour
+        </label>
+        </div>
+    <div>
+        <label for="viewerAllowed">
+          <input type="checkbox" id="viewerAllowed" />
+          Autoriser le rôle viewer
+        </label>
+        </div>
+    <button id="btnSaveConfig" class="record-button" disabled>Valider</button>
+    <p id="statusMsg"></p>
+
+    <button id="btnDeleteEvent" class="danger-button" disabled>
+      Supprimer l’événement
+    </button>
+
+    <hr />
+    <h2>Gestion des backups et restauration</h2>
+ 
+ <div class="config-row">
+      <label>Versions </label>
+      <label for="appVersion">Application:</label>
+      <input type="text" id="appVersion" readonly class="readonly-input" value="Chargement..." />
+      <label for="schemaVersion">Schéma PostgreSQL:</label>
+      <input type="text" id="schemaVersion" readonly class="readonly-input" value="Chargement..." />
+    </div>
+    
+    <div class="horizontal-row">
+      <button id="btnCreateBackup" class="record-button">Créer un backup</button>
+      <p id="backupStatus"></p>
+    </div>
+    
+
+ 
+    <div class="horizontal-row">
+      <label for="backupList">Liste des backups :</label>
+      <select id="backupList">
+        <option disabled selected>Chargement...</option>
+      </select>
+      <button id="btnRestoreSelected" class="danger-button">Restaurer</button>
+      <p id="restoreStatus"></p>
+    </div>
+</body>
+</html>

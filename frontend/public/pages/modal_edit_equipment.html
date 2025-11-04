@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Modal Edit Project</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    
+    <!-- modal_edit_equipment.html -->
+<div id="equipment-modal" class="edit-modal modal show">
+  <div class="modal-content">
+    <span class="modal-close" id="modal-close-span">&times;</span>
+
+    <div id="modal_message" class="modal-message"></div>
+
+    <form id="modal_form_edit_equipment" class="equipment-modal-form">
+      <div id="status_message" class="modal-message"></div>
+
+      <input type="hidden" id="modal_equipment_id" name="modal_equipment_id" value="">
+
+      <!-- Propriétaire -->
+      <div class="equipment-modal-row">
+        <div class="equipment-modal-field">
+          <label for="modal_equipment_owner">Propriétaire</label>
+          <select id="modal_equipment_owner" name="owner_id" disabled class="form-field"></select>
+        </div>
+
+        <div class="equipment-modal-field">
+          <label for="modal_equipment_owner_email">Email</label>
+          <input type="email" id="modal_equipment_owner_email" readonly class="form-field" />
+        </div>
+
+        <div class="equipment-modal-field">
+          <label for="modal_equipment_owner_phone">Téléphone</label>
+          <input type="tel" id="modal_equipment_owner_phone" readonly class="form-field" />
+        </div>
+      </div>
+
+
+      <!-- Gestion -->
+      <div class="equipment-modal-field">
+        <label>Géré par :</label>
+        <div class="equipment-modal-radio-group">
+          <label><input type="radio" name="modal_equipment_manager" value="mag"> le Mag</label>
+          <label><input type="radio" name="modal_equipment_manager" value="owner"> Son propriétaire</label>
+        </div>
+      </div>
+
+      <!-- Équipement -->
+      <div class="equipment-modal-field">
+        <label for="modal_equipment_name">Nom</label>
+        <input type="text" id="modal_equipment_name" name="name" class="form-field" />
+      </div>
+
+      <div class="equipment-modal-field">
+        <label for="modal_equipment_type">Type</label>
+        <select id="modal_equipment_type" name="type_id" class="form-field"></select>
+      </div>
+
+      <div class="equipment-modal-field">
+        <label for="modal_equipment_status">Statut</label>
+        <select id="modal_equipment_status" name="equipment_status" class="form-field"></select>
+      </div>
+
+      <div class="equipment-modal-field">
+        <label for="modal_equipment_description">Description</label>
+        <textarea id="modal_equipment_description" name="description" class="form-field"></textarea>
+      </div>
+
+      <div class="equipment-modal-field">
+        <label for="modal_equipment_notes">Notes</label>
+        <textarea id="modal_equipment_notes" name="notes" class="form-field"></textarea>
+      </div>
+
+      <!-- Bouton Valider -->
+      <div class="equipment-modal-actions">
+        <button type="submit" class="btn-submit">Valider</button>
+      </div>
+    </form>
+
+    <!-- Bouton Fermer -->
+    <div class="equipment-modal-footer">
+      <button type="button" id="modal-close-button" class="btn-quit">Fermer</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

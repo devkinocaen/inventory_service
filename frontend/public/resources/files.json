@@ -1,0 +1,34 @@
+[
+  {
+    "file": "$BASE_PATH/pages/config.html",
+    "title": "Configuration",
+    "user": "admin,dev",
+    "scripts": [
+      "../js/pages/config.js"
+    ]
+  }
+  {
+    "file": "$BASE_PATH/pages/reservation_magasin.html",
+    "title": "Réservation de matériel",
+    "user": "mag,dev",
+    "scripts": [
+        "../js/pages/reservation_magasin.js"
+    ]
+  },
+  {
+    "file": "$BASE_PATH/pages/planning_magasin.html",
+    "title": "Planning du magasin",
+    "user": "mag,dev",
+    "scripts": [
+        "../js/pages/planning_magasin.js"
+    ]
+  },
+  {
+    "file": "$BASE_PATH/pages/magasin.html",
+    "title": "Gestion du magasin",
+    "user": "mag,dev",
+    "scripts": [
+        "../js/pages/magasin.js"
+    ]
+  }
+]

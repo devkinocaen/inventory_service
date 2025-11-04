@@ -1,0 +1,299 @@
+/* === Boutons === */
+button {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+button[type="submit"] {
+  margin-top: 1rem;
+}
+
+button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.record-button {
+  display: block;
+  margin: 2rem auto 0;
+  font-size: 1.3rem;
+  padding: 1rem 3rem;
+  background-color: var(--color-red);
+  color: #000;
+  font-weight: bold;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.record-button:hover {
+  background-color: var(--color-red-dark);
+}
+
+.remove-button {
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+  background-color: var(--color-bg);
+  color: var(--color-red-dark);
+  border: 2px solid var(--color-red-dark);
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.remove-button:hover {
+  background-color: var(--color-red-dark);
+  color: var(--color-bg);
+}
+
+.add-button {
+  padding: 0.5rem 1rem;
+  margin-top: 1.8rem;
+  background-color: var(--color-green);
+  color: white;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-button:hover {
+  background-color: var(--color-green-dark);
+}
+
+/* === Formulaires === */
+.form-grid, .inline-selects, .add-participant, .row {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.form-section {
+  flex: 1 1 300px;
+  display: flex;
+  flex-direction: column;
+  min-width: 300px;
+  max-width: 500px;
+  padding: 10px;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input[type="text"],
+input[type="datetime-local"],
+select,
+textarea {
+  font-size: 1rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  box-sizing: border-box;
+  width: 100%;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+input[readonly] {
+  background-color: #eee;
+  color: var(--color-gray-dark);
+  cursor: not-allowed;
+}
+
+textarea {
+  min-height: 80px;
+}
+
+/* Checkbox */
+.checkbox-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.checkbox-group label {
+  font-weight: normal;
+  font-size: 0.95rem;
+}
+
+/* Inline selects */
+.inline-selects > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.5rem;
+}
+
+/* Participants */
+.add-participant > div {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === Onglets === */
+.tabs {
+  display: flex;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  background: var(--color-gray-light);
+  border: 1px solid var(--color-border);
+  margin: 0 5px 5px 0;
+  border-radius: 5px 5px 0 0;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.tab:hover {
+  background: var(--color-gray-hover);
+}
+
+.tab.active {
+  background: var(--color-bg);
+  font-weight: bold;
+  border-bottom-color: var(--color-bg);
+}
+
+.content {
+  border: 1px solid var(--color-border);
+  padding: 20px;
+  min-height: 300px;
+  border-radius: 0 0 5px 5px;
+  background: var(--color-bg);
+}
+
+/* Flex / Grid utilities */
+.flex-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.flex-item {
+  flex: 1;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.half-width {
+  flex: 1 1 50%;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+}
+
+.center-column {
+  width: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Inline-block utility */
+.inline-block {
+  display: inline-block;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-bold { font-weight: bold; }
+
+
+/* Boutons flèches plein largeur */
+.arrow-button {
+  width: 100%;
+  padding: 6px 0;
+  font-size: 1.1rem;
+  text-align: center;
+  background-color: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease;
+}
+
+.arrow-button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+fieldset {
+  border: 1px solid var(--color-border);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 5px;
+  background: var(--color-bg);
+}
+
+legend {
+  font-weight: bold;
+}
+
+.set-add-row {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+.label-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;          /* espace entre label et champ */
+}
+
+.label-left label {
+  width: 120px;       /* largeur fixe du label */
+  text-align: right;  /* texte à droite pour coller au champ */
+  flex-shrink: 0;
+}
+
+.label-left input,
+.label-left select,
+.label-left textarea {
+  flex: 1;            /* le champ prend le reste de la place */
+}
+
+input, select, textarea {
+  max-width: 100%;
+}

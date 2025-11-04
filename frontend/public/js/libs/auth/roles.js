@@ -1,0 +1,103 @@
+// clients/roles.js
+
+/**
+ * Mapping des rôles Supabase vers la redirection et les permissions
+ */
+export const ROLES = {
+  dev: {
+    redirect: './pages/home.html?user=admin',
+    canRead: 'all',
+    canWrite: 'all',
+  },
+  admin: {
+    redirect: './pages/home.html?user=admin',
+    canRead: 'all',
+    canWrite: [
+      'app_config',
+      'event',
+      'session',
+      'participant',
+      'participant_session',
+      'participant_skill',
+    ],
+  },
+  prod: {
+    redirect: './pages/home.html?user=prod',
+    canRead: 'all',
+    canWrite: [
+      'app_config',
+      'participant',
+      'participant_session',
+      'participant_skill',
+      'project',
+      'shooting_location',
+      'shooting',
+      'editing_station_booking',
+      'equipment_booking'
+    ],
+  },
+  lab: {
+    redirect: './pages/home.html?user=lab',
+    canRead: 'all',
+    canWrite: [
+      'app_config',
+      'participant',
+      'participant_session',
+      'participant_skill',
+      'project',
+      'editing_station',
+      'editing_station_booking',
+    ],
+  },
+  mag: {
+    redirect: './pages/home.html?user=mag',
+    canRead: 'all',
+    canWrite: [
+      'app_config',
+      'project',
+      'equipment',
+      'equipment_booking',
+    ],
+  },
+  viewer: {
+    redirect: './pages/home.html?user=viewer',
+    canRead: 'all',
+    canWrite: null,
+  },
+};
+
+/**
+ * Récupère la redirection selon le rôle
+ * @param {string} role
+ * @returns {string}
+ */
+export function getRedirectByRole(role) {
+//  return ROLES[role]?.redirect || './pages/home.html';
+    return './pages/home.html';
+}
+
+/**
+ * Vérifie si un rôle peut écrire dans une table
+ * @param {string} role
+ * @param {string} table
+ * @returns {boolean}
+ */
+export function canWrite(role, table) {
+  const perm = ROLES[role]?.canWrite;
+  if (!perm) return false;
+  if (perm === 'all') return true;
+  return perm.includes(table);
+}
+
+/**
+ * Vérifie si un rôle peut lire une table
+ * @param {string} role
+ * @param {string} table
+ * @returns {boolean}
+ */
+export function canRead(role, table) {
+  const perm = ROLES[role]?.canRead;
+  if (!perm) return false;
+  if (perm === 'all') return true;
+  return perm.includes(table);
+}

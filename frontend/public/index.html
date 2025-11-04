@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion - Kino Caen</title>
+  <link rel="icon" href="./images/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="./pages/styles.css">
+</head>
+<body>
+
+  <div class="login-container">
+    <img src="images/bandeau_kinocaen.png" alt="Bandeau KinoCaen" class="bandeau-img" />
+    <div class="login-title">Page de connexion au site de gestion de production de Kino Caen</div>
+
+    <form class="login-form" id="login-form">
+      <input type="text" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Mot de passe" required>
+          
+      <!-- Select pour choisir la base -->
+      <label for="database">Choisir la base :</label>
+      <select id="database" name="database" required>
+        <option value="" disabled selected>-- Sélectionnez une base --</option>
+      </select>
+
+      
+      <button type="submit" class="btn-submit" disabled>Se connecter</button>
+    </form>
+  </div>
+  <script src="../js/env-config.js?ts=<?= Date.now() ?>"></script>
+  <script type="module" src="../js/login.js"></script>
+
+</body>
+</html>

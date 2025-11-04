@@ -1,0 +1,90 @@
+#organize-block-dialog {
+  position: fixed;
+  top: 50px;
+  left: 50px;
+  width: 90%;             /* largeur plus grande */
+  max-width: 1200px;      /* limite max */
+  height: 60vh;           /* hauteur relative à la fenêtre */
+  background: #fff;
+  border: 2px solid #aaa;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 9999;
+  display: none;
+  overflow: auto;          /* scroll vertical + horizontal si nécessaire */
+}
+
+#organize-block-dialog.show {
+  display: block;
+}
+
+#organize-block-dialog .dialog-header {
+  background: #ddd;        /* bandeau gris */
+  padding: 10px 15px;
+  cursor: move;            /* indicateur drag */
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+#organize-block-dialog .dialog-body {
+  padding: 10px;
+  overflow: auto;          /* scroll vertical + horizontal si contenu dépasse */
+  max-height: calc(80vh - 100px); /* laisse place header + footer */
+}
+
+#organize-block-dialog .dialog-footer {
+  padding: 10px 15px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #ccc;
+  background: #f9f9f9;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+#organize-block-dialog .table-wrapper {
+  overflow-x: auto;        /* scroll horizontal pour tableau */
+}
+
+#organize-block-dialog .table-modal {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;       /* force largeur pour activer scroll si écran plus petit */
+}
+
+#organize-block-dialog .table-modal th,
+#organize-block-dialog .table-modal td {
+  border: 1px solid #ccc;
+  padding: 5px;
+  text-align: left;
+}
+
+#organize-block-dialog tbody tr.dragging {
+  opacity: 0.5;
+}
+
+.btn-quit {
+  padding: 8px 20px;
+  border: none;
+  background: #6c757d;
+  color: white;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.btn-quit:hover { background: #5a6268; }
+
+.btn-submit {
+  padding: 10px 20px;
+  border: none;
+  background: #d9534f;
+  color: white;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.btn-submit:hover { background: #c9302c; }
