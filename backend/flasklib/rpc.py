@@ -75,7 +75,7 @@ def register_routes(app):
             cur.execute("SET client_min_messages TO notice;")
 
             # --- Prototype fonction ---
-            proto = get_function_prototype(cur, function_name)
+            proto = get_function_prototype(cur, function_name, "inventory")
             if not proto:
                 raise ValueError(f"Function {function_name} not found in {database_id}")
             logger.debug("🧩 Contenu de proto pour %s :\n%s", function_name, pprint.pformat(proto))
@@ -123,7 +123,8 @@ def register_routes(app):
                 else:
                     placeholders.append("%s")
 
-            sql = f"SELECT * FROM {function_name}({', '.join(placeholders)});"
+            schema_name = proto.get("schema_name", "public")
+            sql = f"SELECT * FROM {schema_name}.{function_name}({', '.join(placeholders)});"
             logger.debug("🔹 Final SQL: %s", sql)
 
             # --- Exécution sécurisée avec SAVEPOINT ---

@@ -1,6 +1,7 @@
 // js/pages/inventory.js
 
 import { fetchReservables } from '../libs/sql/index.js'; // ta fonction côté backend
+import {formatServerError } from '../libs/helpers.js'
 import { initClient } from '../libs/client.js';
 
 const client = await initClient();
@@ -53,6 +54,6 @@ export async function init() {
     renderStockTable(items);
     setupLookupFilter();
   } catch (err) {
-    console.error('[inventory] Erreur lors de l’initialisation :', err);
+    console.error('[inventory] Erreur lors de l’initialisation :', formatServerError(err.message));
   }
 }

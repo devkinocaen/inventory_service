@@ -1,13 +1,14 @@
 // js/api/fetchReservables.js
 export async function fetchReservables(client, filters = {}) {
   const params = {
-    p_type_id: filters.p_type_id ?? null,
+    p_type: filters.p_type ?? null,
     p_category_id: filters.p_category_id ?? null,
     p_subcategory_id: filters.p_subcategory_id ?? null,
     p_gender: filters.p_gender ?? null,
   };
+    console.log ('params', params)
 
-  const { data, error } = await client.rpc('inventory.get_reservables', params);
+  const { data, error } = await client.rpc('get_reservables', params);
 
   if (error) {
     console.error('[fetchReservables] Erreur serveur :', error);
