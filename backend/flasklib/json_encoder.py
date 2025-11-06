@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, date, timedelta
+from decimal import Decimal
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -15,4 +16,7 @@ class CustomJSONEncoder(json.JSONEncoder):
                 parts.append(f"{days} days")
             parts.append(f"{hours:02}:{minutes:02}:{sec:02}")
             return ' '.join(parts)
+        if isinstance(obj, Decimal):
+            return float(obj)  # <-- conversion Decimal → float
         return super().default(obj)
+
