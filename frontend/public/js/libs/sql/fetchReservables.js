@@ -7,7 +7,7 @@ export async function fetchReservables(client, filters = {}) {
     p_gender: filters.p_gender ?? null,
   };
 
-  const { data, error } = await client.rpc('get_reservables', params);
+  const { data, error } = await client.rpc('inventory.get_reservables', params);
 
   if (error) {
     console.error('[fetchReservables] Erreur serveur :', error);

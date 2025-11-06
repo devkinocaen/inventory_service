@@ -6,24 +6,24 @@ CREATE OR REPLACE FUNCTION inventory.get_reservables(
 )
 RETURNS TABLE (
     id INT,
-    name TEXT,
+    name VARCHAR(150),
     description TEXT,
     price_per_day NUMERIC(10,2),
     photos JSONB,
     gender inventory.reservable_gender,
     privacy inventory.privacy_type,
-    type inventory.reservable_type,
+    inventory_type inventory.reservable_type,
     category_id INT,
-    category_name TEXT,
+    category_name VARCHAR(100),
     subcategory_id INT,
-    subcategory_name TEXT,
-    status inventory.reservable_status_enum,
+    subcategory_name VARCHAR(100),
+    status inventory.reservable_status,
     storage_location_id INT,
-    storage_location_name TEXT,
+    storage_location_name VARCHAR(150),
     owner_id INT,
-    owner_name TEXT,
+    owner_name VARCHAR(150),
     manager_id INT,
-    manager_name TEXT
+    manager_name VARCHAR(150)
 )
 AS $$
 BEGIN
@@ -36,7 +36,7 @@ BEGIN
         r.photos,
         r.gender,
         r.privacy,
-        r.type,
+        r.inventory_type,
         r.category_id,
         c.name AS category_name,
         r.subcategory_id,
@@ -55,7 +55,7 @@ BEGIN
     LEFT JOIN inventory.organization o ON o.id = r.owner_id
     LEFT JOIN inventory.organization m ON m.id = r.manager_id
     WHERE
-        (p_type IS NULL OR r.type = p_type)
+        (p_type IS NULL OR r.inventory_type = p_type)
         AND (p_category_id IS NULL OR r.category_id = p_category_id)
         AND (p_subcategory_id IS NULL OR r.subcategory_id = p_subcategory_id)
         AND (p_gender IS NULL OR r.gender = p_gender)

@@ -7,7 +7,7 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 -- Schema metier
 -- ===========================
 CREATE SCHEMA IF NOT EXISTS inventory;
-
+SET search_path = inventory, public;
 -- ===========================
 -- Types
 -- ===========================

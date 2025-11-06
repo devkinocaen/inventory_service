@@ -21,75 +21,67 @@ logger = logging.getLogger(__name__)
 # Ordre de restauration pour éviter les FK : parents avant enfants
 RESTORE_ORDER = [
     # 🔹 Config globale
-    "public.app_config",
+    "inventory.app_config",
 
     # 🔹 Personnes et organisations
-    "public.person",
-    "public.organization",
+    "inventory.person",
+    "inventory.organization",
 
     # 🔹 Stockage
-    "public.storage_location",
+    "inventory.storage_location",
 
     # 🔹 Styles et tailles
-    "public.size_type",
-    "public.size",
-    "public.reservable_style",
+    "inventory.size_type",
+    "inventory.size",
+    "inventory.reservable_style",
 
     # 🔹 Catégories et sous-catégories
-    "public.reservable_category",
-    "public.reservable_subcategory",
-
-    # 🔹 Types et statuts
-    "public.reservable_type",
-    "public.reservable_status",
+    "inventory.reservable_category",
+    "inventory.reservable_subcategory",
 
     # 🔹 Objets réservable
-    "public.reservable",
+    "inventory.reservable",
 
     # 🔹 Liens N:N styles <-> objets
-    "public.reservable_style_link",
+    "inventory.reservable_style_link",
 
     # 🔹 Références de booking
-    "public.booking_reference",
+    "inventory.booking_reference",
 
     # 🔹 Réservations
-    "public.reservable_booking"
+    "inventory.reservable_booking"
 ]
 
 # Ordre de purge pour éviter les FK : enfants avant parents
 TRUNCATE_ORDER = [
     # 🔹 Réservations et liens N:N
-    "public.reservable_booking",
-    "public.reservable_style_link",
+    "inventory.reservable_booking",
+    "inventory.reservable_style_link",
 
     # 🔹 Objets réservable
-    "public.reservable",
+    "inventory.reservable",
 
     # 🔹 Références de booking
-    "public.booking_reference",
+    "inventory.booking_reference",
 
     # 🔹 Styles et tailles
-    "public.reservable_style",
-    "public.size",
-    "public.size_type",
+    "inventory.reservable_style",
+    "inventory.size",
+    "inventory.size_type",
 
     # 🔹 Catégories et sous-catégories
-    "public.reservable_subcategory",
-    "public.reservable_category",
-
-    # 🔹 Types et statuts
-    "public.reservable_status",
-    "public.reservable_type",
+    "inventory.reservable_subcategory",
+    "inventory.reservable_category",
 
     # 🔹 Stockage
-    "public.storage_location",
+    "inventory.storage_location",
 
     # 🔹 Organisations et personnes
-    "public.organization",
-    "public.person",
+    "inventory.organization",
+    "inventory.person",
 
     # 🔹 Config globale
-    "public.app_config"
+    "inventory.app_config"
 ]
 
 # Séquences à réinitialiser après purge
@@ -335,7 +327,7 @@ def get_backup_version(dump_path):
         lines = f.readlines()
 
     try:
-        start_idx = next(i for i, line in enumerate(lines) if line.startswith("COPY public.app_config"))
+        start_idx = next(i for i, line in enumerate(lines) if line.startswith("COPY inventory.app_config"))
     except StopIteration:
         return None
 
@@ -356,7 +348,7 @@ def get_current_versions(conn):
     with conn.cursor() as cur:
         cur.execute("""
             SELECT schema_version, app_version
-            FROM public.app_config
+            FROM inventory.app_config
             LIMIT 1;
         """)
         result = cur.fetchone()
@@ -460,7 +452,7 @@ def register_routes(app):
 
                 # 4️⃣ Remettre app_config aux versions pré-restore
                 cur.execute("""
-                    UPDATE public.app_config
+                    UPDATE inventory.app_config
                     SET schema_version = %s,
                         app_version = %s
                 """, (current_schema_version, current_app_version))

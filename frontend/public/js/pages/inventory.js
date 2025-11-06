@@ -1,6 +1,9 @@
 // js/pages/inventory.js
 
 import { fetchReservables } from '../libs/sql/index.js'; // ta fonction côté backend
+import { initClient } from '../libs/client.js';
+
+const client = await initClient();
 
 let currentItems = [];
 
@@ -42,9 +45,11 @@ function setupLookupFilter() {
 }
 
 // ========== Initialisation ==========
-export async function initInventoryPage(client) {
+export async function init() {
   try {
+      
     const items = await fetchReservables(client);
+      
     renderStockTable(items);
     setupLookupFilter();
   } catch (err) {

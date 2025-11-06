@@ -53,7 +53,7 @@ def register_routes(app):
                     sslmode="require"
                 ) as conn:
                     with conn.cursor() as cur:
-                        cur.execute("SELECT last_data_export, updated_at FROM app_config WHERE id = 1")
+                        cur.execute("SELECT last_data_export, updated_at FROM inventory.app_config WHERE id = 1")
                         row = cur.fetchone()
                         last_export, updated_at = row if row else (None, None)
 
@@ -85,21 +85,19 @@ def register_routes(app):
             dump_file = f"/tmp/{BACKUP_PREFIX}_{database_id}_{ts}.sql"
 
             tables = [
-                "public.reservable_booking",
-                "public.reservable_style_link",
-                "public.reservable",
-                "public.booking_reference",
-                "public.reservable_style",
-                "public.size",
-                "public.size_type",
-                "public.reservable_subcategory",
-                "public.reservable_category",
-                "public.reservable_status",
-                "public.reservable_type",
-                "public.organization",
-                "public.person",
-                "public.storage_location",
-                "public.app_config"
+                "inventory.reservable_booking",
+                "inventory.reservable_style_link",
+                "inventory.reservable",
+                "inventory.booking_reference",
+                "inventory.reservable_style",
+                "inventory.size",
+                "inventory.size_type",
+                "inventory.reservable_subcategory",
+                "inventory.reservable_category",
+                "inventory.organization",
+                "inventory.person",
+                "inventory.storage_location",
+                "inventory.app_config"
             ]
 
 
@@ -209,7 +207,7 @@ def register_routes(app):
                     with conn.cursor() as cur:
                         cur.execute(
                             """
-                            UPDATE app_config
+                            UPDATE inventory.app_config
                             SET last_data_export = %s,
                                 updated_at = %s
                             WHERE id = 1
@@ -219,7 +217,7 @@ def register_routes(app):
 
 
 
-                logger.info("🕒 app_config.last_data_export updated successfully")
+                logger.info("🕒 inventory.app_config.last_data_export updated successfully")
             except Exception as e:
                 logger.warning("⚠️ Failed to update last_data_export: %s", e)
 

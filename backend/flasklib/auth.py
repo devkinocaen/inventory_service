@@ -45,7 +45,7 @@ def login(database_id=None):
         cur.execute(f"SET ROLE {DBUSER};")
 
         # 🔹 Vérifie si les viewers sont autorisés
-        cur.execute("SELECT viewer_allowed FROM app_config LIMIT 1;")
+        cur.execute("SELECT viewer_allowed FROM inventory.app_config LIMIT 1;")
         viewer_allowed = cur.fetchone()
         viewer_allowed = viewer_allowed and viewer_allowed[0]
 
