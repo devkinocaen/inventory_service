@@ -30,8 +30,6 @@ tables=(
     "size_type"
     "reservable_subcategory"
     "reservable_category"
-    "reservable_status"
-    "reservable_type"
     "booking_reference"
     "reservable_style"
     "storage_location"
@@ -42,18 +40,20 @@ tables=(
 
 for table in "${tables[@]}"; do
     echo "Dropping table $table..."
-    $PSQL -v ON_ERROR_STOP=1 -q -c "DROP TABLE IF EXISTS $table CASCADE;"
+    $PSQL -v ON_ERROR_STOP=1 -q -c "DROP TABLE IF EXISTS inventory.$table CASCADE;"
 done
 
 echo "Suppression des types ENUM..."
 enums=(
     "reservable_gender"
     "privacy_type"
+    "reservable_type"
+    "reservable_status"
 )
 
 for enum in "${enums[@]}"; do
     echo "Dropping type $enum..."
-    $PSQL -v ON_ERROR_STOP=1 -q -c "DROP TYPE IF EXISTS $enum;"
+    $PSQL -v ON_ERROR_STOP=1 -q -c "DROP TYPE IF EXISTS inventory.$enum;"
 done
 
 echo "✅ Toutes les tables et types ont été supprimés."

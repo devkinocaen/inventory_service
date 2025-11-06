@@ -1,6 +1,6 @@
--- Fonction PL/pgSQL pour réaligner toutes les séquences du schéma public
+-- Fonction PL/pgSQL pour réaligner toutes les séquences du schéma inventory
 -- Paramètre : p_role (texte, optionnel, pour contexte/logs)
-CREATE OR REPLACE FUNCTION public.realign_serials(p_role text DEFAULT 'anonymous')
+CREATE OR REPLACE FUNCTION inventory.realign_serials(p_role text DEFAULT 'anonymous')
 RETURNS void AS $$
 DECLARE
     r RECORD;
@@ -17,7 +17,7 @@ BEGIN
         SELECT table_name, column_name, column_default, is_identity
         FROM information_schema.columns
         WHERE (column_default LIKE 'nextval(%' OR is_identity = 'YES')
-          AND table_schema = 'public'
+          AND table_schema = 'inventory'
     LOOP
         seq_label := pg_get_serial_sequence(r.table_name, r.column_name);
 
@@ -30,11 +30,11 @@ BEGIN
         END IF;
 
         IF seq_label IS NULL THEN
-            RAISE NOTICE 'SKIP: pas de séquence détectée pour public.% column %', r.table_name, r.column_name;
+            RAISE NOTICE 'SKIP: pas de séquence détectée pour inventory.% column %', r.table_name, r.column_name;
             CONTINUE;
         END IF;
 
-        EXECUTE format('SELECT COALESCE(MAX(%I),0), COUNT(*) FROM public.%I', r.column_name, r.table_name)
+        EXECUTE format('SELECT COALESCE(MAX(%I),0), COUNT(*) FROM inventory.%I', r.column_name, r.table_name)
         INTO max_val, nb_rows;
 
         BEGIN
@@ -59,10 +59,10 @@ BEGIN
 
         EXECUTE 'SELECT last_value FROM ' || seq_label INTO seq_last;
         IF seq_last < nb_rows THEN
-            RAISE EXCEPTION 'Séquence % mal alignée pour table public.% : last_value = %, nb_rows = %',
+            RAISE EXCEPTION 'Séquence % mal alignée pour table inventory.% : last_value = %, nb_rows = %',
                 seq_label, r.table_name, seq_last, nb_rows;
         ELSE
-            RAISE NOTICE 'Séquence % OK pour table public.% : last_value = %, nb_rows = %',
+            RAISE NOTICE 'Séquence % OK pour table inventory.% : last_value = %, nb_rows = %',
                 seq_label, r.table_name, seq_last, nb_rows;
         END IF;
 

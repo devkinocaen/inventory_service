@@ -1,19 +1,19 @@
 -- ============================================================
 -- Script : insert_costumes_constants.sql
--- Description : Constantes initiales pour la base "reservable" (focus Costumes)
+-- Description : Constantes initiales pour la base "inventory" (focus Costumes)
 -- ============================================================
 
 -- ===========================================
 -- Configuration globale
 -- ===========================================
-INSERT INTO app_config (app_name, schema_version)
+INSERT INTO inventory.app_config (app_name, schema_version)
 VALUES ('Costumerie', '0.1.0')
 ON CONFLICT DO NOTHING;
 
 -- ===========================================
 -- Organisations par défaut
 -- ===========================================
-INSERT INTO organization (name)
+INSERT INTO inventory.organization (name)
 VALUES
   ('Kino Caen'),
   ('Amavada')
@@ -22,37 +22,17 @@ ON CONFLICT (name) DO NOTHING;
 -- ===========================================
 -- Lieux de stockage
 -- ===========================================
-INSERT INTO storage_location (name, address)
+INSERT INTO inventory.storage_location (name, address)
 VALUES
   ('Koenig', 'quartier Koenig, Bretteville sur Odon'),
   ('Costumerie Amavada', '9 Rue Neuve Bourg l''Abbé, 14000 Caen'),
-  ('Maison de l''asso Kinocaen', '31 rue Norrey, 14000 Caen')
-ON CONFLICT (name) DO NOTHING;
-
--- ===========================================
--- Types d’objets réservables
--- ===========================================
-INSERT INTO reservable_type (name)
-VALUES
-  ('Costume')
-ON CONFLICT (name) DO NOTHING;
-
--- ===========================================
--- Statuts des objets
--- ===========================================
-INSERT INTO reservable_status (name)
-VALUES
-  ('disponible'),
-  ('indisponible'),
-  ('en réparation'),
-  ('perdu'),
-  ('hors service')
+  ('Maison de l''asso Kino Caen', '31 rue Norrey, 14000 Caen')
 ON CONFLICT (name) DO NOTHING;
 
 -- ===========================================
 -- Types de tailles
 -- ===========================================
-INSERT INTO size_type (type)
+INSERT INTO inventory.size_type (type)
 VALUES
   ('Âge'),          -- bébé / 4 - 6 ans / 8 - 10 ans / adulte...
   ('Vêtement EU'),  -- tailles standard européennes (36, 38, 40…)
@@ -64,7 +44,7 @@ ON CONFLICT (type) DO NOTHING;
 -- ===========================================
 -- Styles visuels (époques principales et usages, centrés sur la France)
 -- ===========================================
-INSERT INTO reservable_style (name, description)
+INSERT INTO inventory.reservable_style (name, description)
 VALUES
   ('Antique', 'Costumes inspirés de l’Antiquité gréco-romaine ou égyptienne'),
   ('Médiéval', 'Tenues du Moyen Âge français : chevaliers, nobles, paysans, religieux'),
@@ -85,7 +65,7 @@ ON CONFLICT (name) DO NOTHING;
 -- ===========================================
 -- Catégories principales (Costumerie)
 -- ===========================================
-INSERT INTO reservable_category (name, description)
+INSERT INTO inventory.reservable_category (name, description)
 VALUES
   ('Robes & Tenues', 'Vêtements et ensembles pour costumes'),
   ('Hauts', 'Chemises, pulls, vestes, gilets'),
@@ -100,7 +80,7 @@ ON CONFLICT (name) DO NOTHING;
 -- Sous-catégories par catégorie
 -- ===========================================
 -- Robes & Tenues
-INSERT INTO reservable_subcategory (category_id, name)
+INSERT INTO inventory.reservable_subcategory (category_id, name)
 VALUES
   (1, 'Robe'),
   (1, 'Combinaison / Salopette'),
@@ -111,7 +91,7 @@ VALUES
 ON CONFLICT (category_id, name) DO NOTHING;
 
 -- Hauts
-INSERT INTO reservable_subcategory (category_id, name)
+INSERT INTO inventory.reservable_subcategory (category_id, name)
 VALUES
   (2, 'Chemise / Blouse'),
   (2, 'Pull / Sweat'),
@@ -122,7 +102,7 @@ VALUES
 ON CONFLICT (category_id, name) DO NOTHING;
 
 -- Bas
-INSERT INTO reservable_subcategory (category_id, name)
+INSERT INTO inventory.reservable_subcategory (category_id, name)
 VALUES
   (3, 'Pantalon / Jean'),
   (3, 'Jupe'),
@@ -132,7 +112,7 @@ VALUES
 ON CONFLICT (category_id, name) DO NOTHING;
 
 -- Chaussures
-INSERT INTO reservable_subcategory (category_id, name)
+INSERT INTO inventory.reservable_subcategory (category_id, name)
 VALUES
   (4, 'Bottes'),
   (4, 'Talons'),
@@ -143,7 +123,7 @@ VALUES
 ON CONFLICT (category_id, name) DO NOTHING;
 
 -- Chapeaux & Coiffes
-INSERT INTO reservable_subcategory (category_id, name)
+INSERT INTO inventory.reservable_subcategory (category_id, name)
 VALUES
   (5, 'Chapeau'),
   (5, 'Casquette / Béret'),
@@ -154,7 +134,7 @@ VALUES
 ON CONFLICT (category_id, name) DO NOTHING;
 
 -- Accessoires
-INSERT INTO reservable_subcategory (category_id, name)
+INSERT INTO inventory.reservable_subcategory (category_id, name)
 VALUES
   (6, 'Bijou / Collier / Bracelet'),
   (6, 'Ceinture / Écharpe'),
@@ -165,7 +145,7 @@ VALUES
 ON CONFLICT (category_id, name) DO NOTHING;
 
 -- Uniformes
-INSERT INTO reservable_subcategory (category_id, name)
+INSERT INTO inventory.reservable_subcategory (category_id, name)
 VALUES
   (7, 'Militaire'),
   (7, 'École / Étudiant'),
@@ -178,7 +158,7 @@ ON CONFLICT (category_id, name) DO NOTHING;
 -- ===========================================
 -- Booking references
 -- ===========================================
-INSERT INTO booking_reference (name, description)
+INSERT INTO inventory.booking_reference (name, description)
 VALUES
   ('Location externe', 'Réservation effectuée par un organisme externe'),
   ('Prêt interne', 'Utilisation interne à l’association'),

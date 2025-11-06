@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Configuration Session</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <div id="loadingOverlay" style="
@@ -19,30 +18,8 @@
 ">
     ⏳ Patienter quelques minutes...
 </div>
-<body class="config-session-page">
-  <div class="config-session-container">
-    <h2>Configurer la session</h2>
-
-    <div class="config-row">
-      <label for="eventSelect">Événement :</label>
-      <select id="eventSelect">
-        <option disabled selected>Chargement...</option>
-      </select>
-      <button id="btnEditEvent" class="edit-button" disabled>Éditer</button>
-    </div>
-    <div class="config-row">
-      <label for="sessionSelect">Session :</label>
-      <select id="sessionSelect" disabled>
-        <option disabled selected>Sélectionnez un événement d'abord</option>
-      </select>
-      <button id="btnEditSession" class="edit-button" disabled>Éditer</button>
-      </div>
-    <div>
-        <label>
-          <input type="checkbox" id="sessionJourCheckbox" />
-          Utiliser la session du jour
-        </label>
-        </div>
+<body class="config-page">
+  <div class="config-container">
     <div>
         <label for="viewerAllowed">
           <input type="checkbox" id="viewerAllowed" />
@@ -51,11 +28,6 @@
         </div>
     <button id="btnSaveConfig" class="record-button" disabled>Valider</button>
     <p id="statusMsg"></p>
-
-    <button id="btnDeleteEvent" class="danger-button" disabled>
-      Supprimer l’événement
-    </button>
-
     <hr />
     <h2>Gestion des backups et restauration</h2>
  

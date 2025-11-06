@@ -2,17 +2,17 @@ DO $$
 DECLARE
   r RECORD;
 BEGIN
-  -- Supprimer toutes les fonctions dans le schéma public uniquement
+  -- Supprimer toutes les fonctions dans le schéma inventory uniquement
   FOR r IN
     SELECT p.proname,
            pg_get_function_identity_arguments(p.oid) AS args
     FROM pg_proc p
     JOIN pg_namespace n ON p.pronamespace = n.oid
-    WHERE n.nspname = 'public'
+    WHERE n.nspname = 'inventory'
   LOOP
     BEGIN
       EXECUTE format(
-        'DROP FUNCTION IF EXISTS public.%I(%s) CASCADE;',
+        'DROP FUNCTION IF EXISTS inventory.%I(%s) CASCADE;',
         r.proname,
         r.args
       );
@@ -22,16 +22,16 @@ BEGIN
     END;
   END LOOP;
 
-  -- Supprimer tous les triggers dans le schéma public uniquement
+  -- Supprimer tous les triggers dans le schéma inventory uniquement
   FOR r IN
     SELECT event_object_table AS tablename,
            trigger_name
     FROM information_schema.triggers
-    WHERE trigger_schema = 'public'
+    WHERE trigger_schema = 'inventory'
   LOOP
     BEGIN
       EXECUTE format(
-        'DROP TRIGGER IF EXISTS %I ON public.%I CASCADE;',
+        'DROP TRIGGER IF EXISTS %I ON inventory.%I CASCADE;',
         r.trigger_name,
         r.tablename
       );

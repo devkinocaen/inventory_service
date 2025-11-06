@@ -4,12 +4,15 @@ set -euo pipefail
 # ===========================================
 # Charger la config commune
 # ===========================================
+
+
 CURRENT_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 (( $# )) || { echo "❌ Usage: $0 <DB_CONFIG>"; exit 1; }
 source "$CURRENT_SCRIPT_DIR/load_db_config.sh" $1
 
 echo "🔄 Vidage de toutes les tables de la base '${DBNAME}'..."
 
+DB_CLIENT="neon"
 # ===========================================
 # Tables de la base reservable
 # (ordre compatible avec contraintes FK)
@@ -18,8 +21,6 @@ TABLES=(
   reservable_booking
   reservable_style_link
   reservable
-  reservable_status
-  reservable_type
   reservable_subcategory
   reservable_category
   reservable_style
@@ -34,23 +35,23 @@ TABLES=(
 # Boucle de suppression
 # ===========================================
 for table in "${TABLES[@]}"; do
-  echo "🔄 Vidage de public.$table ($DB_CLIENT)"
+  echo "🔄 Vidage de reservable.$table ($DB_CLIENT)"
   if [[ "$DB_CLIENT" == *render* ]]; then
     # --- Variante Render (pas de TRUNCATE CASCADE autorisé)
-    $PSQL -c "DELETE FROM public.$table;"
+    $PSQL -c "DELETE FROM reservable.$table;"
 
     # Reset séquence si colonne SERIAL
     id_col=$($PSQL -Atc "SELECT column_name FROM information_schema.columns WHERE table_name='$table' AND column_default LIKE 'nextval(%' LIMIT 1;")
     if [ -n "$id_col" ]; then
-      seq_name=$($PSQL -Atc "SELECT pg_get_serial_sequence('public.$table', '$id_col');")
+      seq_name=$($PSQL -Atc "SELECT pg_get_serial_sequence('reservable.$table', '$id_col');")
       if [ -n "$seq_name" ]; then
         echo "🔄 Reset sequence $seq_name"
-        $PSQL -c "SELECT setval('$seq_name', COALESCE((SELECT MAX($id_col) FROM public.$table), 0) + 1, false);"
+        $PSQL -c "SELECT setval('$seq_name', COALESCE((SELECT MAX($id_col) FROM reservable.$table), 0) + 1, false);"
       fi
     fi
   else
     # --- Variante locale ou Neon
-    $PSQL -c "TRUNCATE TABLE public.$table RESTART IDENTITY CASCADE;"
+    $PSQL -c "TRUNCATE TABLE reservable.$table RESTART IDENTITY CASCADE;"
   fi
 done
 

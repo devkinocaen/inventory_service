@@ -6,29 +6,29 @@
     "scripts": [
       "../js/pages/config.js"
     ]
-  }
+  },
   {
-    "file": "$BASE_PATH/pages/reservation_magasin.html",
-    "title": "Réservation de matériel",
-    "user": "mag,dev",
+    "file": "$BASE_PATH/pages/booking.html",
+    "title": "Réservations",
+    "user": "admin,dev",
     "scripts": [
-        "../js/pages/reservation_magasin.js"
+        "../js/pages/booking.js"
     ]
   },
   {
-    "file": "$BASE_PATH/pages/planning_magasin.html",
-    "title": "Planning du magasin",
-    "user": "mag,dev",
+    "file": "$BASE_PATH/pages/planning.html",
+    "title": "Planning",
+    "user": "admin,dev",
     "scripts": [
-        "../js/pages/planning_magasin.js"
+        "../js/pages/planning.js"
     ]
   },
   {
-    "file": "$BASE_PATH/pages/magasin.html",
-    "title": "Gestion du magasin",
-    "user": "mag,dev",
+    "file": "$BASE_PATH/pages/inventory.html",
+    "title": "Gestion du stock",
+    "user": "admin,dev",
     "scripts": [
-        "../js/pages/magasin.js"
+        "../js/pages/inventory.js"
     ]
   }
 ]

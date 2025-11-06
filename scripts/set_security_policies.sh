@@ -20,8 +20,6 @@ tables=(
   reservable_style
   reservable_category
   reservable_subcategory
-  reservable_type
-  reservable_status
   size_type
   size
   reservable
@@ -41,8 +39,6 @@ sequences=(
   "reservable_style_id_seq"
   "reservable_category_id_seq"
   "reservable_subcategory_id_seq"
-  "reservable_type_id_seq"
-  "reservable_status_id_seq"
   "size_type_id_seq"
   "size_id_seq"
   "reservable_id_seq"
@@ -56,17 +52,17 @@ sequences=(
 # --- Grant sur séquences ---
 for seq in "${sequences[@]}"; do
   echo "GRANT usage/select/update sur $seq..."
-  $PSQL -v ON_ERROR_STOP=1 -q -c "GRANT USAGE, SELECT, UPDATE ON SEQUENCE $seq TO $AUTHENTICATED_ROLE;" || true
+  $PSQL -v ON_ERROR_STOP=1 -q -c "GRANT USAGE, SELECT, UPDATE ON SEQUENCE inventory.$seq TO $AUTHENTICATED_ROLE;" || true
 done
 
 # --- Réinitialiser droits existants et supprimer policies ---
 for table in "${tables[@]}"; do
   echo "📌 Réinitialisation des droits sur $table"
-  $PSQL -v ON_ERROR_STOP=1 -q -c "REVOKE ALL ON $table FROM $ANONYMOUS_ROLE, $AUTHENTICATED_ROLE;"
+  $PSQL -v ON_ERROR_STOP=1 -q -c "REVOKE ALL ON inventory.$table FROM $ANONYMOUS_ROLE, $AUTHENTICATED_ROLE;"
 
-  policies=$(echo "SELECT policyname FROM pg_policies WHERE schemaname='public' AND tablename='${table}';" | $PSQL -t)
+  policies=$(echo "SELECT policyname FROM pg_policies WHERE schemaname='inventory' AND tablename='${table}';" | $PSQL -t)
   for pol in $policies; do
     [[ -z "$pol" ]] && continue
-    echo "DROP POLICY IF EXISTS \"$pol\" ON public.\"$table\";" | $PSQL
+    echo "DROP POLICY IF EXISTS \"$pol\" ON inventory.\"$table\";" | $PSQL
   done
 done

@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION public.upsert_app_config(
+CREATE OR REPLACE FUNCTION inventory.upsert_app_config(
   p_current_session_id INTEGER,
   p_use_current_time BOOLEAN DEFAULT NULL,
   p_app_version TEXT DEFAULT NULL,

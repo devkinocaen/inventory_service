@@ -1,12 +1,9 @@
 /* --- Import des CSS spécifiques aux pages --- */
 @import './pages/login.css';
-@import './pages/magasin.css';
-@import './pages/planning_magasin.css';
-@import './pages/modal_edit_project_mag.css';
-@import './pages/modal_edit_equipment.css';
-@import './pages/modal_photos.css';
-@import './pages/modal_equipment_photos.css';
 @import './pages/config.css';
+@import './pages/inventory.css';
+@import './pages/planning.css';
+@import './pages/booking.css';
 
 
 

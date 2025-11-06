@@ -11,20 +11,18 @@ DECLARE
     'size_type',
     'reservable_subcategory',
     'reservable_category',
-    'reservable_status',
-    'reservable_type',
+    'reservable_batch',
     'organization',
     'person',
-    'storage_location',
-    'app_config'
+    'storage_location'
   ];
 BEGIN
   FOREACH tbl IN ARRAY tables_to_watch LOOP
     EXECUTE format(
       'CREATE TRIGGER trigger_%I_update
-       AFTER INSERT OR UPDATE OR DELETE ON %I
+       AFTER INSERT OR UPDATE OR DELETE ON inventory.%I
        FOR EACH STATEMENT
-       EXECUTE FUNCTION update_app_config_timestamp();',
+       EXECUTE FUNCTION inventory.update_app_config_timestamp();',
       tbl, tbl
     );
   END LOOP;

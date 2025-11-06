@@ -1,9 +1,11 @@
-@import url("./_variables.css");
+/*@import url("./_variables.css");
+@import url("./_base.css");
+@import url("./_components.css");
+@import url("./_tables.css");
+@import url("./_modal.css");
+@import url("./_dialog.css");
+@import url("./_utilities.css");*/
 @import url("./_base.css");
 @import url("./_layout.css");
 @import url("./_components.css");
-@import url("./_tables.css");
 @import url("./_pages.css");
-@import url("./_modal.css");
-@import url("./_dialog.css");
-@import url("./_utilities.css");
