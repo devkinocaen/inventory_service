@@ -1,0 +1,49 @@
+/* Styles globaux pour toutes les pages */
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f9f9f9;
+}
+
+h1 {
+  color: #333;
+}
+
+input {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 15px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  max-height: 500px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 8px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+th {
+  background-color: #e9ecef;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.search-bar {
+  margin-bottom: 10px;
+}

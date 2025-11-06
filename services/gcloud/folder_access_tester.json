@@ -1,0 +1,46 @@
+import os
+import argparse
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+SCOPES = ["https://www.googleapis.com/auth/drive"]
+
+def test_drive_folder(token_path: str, folder_id: str):
+    """
+    Teste l'accès à un dossier Google Drive avec le token fourni.
+    """
+    if not os.path.exists(token_path):
+        print(f"❌ Token not found at {token_path}")
+        return
+
+    try:
+        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+        service = build("drive", "v3", credentials=creds)
+
+        folder = service.files().get(fileId=folder_id, fields="id,name").execute()
+        print(f"✅ Folder found: {folder['name']} ({folder['id']})")
+
+    except HttpError as e:
+        print(f"❌ Google Drive API error: {e}")
+        if e.resp.status == 404:
+            print("Le dossier n'existe pas ou le compte n'y a pas accès.")
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Test Google Drive folder access with a service account token."
+    )
+    parser.add_argument(
+        "--token", required=True,
+        help="Path to the Google token JSON file for the service account."
+    )
+    parser.add_argument(
+        "--folder", required=True,
+        help="Google Drive folder ID to test access."
+    )
+    args = parser.parse_args()
+
+    test_drive_folder(args.token, args.folder)

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestion du stock</title>
+</head>
+<body>
+  <h1>Gestion du stock</h1>
+
+  <!-- Barre de recherche -->
+  <div>
+    <label for="lookup_item_name">Rechercher :</label>
+    <input type="text" id="lookup_item_name" name="lookup_item_name" />
+  </div>
+
+  <!-- Tableau de stock -->
+  <div class="table-wrapper">
+    <table id="stock_table">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Type</th>
+          <th>Propriétaire</th>
+          <th>Gestionnaire</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- lignes dynamiques ici -->
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

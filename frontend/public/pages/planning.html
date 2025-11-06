@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Planning des emprunts</title>
+  <link rel="stylesheet" href="./styles.css" /> <!-- Lien vers ton CSS global -->
+</head>
+<body>
+
+  <h1 id="title">Planning des emprunts de matériel</h1>
+
+  <!-- 🎛️ Filtres -->
+  <div class="form-grid">
+
+    <!-- Type de matériel -->
+    <div class="form-section">
+      <label for="filter_equipment_type">Type de matériel</label>
+      <select id="filter_equipment_type" name="filter_equipment_type" class="form-input">
+        <!-- Options ajoutées dynamiquement via JS -->
+      </select>
+    </div>
+
+    <!-- Filtre "nature" -->
+    <div class="form-section">
+      <label for="filter_equipment_status">Statut</label>
+      <select id="filter_equipment_status" name="filter_equipment_status" class="form-input">
+          <!-- Options ajoutées dynamiquement via JS -->
+      </select>
+    </div>
+    
+    <!-- Filtre "project" -->
+    <div class="form-section">
+      <label for="filter_project_status">Projet</label>
+        <select id="filter_project_status" name="filter_project_status" class="form-input">
+          <!-- Options ajoutées dynamiquement via JS -->
+        </select>
+    </div>
+    <div class="form-section">
+        <label for="lookup_equipment_name" class="form-label-left">Rechercher :</label>
+        <input type="text" id="lookup_equipment_name" name="lookup_equipment_name" class="form-input" required />
+    </div>
+    
+    <!-- Filtre tranches horaires -->
+       <div class="form-section">
+         <label for="filter-time-slot" class="emprunts-time-slot-label">par tranche horaire de:</label>
+         <select id="filter-time-slot" class="emprunts-select">
+           <option value="30">00:30</option>
+           <option value="60">1:00</option>
+           <option value="120">2:00</option>
+           <option value="240">4:00</option>
+         </select>
+         <button type="button" id="btn-recalculer">Recalculer le planning</button>
+      </div>
+  </div>
+
+
+  <!-- 📅 Planning -->
+  <div class="boxed">
+    <div class="table-wrapper planning-wrapper" style="overflow-x:auto;"> <!-- Wrapper scroll horizontal -->
+      <div class="planning-now-indicator"></div> <!-- Trait rouge "maintenant" -->
+      <table id="planning-table">
+        <thead>
+          <tr>
+            <th rowspan="2">Matériel</th>
+            <!-- Colonnes jours (à remplir dynamiquement) -->
+          </tr>
+          <tr>
+            <!-- Heures par jour (à remplir dynamiquement) -->
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Corps du planning (à remplir dynamiquement) -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Visualiseur de pages</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="../images/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+
+    <!-- Bandeau en haut de la page -->
+    <div class="bandeau-container">
+      <img src="../images/bandeau_kinocaen.png" alt="Bandeau KinoCaen" class="bandeau-img" />
+    </div>
+    <div class="flex-row">
+        <div>
+          <select id="helpMenu" disabled>
+            <option value="">Sélectionnez une aide</option>
+          </select>
+        </div>
+
+        <h3 id="user_role" style="margin-left:auto; display:block;">connexion anonyme</h3>
+        <button type="button" class="btn btn-primary" id="signout">se déconnecter</button>
+    </div>
+<h1>Visualiseur de pages</h1>
+
+<div id="tabs" class="tabs"></div>
+<div id="content" class="content">Sélectionne un onglet pour afficher le contenu.</div>
+<script src="../js/env-config.js"></script>
+<script>window.BASE_URL = window.location.origin;</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script async src="//www.instagram.com/embed.js"></script>
+
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+<script src="../js/libs/client.js" type="module"></script>
+<script src="../js/router.js" type="module"></script>
+
+</body>
+</html>
+
+
