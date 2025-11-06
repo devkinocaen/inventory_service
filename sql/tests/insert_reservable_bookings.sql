@@ -10,19 +10,19 @@ DECLARE
   renter_id INT;
 BEGIN
   -- Pour chaque batch existant
-  FOR r IN SELECT id AS batch_id FROM reservable_batch LOOP
+  FOR r IN SELECT id AS batch_id FROM inventory.reservable_batch LOOP
     nb := 1 + floor(random()*3)::int;  -- 1 à 3 réservations par batch
     FOR i IN 1..nb LOOP
 
       -- Sélection aléatoire d'une booking_reference existante
       SELECT id INTO br_id
-      FROM booking_reference
+      FROM inventory.booking_reference
       ORDER BY random()
       LIMIT 1;
 
       -- Sélection aléatoire d'une organisation pour renter
       SELECT id INTO renter_id
-      FROM organization
+      FROM inventory.organization
       ORDER BY random()
       LIMIT 1;
 
@@ -34,7 +34,7 @@ BEGIN
 
       -- Récupérer quelques reservables du batch
       SELECT array_agg(reservable_id) INTO chosen_reservable_ids
-      FROM reservable_batch_link
+      FROM inventory.reservable_batch_link
       WHERE batch_id = r.batch_id
       ORDER BY random()
       LIMIT (1 + floor(random()*3))::int;
@@ -45,7 +45,7 @@ BEGIN
       END IF;
 
       -- Créer une réservation pour le batch
-      INSERT INTO reservable_booking (
+      INSERT INTO inventory.reservable_booking (
         reservable_batch_id, renter_organization_id, booking_reference_id, start_date, end_date
       ) VALUES (
         r.batch_id,

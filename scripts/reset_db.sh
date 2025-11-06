@@ -55,8 +55,8 @@ if [ "$STEP" -le 1 ]; then
 
     $PSQL -f "$SQL_SCRIPTS_DIR/schema.sql"
     $PSQL -f "$SQL_SCRIPTS_DIR/init_db.sql"
-    echo "📋 Tables existantes dans le schema reservable :"
-    $PSQL -c "\dt reservable.*"
+    echo "📋 Tables existantes dans le schema inventory :"
+    $PSQL -c "\dt inventory.*"
 fi
 
 
@@ -111,7 +111,7 @@ if [ "$STEP" -le 7 ]; then
     $PSQL -f "$SQL_SCRIPTS_DIR/realign_serials.sql"
 
     # Appel de la fonction avec rôle "authenticated"
-    $PSQL -c "SELECT reservable.realign_serials('$AUTHENTICATED_ROLE');"
+    $PSQL -c "SELECT inventory.realign_serials('$AUTHENTICATED_ROLE');"
 fi
 
 echo "🎉 Provisioning terminé avec succès."

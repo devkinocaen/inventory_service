@@ -2,7 +2,6 @@
 DO $$
 DECLARE
   rec jsonb;
-  org_counter INT := 1;
   org_list CONSTANT JSONB := '[
     {"name":"Costumerie Centrale"},
     {"name":"Atelier Décors"},
@@ -15,11 +14,12 @@ DECLARE
 BEGIN
   FOR rec IN SELECT * FROM jsonb_array_elements(org_list)
   LOOP
-    INSERT INTO organization (name)
-    VALUES ( rec->>'name')
+    INSERT INTO inventory.organization (name)
+    VALUES (rec->>'name')
     ON CONFLICT (name) DO NOTHING;
   END LOOP;
 
-  PERFORM setval(pg_get_serial_sequence('organization','id'), (SELECT COALESCE(MAX(id),0) FROM organization), true);
+  PERFORM setval(pg_get_serial_sequence('inventory.organization','id'),
+                 (SELECT COALESCE(MAX(id),0) FROM inventory.organization), true);
 END;
 $$ LANGUAGE plpgsql;

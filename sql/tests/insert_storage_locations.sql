@@ -10,11 +10,15 @@ DECLARE
 BEGIN
   FOR r IN SELECT * FROM jsonb_array_elements(list)
   LOOP
-    INSERT INTO storage_location (name, address)
+    INSERT INTO inventory.storage_location (name, address)
     VALUES (r->>'name', r->>'address')
     ON CONFLICT (name) DO NOTHING;
   END LOOP;
 
-  PERFORM setval(pg_get_serial_sequence('storage_location','id'), (SELECT COALESCE(MAX(id),0) FROM storage_location), true);
+  PERFORM setval(
+    pg_get_serial_sequence('inventory.storage_location','id'),
+    (SELECT COALESCE(MAX(id),0) FROM inventory.storage_location),
+    true
+  );
 END;
 $$ LANGUAGE plpgsql;

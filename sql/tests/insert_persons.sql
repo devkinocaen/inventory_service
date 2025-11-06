@@ -13,12 +13,13 @@ DECLARE
 BEGIN
   FOR p IN SELECT * FROM jsonb_array_elements(list)
   LOOP
-    INSERT INTO person (id, first_name, last_name, email, phone)
+    INSERT INTO inventory.person (id, first_name, last_name, email, phone)
     VALUES (i, p->>'first_name', p->>'last_name', p->>'email', p->>'phone')
     ON CONFLICT (first_name, last_name) DO NOTHING;
     i := i + 1;
   END LOOP;
 
-  PERFORM setval(pg_get_serial_sequence('person','id'), (SELECT COALESCE(MAX(id),0) FROM person), true);
+  PERFORM setval(pg_get_serial_sequence('inventory.person','id'),
+                 (SELECT COALESCE(MAX(id),0) FROM inventory.person), true);
 END;
 $$ LANGUAGE plpgsql;

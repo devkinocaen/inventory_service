@@ -19,7 +19,8 @@ BEGIN
         WHERE (column_default LIKE 'nextval(%' OR is_identity = 'YES')
           AND table_schema = 'inventory'
     LOOP
-        seq_label := pg_get_serial_sequence(r.table_name, r.column_name);
+        -- Récupérer la séquence associée
+        seq_label := pg_get_serial_sequence('inventory.' || r.table_name, r.column_name);
 
         IF seq_label IS NULL AND r.column_default IS NOT NULL THEN
             BEGIN
@@ -34,30 +35,35 @@ BEGIN
             CONTINUE;
         END IF;
 
+        -- Calculer la valeur max de la colonne
         EXECUTE format('SELECT COALESCE(MAX(%I),0), COUNT(*) FROM inventory.%I', r.column_name, r.table_name)
         INTO max_val, nb_rows;
 
+        -- Vérifier que la séquence existe
         BEGIN
-            seq_reg := seq_label::regclass;
+            seq_reg := ('inventory.' || seq_label)::regclass;
         EXCEPTION WHEN OTHERS THEN
             RAISE NOTICE 'SKIP: sequence % introuvable en tant que regclass', seq_label;
             CONTINUE;
         END;
 
+        -- Ajuster la valeur max si nécessaire
         IF max_val < nb_rows THEN
             max_val := nb_rows;
         END IF;
 
+        -- Construire la commande setval
         IF max_val = 0 THEN
-            cmd := 'SELECT setval(' || quote_literal(seq_label) || ', 1, false)';
+            cmd := format('SELECT setval(%L, 1, false)', seq_label);
         ELSE
-            cmd := 'SELECT setval(' || quote_literal(seq_label) || ', ' || max_val || ', true)';
+            cmd := format('SELECT setval(%L, %s, true)', seq_label, max_val);
         END IF;
 
         EXECUTE cmd;
         RAISE NOTICE 'Command executed: %', cmd;
 
-        EXECUTE 'SELECT last_value FROM ' || seq_label INTO seq_last;
+        -- Vérifier le last_value
+        EXECUTE format('SELECT last_value FROM %I', seq_label) INTO seq_last;
         IF seq_last < nb_rows THEN
             RAISE EXCEPTION 'Séquence % mal alignée pour table inventory.% : last_value = %, nb_rows = %',
                 seq_label, r.table_name, seq_last, nb_rows;

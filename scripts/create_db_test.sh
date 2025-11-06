@@ -38,6 +38,6 @@ echo "▶ Étape 7 : Création des réservations factices..."
 $PSQL -f $SQL_TEST_SCRIPTS_DIR/insert_reservable_bookings.sql
 
 echo "▶ Étape 8 : Mise à jour des séquences..."
-$PSQL -f "$SQL_TEST_SCRIPTS_DIR/realign_serials.sql"
+$PSQL -f "$SQL_SCRIPTS_DIR/realign_serials.sql"
 
 echo "✅ Script d'initialisation costumerie terminé avec succès."

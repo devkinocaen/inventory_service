@@ -13,7 +13,7 @@ CREATE SCHEMA IF NOT EXISTS inventory;
 -- ===========================
 CREATE TYPE inventory.reservable_gender AS ENUM ('male', 'female', 'unisex');
 CREATE TYPE inventory.privacy_type AS ENUM ('hidden', 'private', 'public');
-CREATE TYPE inventory.reservable_type AS ENUM ('Costume', 'Equipement');
+CREATE TYPE inventory.reservable_type AS ENUM ('costume', 'equipment');
 CREATE TYPE inventory.reservable_status AS ENUM (
     'disponible', 'indisponible', 'en réparation', 'perdu', 'hors service'
 );
@@ -86,7 +86,7 @@ CREATE TABLE inventory.reservable_subcategory (
 -- ===========================
 CREATE TABLE inventory.size_type (
     id SERIAL PRIMARY KEY,
-    type TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE inventory.size (
@@ -103,8 +103,8 @@ CREATE TABLE inventory.size (
 CREATE TABLE inventory.reservable (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL UNIQUE,
-    type inventory.reservable_type NOT NULL,
-    status inventory.reservable_status_enum NOT NULL DEFAULT 'disponible',
+    inventory_type inventory.reservable_type NOT NULL,
+    status inventory.reservable_status NOT NULL DEFAULT 'disponible',
     owner_id INT REFERENCES inventory.organization(id) NOT NULL,
     manager_id INT REFERENCES inventory.organization(id) NOT NULL,
     storage_location_id INT REFERENCES inventory.storage_location(id),

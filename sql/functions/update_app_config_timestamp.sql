@@ -4,7 +4,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 VOLATILE AS $$
 BEGIN
-  UPDATE app_config
+  UPDATE inventory.app_config
   SET updated_at = NOW()
   WHERE id = 1;  -- id fixe
   RETURN NULL;   -- AFTER trigger
