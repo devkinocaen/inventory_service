@@ -1,4 +1,3 @@
--- SQL: get_reservables
 CREATE OR REPLACE FUNCTION inventory.get_reservables(
     p_type inventory.reservable_type DEFAULT NULL,
     p_category_id INT DEFAULT NULL,
@@ -67,7 +66,7 @@ BEGIN
       s.label,
       -- styles aggregation
       array_remove(array_agg(DISTINCT rsl.style_id), NULL) AS style_ids,
-      array_remove(array_agg(DISTINCT rs.name), NULL) AS style_names
+      array_remove(array_agg(DISTINCT rs.name)::text[], NULL) AS style_names
     FROM inventory.reservable r
     LEFT JOIN inventory.reservable_category c ON c.id = r.category_id
     LEFT JOIN inventory.reservable_subcategory sc ON sc.id = r.subcategory_id
@@ -82,7 +81,6 @@ BEGIN
       AND (p_category_id IS NULL OR r.category_id = p_category_id)
       AND (p_subcategory_id IS NULL OR r.subcategory_id = p_subcategory_id)
       AND (p_gender IS NULL OR r.gender = p_gender)
-      -- si p_style_ids fourni : garder les objets contenant AU MOINS une des styles (OR logic)
       AND (
         p_style_ids IS NULL
         OR EXISTS (

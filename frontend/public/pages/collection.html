@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Collection</title>
+<link rel="stylesheet" href="./styles/collection.css">
+</head>
+<body class="collection-page">
+
+<!-- Sidebar Filtres -->
+<aside id="collection-filtersSidebar" class="collapsed">
+  <h3>Filtres</h3>
+  <div><strong>Catégorie</strong></div>
+  <div id="collection-categoryChips" class="collection-chip-list"></div>
+  <div><strong>Sous-catégorie</strong></div>
+  <div id="collection-subcatChips" class="collection-chip-list"></div>
+  <div><strong>Style</strong></div>
+  <div id="collection-styleChips" class="collection-chip-list"></div>
+
+  <hr>
+  <div><strong>Période</strong></div>
+  <div class="collection-date-filters">
+    <div class="collection-date-row">
+      <label for="filterStartDate">Du</label>
+      <input type="date" id="filterStartDate">
+    </div>
+    <div class="collection-date-row">
+      <label for="filterEndDate">Au</label>
+      <input type="date" id="filterEndDate">
+    </div>
+  </div>
+</aside>
+
+<!-- Zone principale -->
+<div id="collection-main"></div>
+
+<!-- Sidebar Panier -->
+<div id="collection-cartSidebar" class="collapsed"></div>
+
+<!-- Boutons flottants -->
+<button id="collection-filtersToggle" class="collapsed">🔍</button>
+<button id="collection-cartToggle" class="collapsed">🛒</button>
+
+<script type="module" src="./js/pages/collection.js"></script>
+</body>
+</html>

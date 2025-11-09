@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Planning Costumerie</title>
+<style>
+body {
+  font-family: sans-serif;
+  margin: 0;
+  background: #fafafa;
+  color: #333;
+}
+
+/* --- Container principal --- */
+.planning-container {
+  margin: 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+/* --- Table --- */
+#planning-table {
+  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+  font-size: 0.9em;
+}
+#planning-table th, #planning-table td {
+  border: 1px solid #ddd;
+  text-align: center;
+  padding: 4px;
+  min-width: 70px;
+  height: 36px;
+}
+#planning-table th {
+  background: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+#planning-table th.day-header {
+  background: #e8f5e9;
+  font-weight: bold;
+}
+#planning-table td.booking {
+  color: #fff;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+}
+#planning-table td.booking:hover {
+  filter: brightness(1.1);
+}
+#planning-table td.available {
+  background: #fff;
+}
+
+/* --- Ligne actuelle --- */
+.planning-now-indicator {
+  position: absolute;
+  width: 2px;
+  background: #e53935;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+}
+
+/* --- Scroll horizontal --- */
+.planning-wrapper {
+  overflow-x: auto;
+  position: relative;
+  max-height: 80vh;
+}
+
+/* --- Modal projet --- */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+.modal {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  width: 360px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.modal header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.modal header h3 {
+  margin: 0;
+  color: #4CAF50;
+}
+.modal footer {
+  text-align: right;
+  margin-top: 10px;
+}
+.modal button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.modal .close-btn {
+  background: #e53935;
+  color: #fff;
+}
+.modal .save-btn {
+  background: #4CAF50;
+  color: #fff;
+}
+</style>
+</head>
+<body>
+
+<div class="planning-container">
+  <div style="padding:10px;">
+    <label>Granularité :</label>
+    <select id="granularity">
+      <option value="60">1h</option>
+      <option value="120">2h</option>
+      <option value="240">4h</option>
+      <option value="480">8h</option>
+      <option value="1440">1 jour</option>
+    </select>
+  </div>
+
+  <div class="planning-wrapper">
+    <table id="planning-table">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+    <div class="planning-now-indicator"></div>
+  </div>
+</div>
+
+<!-- Modal projet -->
+<div id="projectModal" class="modal-overlay">
+  <div class="modal">
+    <header>
+      <h3>Détails du projet</h3>
+      <button class="close-btn">✖</button>
+    </header>
+    <div class="content"></div>
+    <footer>
+      <button class="save-btn">Modifier</button>
+    </footer>
+  </div>
+</div>
+
+<script>
+// === Données factices ===
+const equipments = Array.from({length:6}, (_,i)=>({id:i+1,name:'Equipement '+(i+1)}));
+const projects = [
+  {id:1,short_title:'Proj A',mag_color:'#4CAF50',referent_name:'Alice',referent_mobile_phone:'0123456789'},
+  {id:2,short_title:'Proj B',mag_color:'#FF9800',referent_name:'Bob',referent_mobile_phone:'0987654321'},
+];
+const now = new Date();
+const bookings = [
+  {id:1,equipment_id:1,project_id:1,start_date:new Date(now.getFullYear(),now.getMonth(),now.getDate(),8),end_date:new Date(now.getFullYear(),now.getMonth(),now.getDate(),12)},
+  {id:2,equipment_id:2,project_id:2,start_date:new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,10),end_date:new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,18)},
+  {id:3,equipment_id:3,project_id:1,start_date:new Date(now.getFullYear(),now.getMonth(),now.getDate()+2,14),end_date:new Date(now.getFullYear(),now.getMonth(),now.getDate()+2,20)},
+];
+
+// === Config ===
+let GRANULARITY_MINUTES = 60;
+const DEFAULT_HOURS_START = 8;
+const DEFAULT_HOURS_END = 20;
+
+// === Fonctions planning ===
+function generateTimeSlots(startDate,endDate,intervalMinutes){
+  const slots = [];
+  for(let d=new Date(startDate);d<=endDate;d.setDate(d.getDate()+1)){
+    let start = DEFAULT_HOURS_START*60, end = DEFAULT_HOURS_END*60;
+    let t = new Date(d.getFullYear(),d.getMonth(),d.getDate(),Math.floor(start/60),start%60);
+    while(t.getHours()*60+t.getMinutes() < end){
+      slots.push(new Date(t));
+      t = new Date(t.getTime()+intervalMinutes*60000);
+    }
+  }
+  return slots;
+}
+
+function generateHeader(slots){
+  const thead = document.querySelector('#planning-table thead');
+  thead.innerHTML='';
+  const trDays=document.createElement('tr');
+  const thEmpty=document.createElement('th'); thEmpty.textContent=''; trDays.appendChild(thEmpty);
+  const days={};
+  slots.forEach(s=>{const k=s.toDateString(); days[k]=(days[k]||0)+1;});
+  for(const k in days){
+    const th=document.createElement('th'); th.className='day-header';
+    th.colSpan=days[k];
+    const d=new Date(k);
+    th.textContent=d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'numeric'});
+    trDays.appendChild(th);
+  }
+  thead.appendChild(trDays);
+
+  const trHours=document.createElement('tr');
+  const thLabel=document.createElement('th'); trHours.appendChild(thLabel);
+  slots.forEach(s=>{
+    const th=document.createElement('th');
+    th.dataset.time=s.getTime();
+    th.textContent=s.getHours().toString().padStart(2,'0')+':'+s.getMinutes().toString().padStart(2,'0');
+    trHours.appendChild(th);
+  });
+  thead.appendChild(trHours);
+}
+
+function calculateColspan(start,end,slots){
+  let c=0;
+  for(const s of slots){ if(s>=start && s<end) c++; }
+  return Math.max(c,1);
+}
+
+function renderPlanning(){
+  const tbody=document.querySelector('#planning-table tbody');
+  tbody.innerHTML='';
+  const start=new Date(), end=new Date();
+  end.setDate(start.getDate()+3);
+  const slots=generateTimeSlots(start,end,GRANULARITY_MINUTES);
+  generateHeader(slots);
+
+  equipments.forEach(eq=>{
+    const tr=document.createElement('tr');
+    const tdName=document.createElement('td'); tdName.textContent=eq.name; tr.appendChild(tdName);
+
+    let idx=0;
+    while(idx<slots.length){
+      const slot=slots[idx];
+      const b=bookings.find(b=>b.equipment_id===eq.id && b.start_date<=slot && b.end_date>slot);
+      if(b){
+        const proj=projects.find(p=>p.id===b.project_id);
+        const td=document.createElement('td'); td.className='booking';
+        td.colSpan=calculateColspan(b.start_date,b.end_date,slots);
+        td.style.backgroundColor=proj?.mag_color||'#777';
+        td.innerHTML=`<span>${proj?.short_title||'Projet'}</span>`;
+        td.addEventListener('click',()=>openProjectModal(b,proj));
+        tr.appendChild(td);
+        idx+=td.colSpan;
+      } else {
+        const td=document.createElement('td'); td.className='available'; tr.appendChild(td);
+        idx++;
+      }
+    }
+    tbody.appendChild(tr);
+  });
+  updateNowIndicator(slots);
+}
+
+function updateNowIndicator(slots){
+  const now=new Date();
+  const wrapper=document.querySelector('.planning-wrapper');
+  const first=document.querySelector('#planning-table th:first-child');
+  const ths=document.querySelectorAll('#planning-table thead tr:nth-child(2) th');
+  if(!wrapper||!first) return;
+  let left=first.offsetWidth;
+  for(let i=0;i<ths.length;i++){
+    const th=ths[i]; const t=parseInt(th.dataset.time,10);
+    if(now<t){
+      if(i===0) left=first.offsetWidth;
+      else {
+        const prev=ths[i-1];
+        const prevT=parseInt(prev.dataset.time,10);
+        left=prev.offsetLeft + ((now-prevT)/(t-prevT))*(th.offsetLeft-prev.offsetLeft);
+      }
+      break;
+    } else if(i===ths.length-1){ left=th.offsetLeft+th.offsetWidth; }
+  }
+  document.querySelector('.planning-now-indicator').style.left=left+'px';
+}
+
+// === Modal ===
+const modal=document.getElementById('projectModal');
+const content=modal.querySelector('.content');
+modal.querySelector('.close-btn').onclick=()=>modal.style.display='none';
+function openProjectModal(booking,project){
+  content.innerHTML=`
+    <p><strong>Projet :</strong> ${project?.short_title||booking.project_id}</p>
+    <p><strong>Référent :</strong> ${project?.referent_name||''}</p>
+    <p><strong>Téléphone :</strong> ${project?.referent_mobile_phone||''}</p>
+    <p><strong>Période :</strong><br>
+      ${booking.start_date.toLocaleString()}<br>
+      → ${booking.end_date.toLocaleString()}</p>`;
+  modal.style.display='flex';
+}
+
+// === Listeners ===
+document.getElementById('granularity').addEventListener('change',e=>{
+  GRANULARITY_MINUTES=parseInt(e.target.value);
+  renderPlanning();
+});
+
+// === Init ===
+renderPlanning();
+</script>
+</body>
+</html>
