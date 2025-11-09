@@ -1,0 +1,298 @@
+<div class="modal-overlay">
+  <div class="reservation-modal">
+    <h2>Nouvelle réservation</h2>
+
+    <!-- FORMULAIRE DE RÉSERVATION -->
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="startDate">📅 Date de début</label>
+        <input type="date" id="startDate" />
+      </div>
+      <div class="form-group">
+        <label for="endDate">📅 Date de fin</label>
+        <input type="date" id="endDate" />
+      </div>
+
+      <!-- Orga + Référent sur la même ligne -->
+      <div class="form-group form-group-full org-line">
+        <label>🏛️ Organisation & Référent</label>
+        <div class="org-referent-row">
+          <div class="org-select">
+            <select id="organization">
+              <option value="">— Organisation —</option>
+              <option value="1">Théâtre de Caen</option>
+              <option value="2">Compagnie Les Étoiles</option>
+              <option value="3">Université de Poitiers</option>
+            </select>
+            <button id="addOrg" class="btn-secondary">+ Ajouter / Modifier</button>
+          </div>
+          <select id="referent">
+            <option value="">— Référent —</option>
+            <option value="1">Marie Dupont</option>
+            <option value="2">Julien Martin</option>
+            <option value="3">Claire Benoît</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- PRIX -->
+      <div class="form-group form-group-full">
+        <label for="price">💰 Prix de location (€)</label>
+        <input type="number" id="price" placeholder="0.00" min="0" step="0.01" />
+      </div>
+
+      <!-- RÉSUMÉ DU PANIER - 2 COLONNES SCROLLABLE -->
+      <div class="form-group form-group-full">
+        <h3>🧺 Articles sélectionnés</h3>
+        <div class="cart-items scrollable">
+          <!-- Exemple de 12-15 articles -->
+          <div class="cart-item">
+            <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=100" alt="">
+            <div>
+              <div class="cart-item-name">Robe de bal renaissance</div>
+              <div class="cart-item-cat">Costume féminin</div>
+            </div>
+          </div>
+          <div class="cart-item">
+            <img src="https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=100" alt="">
+            <div>
+              <div class="cart-item-name">Tunique médiévale</div>
+              <div class="cart-item-cat">Costume masculin</div>
+            </div>
+          </div>
+          <div class="cart-item">
+            <img src="https://images.unsplash.com/photo-1520975918318-3d89d7a1c365?w=100" alt="">
+            <div>
+              <div class="cart-item-name">Cape d’aventurier</div>
+              <div class="cart-item-cat">Accessoire</div>
+            </div>
+          </div>
+          <div class="cart-item">
+            <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?w=100" alt="">
+            <div>
+              <div class="cart-item-name">Chapeau victorien</div>
+              <div class="cart-item-cat">Accessoire</div>
+            </div>
+          </div>
+          <div class="cart-item">
+            <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=100" alt="">
+            <div>
+              <div class="cart-item-name">Veste d’officier impérial</div>
+              <div class="cart-item-cat">Uniforme</div>
+            </div>
+          </div>
+          <div class="cart-item">
+            <img src="https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=100" alt="">
+            <div>
+              <div class="cart-item-name">Corset baroque</div>
+              <div class="cart-item-cat">Costume féminin</div>
+            </div>
+          </div>
+          <div class="cart-item">
+            <img src="https://images.unsplash.com/photo-1533089860892-a7c6f0b2b1df?w=100" alt="">
+            <div>
+              <div class="cart-item-name">Manteau du mousquetaire</div>
+              <div class="cart-item-cat">Costume masculin</div>
+            </div>
+          </div>
+          <div class="cart-item">
+            <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=100" alt="">
+            <div>
+              <div class="cart-item-name">Masque vénitien</div>
+              <div class="cart-item-cat">Accessoire</div>
+            </div>
+          </div>
+          <div class="cart-item">
+            <img src="https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?w=100" alt="">
+            <div>
+              <div class="cart-item-name">Chemise de pirate</div>
+              <div class="cart-item-cat">Costume masculin</div>
+            </div>
+          </div>
+          <div class="cart-item">
+            <img src="https://images.unsplash.com/photo-1560067174-8941b9a44f4c?w=100" alt="">
+            <div>
+              <div class="cart-item-name">Robe empire</div>
+              <div class="cart-item-cat">Costume féminin</div>
+            </div>
+          </div>
+          <div class="cart-item">
+            <img src="https://images.unsplash.com/photo-1520975918318-3d89d7a1c365?w=100" alt="">
+            <div>
+              <div class="cart-item-name">Plastron médiéval</div>
+              <div class="cart-item-cat">Armure</div>
+            </div>
+          </div>
+          <div class="cart-item">
+            <img src="https://images.unsplash.com/photo-1533106418989-88406c7cc8e1?w=100" alt="">
+            <div>
+              <div class="cart-item-name">Cape de sorcier</div>
+              <div class="cart-item-cat">Fantastique</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Boutons -->
+      <div class="form-group form-group-full form-actions">
+        <button class="btn-secondary">Annuler</button>
+        <button class="btn-primary">Valider la réservation</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+  backdrop-filter: blur(4px);
+}
+
+.reservation-modal {
+  background: #fff;
+  border-radius: 18px;
+  width: 720px;
+  max-width: 90%;
+  padding: 2rem;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.25);
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+h2, h3 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group-full {
+  grid-column: span 2;
+}
+
+label {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #555;
+}
+
+input, select {
+  padding: 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+input:focus, select:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+
+.org-line .org-referent-row {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.org-select {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-secondary {
+  background: #f3f3f3;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #e8e8e8;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn-primary {
+  background: #0077ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 1.4rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-primary:hover {
+  background: #005fcc;
+}
+
+.cart-items {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+}
+
+.cart-item {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 0.5rem;
+}
+
+.cart-item img {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.cart-item-name {
+  font-weight: 600;
+  color: #222;
+}
+
+.cart-item-cat {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
