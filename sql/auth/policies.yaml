@@ -1,48 +1,84 @@
 roles:
-  dev:
-    select: all
-    insert: all
-    update: all
-    delete: all
+dev:
+  select: all
+  insert: all
+  update: all
+  delete: all
 
-  admin:
-    select: all
-    insert: [event, session, participant, participant_session, participant_skill, participant_role]
-    update: [app_config, event, session, participant, participant_session, participant_skill, participant_role]
-    delete: [event, session, project, participant, participant_session, participant_skill, equipment, equipment_booking, costume, costume_booking, editing_station, editing_station_booking, shooting ]
+admin:
+  select: all
+  insert:
+    - app_config
+    - person
+    - organization
+    - storage_location
+    - reservable_style
+    - reservable_category
+    - reservable_subcategory
+    - size_type
+    - size
+    - reservable
+    - reservable_style_link
+    - reservable_batch
+    - reservable_batch_link
+    - booking_reference
+    - reservable_booking
+  update:
+    - app_config
+    - person
+    - organization
+    - storage_location
+    - reservable_style
+    - reservable_category
+    - reservable_subcategory
+    - size_type
+    - size
+    - reservable
+    - reservable_style_link
+    - reservable_batch
+    - reservable_batch_link
+    - booking_reference
+    - reservable_booking
+  delete:
+    - app_config
+    - person
+    - organization
+    - storage_location
+    - reservable_style
+    - reservable_category
+    - reservable_subcategory
+    - size_type
+    - size
+    - reservable
+    - reservable_style_link
+    - reservable_batch
+    - reservable_batch_link
+    - booking_reference
+    - reservable_booking
 
-  prod:
-    select: all
-    insert: [participant, participant_session, participant_skill, project, shooting_location, shooting, participant_role ]
-    update: [app_config, participant, participant_session, participant_skill, project, shooting_location, shooting, editing_station_booking, equipment_booking, costume_booking, participant_role]
-    delete: [participant, participant_session, participant_skill, project, shooting_location, shooting ]
+viewer:
+  select: all
+  insert: []
+  update: []
+  delete: []
 
-  lab:
-    select: all
-    insert: [ participant_skill, editing_station, editing_station_booking]
-    update: [app_config, participant, participant_skill, project, editing_station, editing_station_booking]
-    delete: [participant_skill, editing_station, editing_station_booking]
-
-  mag:
-    select: all
-    insert: [equipment, equipment_booking]
-    update: [app_config, equipment, equipment_booking, project]
-    delete: [equipment, equipment_booking]
-    
-  hmc:
-      select: all
-      insert: [costume, costume_booking]
-      update: [app_config, costume, costume_booking, project]
-      delete: [costume, costume_booking]
-      
-  viewer:
-    select: all
-    insert: []
-    update: []
-    delete: []
-
-  anon:
-    select: [project, shooting, shooting_location, participant_role, participant, project_status, progress_status, participant_session, participant_skill, film_genre, film_type, skill, session, event, app_config]
-    insert: []
-    update: []
-    delete: []
+anon:
+  select:
+    - app_config
+    - person
+    - organization
+    - storage_location
+    - reservable_style
+    - reservable_category
+    - reservable_subcategory
+    - size_type
+    - size
+    - reservable
+    - reservable_style_link
+    - reservable_batch
+    - reservable_batch_link
+    - booking_reference
+    - reservable_booking
+  insert: []
+  update: []
+  delete: []

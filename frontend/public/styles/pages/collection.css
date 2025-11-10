@@ -1,142 +1,172 @@
-// js/pages/collection.js
-import { fetchReservables, fetchCategories, fetchSubcategories, fetchStyles } from '../libs/sql/index.js';
-import { initClient } from '../libs/client.js';
-import { formatServerError } from '../libs/helpers.js';
-
-const client = await initClient();
-
-let currentItems = [];
-let selectedItems = [];
-let activeFilters = { category: [], subcategory: [], style: [] };
-
-// ---- DOM Elements ----
-const filtersSidebar = document.getElementById('filtersSidebar');
-const filtersToggle = document.getElementById('filtersToggle');
-const cartSidebar = document.getElementById('cartSidebar');
-const cartToggle = document.getElementById('cartToggle');
-const container = document.getElementById('main');
-
-// ---- Toggle sidebar ----
-filtersToggle.addEventListener('click', ()=>{
-  filtersSidebar.classList.toggle('collapsed');
-  filtersToggle.classList.toggle('collapsed');
-});
-cartToggle.addEventListener('click', ()=>{
-  cartSidebar.classList.toggle('collapsed');
-  cartToggle.classList.toggle('collapsed');
-});
-
-// ---- Fetch Data ----
-async function loadData() {
-  try {
-    const [items, categories, subcategories, styles] = await Promise.all([
-      fetchReservables(client),
-      fetchCategories(client),
-      fetchSubcategories(client),
-      fetchStyles(client)
-    ]);
-
-    currentItems = items;
-    renderFilterChips(categories, subcategories, styles);
-    renderItems();
-    renderCart();
-  } catch (err) {
-    console.error('[Collection] Erreur :', formatServerError(err.message));
-  }
+/* ---- Global ---- */
+body {
+  font-family: sans-serif;
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
 }
 
-// ---- Render Filters ----
-function renderFilterChips(categories, subcategories, styles) {
-  const categoryChips = document.getElementById('categoryChips');
-  const subcatChips = document.getElementById('subcatChips');
-  const styleChips = document.getElementById('styleChips');
+/* ---- Sidebar Filtres ---- */
+#filtersSidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  background: #fafafa;
+  border-right: 1px solid #ccc;
+  padding: 12px;
+  overflow-y: auto;
+  transition: transform 0.3s;
+  z-index: 900;
+}
+#filtersSidebar.collapsed { transform: translateX(-100%); }
 
-  categoryChips.innerHTML='';
-  categories.forEach(c=>{
-    const chip = document.createElement('div');
-    chip.textContent=c.name;
-    chip.className='chip'+(activeFilters.category.includes(c.name)?' active':'');
-    chip.onclick=()=>{ toggleFilter('category', c.name); renderFilterChips(categories, subcategories, styles); renderItems(); };
-    categoryChips.appendChild(chip);
-  });
-
-  subcatChips.innerHTML='';
-  subcategories.forEach(s=>{
-    const chip = document.createElement('div');
-    chip.textContent=s.name;
-    chip.className='chip'+(activeFilters.subcategory.includes(s.name)?' active':'');
-    chip.onclick=()=>{ toggleFilter('subcategory', s.name); renderFilterChips(categories, subcategories, styles); renderItems(); };
-    subcatChips.appendChild(chip);
-  });
-
-  styleChips.innerHTML='';
-  styles.forEach(s=>{
-    const chip = document.createElement('div');
-    chip.textContent=s.name;
-    chip.className='chip'+(activeFilters.style.includes(s.name)?' active':'');
-    chip.onclick=()=>{ toggleFilter('style', s.name); renderFilterChips(categories, subcategories, styles); renderItems(); };
-    styleChips.appendChild(chip);
-  });
+/* ---- Zone principale ---- */
+#main {
+  flex: 1;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-gap: 8px;
+  overflow-y: auto;
+  margin-left: 0;
+  position: relative;
+  z-index: 1;
 }
 
-function toggleFilter(type, value) {
-  if(activeFilters[type].includes(value)) activeFilters[type] = activeFilters[type].filter(v=>v!==value);
-  else activeFilters[type].push(value);
+/* ---- Cartes ---- */
+.costume-card {
+  position: relative;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: #fff;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  height: 150px;
+  z-index: 1;
+}
+.costume-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+.costume-card.selected { border: 2px solid #4CAF50; }
+.costume-card img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+}
+.costume-name {
+  margin-top: 4px;
+  font-size: 0.85em;
+  text-align: center;
+  flex-shrink: 0;
 }
 
-// ---- Render Items ----
-function renderItems() {
-  container.innerHTML='';
-  currentItems.forEach(item=>{
-    if(activeFilters.category.length && !activeFilters.category.includes(item.category_name)) return;
-    if(activeFilters.subcategory.length && !activeFilters.subcategory.includes(item.subcategory_name)) return;
-    if(activeFilters.style.length && !activeFilters.style.includes(item.style_names?.[0])) return; // première style pour affichage
+/* ---- Sidebar Panier ---- */
+#cartSidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 200px;
+  height: auto;
+  max-height: 80vh;
+  background: rgba(255,255,255,0.95);
+  box-shadow: -2px 0 6px rgba(0,0,0,0.2);
+  border-left: 1px solid #ccc;
+  padding: 8px;
+  transition: transform 0.3s;
+  overflow-y: auto;
+  z-index: 950;
+}
+#cartSidebar.collapsed { transform: translateX(100%); }
 
-    const div = document.createElement('div');
-    div.className='costume-card'+(selectedItems.includes(item.id)?' selected':'');
+/* ---- Boutons flottants ---- */
+#cartToggle,
+#filtersToggle { z-index: 1000; }
 
-    const img = document.createElement('img');
-    img.src = item.photos?.[0] || '';
-    let hoverInterval, idx=0;
-    div.addEventListener('mouseenter', ()=>{
-      hoverInterval=setInterval(()=>{
-        idx=(idx+1)%item.photos.length;
-        img.src=item.photos[idx];
-      },1000);
-    });
-    div.addEventListener('mouseleave', ()=>{
-      clearInterval(hoverInterval);
-      idx=0;
-      img.src=item.photos?.[0] || '';
-    });
-    div.appendChild(img);
+#cartToggle {
+  position: fixed;
+  right: 220px;
+  top: 20px;
+  background: #e53935;
+  color: #fff;
+  border: none;
+  padding: 12px 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: right 0.3s, transform 0.2s;
+  font-size: 22px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+#cartToggle:hover { transform: scale(1.1); }
+#cartToggle.collapsed { right: 20px; }
 
-    const name = document.createElement('div');
-    name.className='costume-name';
-    name.textContent=item.name;
-    div.appendChild(name);
+#filtersToggle {
+  position: fixed;
+  left: 260px;
+  top: 20px;
+  background: #4CAF50;
+  color: #fff;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: left 0.3s, transform 0.2s;
+  font-size: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+#filtersToggle:hover { transform: scale(1.1); }
+#filtersToggle.collapsed { left: 20px; }
 
-    div.addEventListener('click', ()=>{
-      if(selectedItems.includes(item.id)) selectedItems=selectedItems.filter(i=>i!==item.id);
-      else selectedItems.push(item.id);
-      renderItems();
-      renderCart();
-    });
-
-    container.appendChild(div);
-  });
+/* ---- Chips ---- */
+.chip {
+  display: inline-block;
+  padding: 4px 8px;
+  margin: 2px;
+  border-radius: 16px;
+  background: #eee;
+  cursor: pointer;
+  font-size: 0.8em;
+}
+.chip.active {
+  background: #4CAF50;
+  color: #fff;
 }
 
-// ---- Render Cart ----
-function renderCart() {
-  cartSidebar.innerHTML='<h4>Panier</h4>';
-  selectedItems.forEach(id=>{
-    const item = currentItems.find(i=>i.id===id);
-    const div = document.createElement('div');
-    div.textContent=item.name;
-    cartSidebar.appendChild(div);
-  });
+.date-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
 }
 
-// ---- Init ----
-loadData();
+.date-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-row label {
+  width: 24px;
+  font-size: 0.85em;
+  color: #333;
+  text-align: right;
+}
+
+.date-row input[type="date"] {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
