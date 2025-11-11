@@ -1,6 +1,9 @@
 // js/pages/collection.js
 import { fetchReservables, fetchCategories, fetchSubcategories, fetchStyles } from '../libs/sql/index.js';
 import { initClient } from '../libs/client.js';
+
+import { openBookingModal } from '../modals/booking_modal.js';
+
 import { formatServerError } from '../libs/helpers.js';
 
 let client;
@@ -11,77 +14,94 @@ let activeFilters = { category: [], subcategory: [], style: [] };
 // ---- DOM Elements ----
 let filtersSidebar, filtersToggle, cartSidebar, cartToggle, container;
 
+/**
+ * Toggle filtre sélectionné
+ */
 function toggleFilter(type, value) {
-  if(activeFilters[type].includes(value)) activeFilters[type] = activeFilters[type].filter(v=>v!==value);
+  if (activeFilters[type].includes(value)) activeFilters[type] = activeFilters[type].filter(v => v !== value);
   else activeFilters[type].push(value);
 }
 
+/**
+ * Render les filtres sous forme de chips
+ */
 function renderFilterChips(categories, subcategories, styles) {
-  const categoryChips = document.getElementById('collection-categoryChips');
-  const subcatChips = document.getElementById('collection-subcatChips');
-  const styleChips = document.getElementById('collection-styleChips');
+  const categoryChips = document.getElementById('cstm-categoryChips');
+  const subcatChips = document.getElementById('cstm-subcatChips');
+  const styleChips = document.getElementById('cstm-styleChips');
 
-  categoryChips.innerHTML='';
-  categories.forEach(c=>{
+  categoryChips.innerHTML = '';
+  categories.forEach(c => {
     const chip = document.createElement('div');
-    chip.textContent=c.name;
-    chip.className='chip'+(activeFilters.category.includes(c.name)?' active':'');
-    chip.onclick=()=>{ toggleFilter('category', c.name); renderFilterChips(categories, subcategories, styles); renderItems(); };
+    chip.textContent = c.name;
+    chip.className = 'cstm-chip' + (activeFilters.category.includes(c.name) ? ' active' : '');
+    chip.onclick = () => { toggleFilter('category', c.name); renderFilterChips(categories, subcategories, styles); renderItems(); };
     categoryChips.appendChild(chip);
   });
 
-  subcatChips.innerHTML='';
-  subcategories.forEach(s=>{
+  subcatChips.innerHTML = '';
+  subcategories.forEach(s => {
     const chip = document.createElement('div');
-    chip.textContent=s.name;
-    chip.className='chip'+(activeFilters.subcategory.includes(s.name)?' active':'');
-    chip.onclick=()=>{ toggleFilter('subcategory', s.name); renderFilterChips(categories, subcategories, styles); renderItems(); };
+    chip.textContent = s.name;
+    chip.className = 'cstm-chip' + (activeFilters.subcategory.includes(s.name) ? ' active' : '');
+    chip.onclick = () => { toggleFilter('subcategory', s.name); renderFilterChips(categories, subcategories, styles); renderItems(); };
     subcatChips.appendChild(chip);
   });
 
-  styleChips.innerHTML='';
-  styles.forEach(s=>{
+  styleChips.innerHTML = '';
+  styles.forEach(s => {
     const chip = document.createElement('div');
-    chip.textContent=s.name;
-    chip.className='chip'+(activeFilters.style.includes(s.name)?' active':'');
-    chip.onclick=()=>{ toggleFilter('style', s.name); renderFilterChips(categories, subcategories, styles); renderItems(); };
+    chip.textContent = s.name;
+    chip.className = 'cstm-chip' + (activeFilters.style.includes(s.name) ? ' active' : '');
+    chip.onclick = () => { toggleFilter('style', s.name); renderFilterChips(categories, subcategories, styles); renderItems(); };
     styleChips.appendChild(chip);
   });
 }
 
+/**
+ * Render les costumes filtrés
+ */
 function renderItems() {
-  container.innerHTML='';
-  currentItems.forEach(item=>{
-    if(activeFilters.category.length && !activeFilters.category.includes(item.category_name)) return;
-    if(activeFilters.subcategory.length && !activeFilters.subcategory.includes(item.subcategory_name)) return;
-    if(activeFilters.style.length && !activeFilters.style.includes(item.style_names?.[0])) return;
+  container.innerHTML = '';
+
+  currentItems.forEach(item => {
+    if (activeFilters.category.length && !activeFilters.category.includes(item.category_name)) return;
+    if (activeFilters.subcategory.length && !activeFilters.subcategory.includes(item.subcategory_name)) return;
+    if (activeFilters.style.length && !activeFilters.style.includes(item.style_names?.[0])) return;
 
     const div = document.createElement('div');
-    div.className='costume-card'+(selectedItems.includes(item.id)?' selected':'');
+    div.className = 'cstm-costume-card' + (selectedItems.includes(item.id) ? ' selected' : '');
 
     const img = document.createElement('img');
-    img.src = item.photos?.[0] || '';
-    let hoverInterval, idx=0;
-    div.addEventListener('mouseenter', ()=>{
-      hoverInterval=setInterval(()=>{
-        idx=(idx+1)%item.photos.length;
-        img.src=item.photos[idx];
-      },1000);
+    // ⚡ Pseudo-image si pas de photo
+    img.src = (item.photos?.[0]) ? item.photos[0] : 'data:image/svg+xml;charset=UTF-8,' +
+      encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+        <rect width="200" height="200" fill="#ddd"/>
+        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="16">No Image</text>
+      </svg>`);
+
+    let hoverInterval, idx = 0;
+    div.addEventListener('mouseenter', () => {
+      if (!item.photos?.length) return;
+      hoverInterval = setInterval(() => {
+        idx = (idx + 1) % item.photos.length;
+        img.src = item.photos[idx];
+      }, 1000);
     });
-    div.addEventListener('mouseleave', ()=>{
+    div.addEventListener('mouseleave', () => {
       clearInterval(hoverInterval);
-      idx=0;
-      img.src=item.photos?.[0] || '';
+      idx = 0;
+      img.src = (item.photos?.[0]) ? item.photos[0] : img.src;
     });
     div.appendChild(img);
 
     const name = document.createElement('div');
-    name.className='costume-name';
-    name.textContent=item.name;
+    name.className = 'cstm-costume-name';
+    name.textContent = item.name;
     div.appendChild(name);
 
-    div.addEventListener('click', ()=>{
-      if(selectedItems.includes(item.id)) selectedItems=selectedItems.filter(i=>i!==item.id);
+    div.addEventListener('click', () => {
+      if (selectedItems.includes(item.id)) selectedItems = selectedItems.filter(i => i !== item.id);
       else selectedItems.push(item.id);
       renderItems();
       renderCart();
@@ -91,16 +111,27 @@ function renderItems() {
   });
 }
 
+/**
+ * Render le panier plus bas
+ */
 function renderCart() {
-  cartSidebar.innerHTML='<h4>Panier</h4>';
-  selectedItems.forEach(id=>{
-    const item = currentItems.find(i=>i.id===id);
+  // Ajout d'une zone panier en bas
+  const cartContainer = document.getElementById('cstm-cartBottom');
+  if (!cartContainer) return;
+
+  cartContainer.innerHTML = '<h4>Panier</h4>';
+  selectedItems.forEach(id => {
+    const item = currentItems.find(i => i.id === id);
+    if (!item) return;
     const div = document.createElement('div');
-    div.textContent=item.name;
-    cartSidebar.appendChild(div);
+    div.textContent = item.name;
+    cartContainer.appendChild(div);
   });
 }
 
+/**
+ * Charge les données depuis la base SQL
+ */
 async function loadData() {
   try {
     const [items, categories, subcategories, styles] = await Promise.all([
@@ -115,32 +146,51 @@ async function loadData() {
     renderItems();
     renderCart();
   } catch (err) {
-    console.error('[Collection] Erreur :', formatServerError(err.message));
+    console.error('[Collection] Erreur :', formatServerError(err.message || err));
   }
 }
 
 /**
- * Init function à appeler au chargement du HTML
+ * Init function à appeler après que le HTML soit injecté
  */
 export async function init() {
   client = await initClient();
 
   // DOM Elements
-  filtersSidebar = document.getElementById('collection-filtersSidebar');
-  filtersToggle = document.getElementById('collection-filtersToggle');
-  cartSidebar = document.getElementById('collection-cartSidebar');
-  cartToggle = document.getElementById('collection-cartToggle');
-  container = document.getElementById('collection-main');
+  filtersSidebar = document.getElementById('cstm-filtersSidebar');
+  filtersToggle = document.getElementById('cstm-filtersToggle');
+  cartSidebar = document.getElementById('cstm-cartSidebar');
+  cartToggle = document.getElementById('cstm-cartToggle');
+  container = document.getElementById('cstm-main');
+
+  // ⚡ Créer conteneur panier en bas si inexistant
+  if (!document.getElementById('cstm-cartBottom')) {
+    const bottomCart = document.createElement('div');
+    bottomCart.id = 'cstm-cartBottom';
+    bottomCart.style.marginTop = '2rem';
+    container.parentNode.appendChild(bottomCart);
+  }
 
   // Toggle sidebar events
-  filtersToggle.addEventListener('click', ()=>{
-    filtersSidebar.classList.toggle('collapsed');
-    filtersToggle.classList.toggle('collapsed');
+  filtersToggle.addEventListener('click', () => {
+    filtersSidebar.classList.toggle('cstm-collapsed');
+    filtersToggle.classList.toggle('cstm-collapsed');
   });
-  cartToggle.addEventListener('click', ()=>{
-    cartSidebar.classList.toggle('collapsed');
-    cartToggle.classList.toggle('collapsed');
+  cartToggle.addEventListener('click', async () => {
+    // Ouvre le modal avec les items sélectionnés
+    const itemsForModal = selectedItems.map(id => {
+      const item = currentItems.find(i => i.id === id);
+      return item ? {
+        name: item.name,
+        category: item.category_name,
+        img: item.photos?.[0] || ''
+      } : null;
+    }).filter(Boolean);
+
+    await openBookingModal(itemsForModal);
   });
+
+
 
   await loadData();
 }

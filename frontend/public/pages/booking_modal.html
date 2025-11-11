@@ -1,0 +1,50 @@
+<div id="booking-modal" class="booking-modal-overlay hidden">
+  <div class="booking-modal-dialog">
+    <h2 class="booking-modal-title">Nouvelle réservation</h2>
+
+    <div class="booking-form-grid">
+
+      <!-- Dates -->
+      <div class="booking-form-group">
+        <label for="startDate">📅 Date de début</label>
+        <input type="date" id="startDate" class="booking-input" />
+      </div>
+
+      <div class="booking-form-group">
+        <label for="endDate">📅 Date de fin</label>
+        <input type="date" id="endDate" class="booking-input" />
+      </div>
+
+      <!-- Organisation & Référent -->
+      <div class="booking-form-group booking-form-group-full booking-org-line">
+        <label>🏛️ Organisation & Référent</label>
+        <div class="booking-org-referent-row">
+          <div class="booking-org-select">
+            <select id="organization" class="booking-select"></select>
+            <button id="addOrg" class="booking-btn-secondary">+ Ajouter / Modifier</button>
+          </div>
+          <select id="referent" class="booking-select"></select>
+        </div>
+      </div>
+
+      <!-- Prix -->
+      <div class="booking-form-group booking-form-group-full booking-price-container">
+        <label for="price">💰 Prix de location (€)</label>
+        <input type="number" id="price" class="booking-input" placeholder="0.00" min="0" step="0.01" />
+      </div>
+
+      <!-- Articles sélectionnés -->
+      <div class="booking-form-group booking-form-group-full">
+        <h3>🧺 Articles sélectionnés</h3>
+        <div class="booking-cart-items" id="booking-items"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="booking-form-group booking-form-group-full booking-form-actions">
+        <button class="booking-btn-secondary" id="cancel-booking-btn">Annuler</button>
+        <button class="booking-btn-primary" id="validate-booking-btn">Valider la réservation</button>
+      </div>
+
+    </div>
+  </div>
+</div>

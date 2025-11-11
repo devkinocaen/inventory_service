@@ -33,7 +33,7 @@
   grid-gap: 8px;
   overflow-y: auto;
   margin-left: 0;
-  position: relative; /* important pour les boutons absolus */
+  position: relative;
   z-index: 1;
 }
 
@@ -87,56 +87,45 @@
 }
 #cstm-cartSidebar.cstm-collapsed { transform: translateX(100%); }
 
-/* ---- Boutons flottants centrés horizont. sur la 1ère ligne ---- */
-#cstm-filtersToggle,
-#cstm-cartToggle {
-  position: fixed; /* par rapport à la fenêtre */
-  top: 120px;      /* ajuster selon la hauteur du header / top du tableau */
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  z-index: 1000;
-  transition: transform 0.2s;
-}
-
+/* ---- Boutons flottants ---- */
+#cstm-cartToggle,
 #cstm-filtersToggle {
-  position: fixed;       /* reste visible même au scroll */
-  top: 50%;              /* milieu vertical de la fenêtre */
-  left: 20px;            /* légèrement décalé du bord gauche */
-  transform: translateY(-50%); /* centre exact sur le milieu */
-  background: #4CAF50;
-  color: #fff;
-  border: none;
-  padding: 10px 12px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 20px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
   z-index: 1000;
-  transition: transform 0.2s;
 }
 
 #cstm-cartToggle {
   position: fixed;
-  top: 50%;              /* milieu vertical de la fenêtre */
-  right: 20px;           /* légèrement décalé du bord droit */
-  transform: translateY(-50%);
+  right: 220px;
+  top: 20px;
   background: #e53935;
   color: #fff;
   border: none;
   padding: 12px 14px;
   border-radius: 50%;
   cursor: pointer;
+  transition: right 0.3s, transform 0.2s;
   font-size: 22px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  z-index: 1000;
-  transition: transform 0.2s;
 }
-
-#cstm-filtersToggle:hover,
 #cstm-cartToggle:hover { transform: scale(1.1); }
+#cstm-cartToggle.cstm-collapsed { right: 20px; }
 
+#cstm-filtersToggle {
+  position: fixed;
+  left: 260px;
+  top: 20px;
+  background: #4CAF50;
+  color: #fff;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: left 0.3s, transform 0.2s;
+  font-size: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+#cstm-filtersToggle:hover { transform: scale(1.1); }
+#cstm-filtersToggle.cstm-collapsed { left: 20px; }
 
 /* ---- Chips ---- */
 .cstm-chip {

@@ -132,64 +132,54 @@ onReady(() => {
         
         
  async function loadContent(fileObj, index) {
-    Array.from(tabsEl.children).forEach((tab, i) => {
-      tab.classList.toggle('active', i === index);
-    });
+   Array.from(tabsEl.children).forEach((tab, i) => {
+     tab.classList.toggle('active', i === index);
+   });
 
-    try {
-      //console.log(`Chargement de la page HTML : ${fileObj.file}`);
+   try {
+     // Sauvegarde l'état de l'onglet courant avant de changer
+     const currentTab = Number(localStorage.getItem('currentTabIndex'));
+     if (!isNaN(currentTab)) saveFormState(currentTab, contentEl);
 
-        // Sauvegarde l'état de l'onglet courant avant de changer
-         const currentTab = Number(localStorage.getItem('currentTabIndex'));
-        if (!isNaN(currentTab)) saveFormState(currentTab, contentEl);
+     // Nettoyage précédent si nécessaire
+     if (typeof currentCleanupFn === 'function') {
+       console.log('🧹 Appel de la fonction de nettoyage précédente');
+       currentCleanupFn();
+       currentCleanupFn = null;
+     }
 
-      // Nettoyage précédent si nécessaire
-      if (typeof currentCleanupFn === 'function') {
-        console.log('🧹 Appel de la fonction de nettoyage précédente');
-        currentCleanupFn();
-        currentCleanupFn = null;
-      }
+     // Supprime les anciens scripts dynamiques
+     document.querySelectorAll('script[data-dynamic-script]').forEach(el => el.remove());
 
-      // Supprime les anciens scripts dynamiques
-      document.querySelectorAll('script[data-dynamic-script]').forEach(el => el.remove());
+     // Récupère le HTML de la page
+     const res = await fetch(resolvePath(fileObj.file) + '?_=' + Date.now());
+     if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
+     const html = await res.text();
 
-      // Récupère le HTML de la page
-      const res = await fetch(resolvePath(fileObj.file) + '?_=' + Date.now());
-      if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
+     const parser = new DOMParser();
+     const doc = parser.parseFromString(html, 'text/html');
 
-      const html = await res.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
+     // On enlève les styles externes / liens pour éviter doublons
+     doc.querySelectorAll('style, link[rel="stylesheet"]').forEach(el => el.remove());
+     contentEl.innerHTML = doc.body.innerHTML;
 
-      // On enlève les styles externes / liens pour éviter doublons
-      doc.querySelectorAll('style, link[rel="stylesheet"]').forEach(el => el.remove());
-      contentEl.innerHTML = doc.body.innerHTML;
+     // Charge les scripts dynamiques
+     currentCleanupFn = await loadScripts(fileObj.scripts, contentEl);
 
-     // console.log(`Début du chargement des scripts pour : ${fileObj.file}`);
-      currentCleanupFn = await loadScripts(fileObj.scripts);
-     // console.log(`Scripts chargés pour : ${fileObj.file}`);
+     // Restore l'état de l'onglet chargé
+     restoreFormState(index, contentEl);
 
-        
-        // Restore l'état de l'onglet chargé
-        restoreFormState(index, contentEl);
+   } catch (error) {
+     contentEl.innerHTML = `<p style="color:red;">Erreur de chargement : ${error.message}</p>`;
+     console.error('Erreur dans loadContent:', error);
+   }
 
-        
-      // 🔹 Rappel de init() pour rafraîchir les selects depuis la base
-      if (typeof window.init === 'function') {
-       // console.log('▶️ Rechargement de init() après injection du HTML et des scripts');
-        await window.init();
-      }
-
-    } catch (error) {
-      contentEl.innerHTML = `<p style="color:red;">Erreur de chargement : ${error.message}</p>`;
-      console.error('Erreur dans loadContent:', error);
-    }
-     localStorage.setItem('currentTabIndex', index);
-
-  }
+   localStorage.setItem('currentTabIndex', index);
+ }
 
 
-  async function loadScripts(scripts) {
+
+ async function loadScripts(scripts, containerEl) {
     if (!scripts || !scripts.length) return null;
 
     let cleanupFn = null;
@@ -206,35 +196,33 @@ onReady(() => {
         script.setAttribute('data-dynamic-script', 'true');
 
         script.onload = async () => {
-    //  console.log(`✅ Script chargé : ${scriptSrc}`);
+          try {
+            const imported = await import(script.src);
 
-      try {
-        const imported = await import(script.src);
+            if (typeof imported.init === 'function') {
+              console.log(`🚀 Appel init() depuis import() pour : ${cleanKey}`);
+              // ⚡ On passe containerEl au init()
+              await imported.init(containerEl);
+              window.__loadedModules[cleanKey] = {
+                initDone: true,
+                cleanup: typeof imported.cleanup === 'function' ? imported.cleanup : null,
+              };
+            }
+          } catch (err) {
+            console.error(`❌ Erreur import() post-load pour ${scriptSrc}:`, err);
+          }
 
-        //if (typeof imported.init === 'function' && !window.__loadedModules[cleanKey]?.initDone) {
-        if (typeof imported.init === 'function') {
-        //  console.log(`🚀 Appel init() depuis import() pour : ${cleanKey}`);
-          await imported.init();
-          window.__loadedModules[cleanKey] = {
-            initDone: true,
-            cleanup: typeof imported.cleanup === 'function' ? imported.cleanup : null,
-          };
-        }
-      } catch (err) {
-        console.error(`❌ Erreur import() post-load pour ${scriptSrc}:`, err);
-      }
-
-      resolve();
-    };
+          resolve();
+        };
 
         script.onerror = () => reject(new Error(`Erreur chargement script ${scriptSrc}`));
-
         document.body.appendChild(script);
       });
     }
 
     return cleanupFn;
   }
+
 
   // 🔹 TNR automatique si activé
   if (window.ENV.RUN_TNR) {

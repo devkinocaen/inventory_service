@@ -11,4 +11,6 @@ export { fetchReservableStatuses } from './fetchReservableStatuses.js';
 export { fetchReservableTypes } from './fetchReservableTypes.js';
 export { fetchStyles } from './fetchStyles.js';
 export { fetchSubcategories } from './fetchSubcategories.js';
-export { fetchSubcategoriesByCategory } from './fetchSubcategoriesByCategory.js';
+export { fetchOrganizations } from './fetchOrganizations.js';
+export { fetchOrganizationReferents } from './fetchOrganizationReferents.js';
+
