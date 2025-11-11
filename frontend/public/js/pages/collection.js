@@ -1,9 +1,7 @@
 // js/pages/collection.js
 import { fetchReservables, fetchCategories, fetchSubcategories, fetchStyles } from '../libs/sql/index.js';
 import { initClient } from '../libs/client.js';
-
 import { openBookingModal } from '../modals/booking_modal.js';
-
 import { formatServerError } from '../libs/helpers.js';
 
 let client;
@@ -18,8 +16,11 @@ let filtersSidebar, filtersToggle, cartSidebar, cartToggle, container;
  * Toggle filtre sélectionné
  */
 function toggleFilter(type, value) {
-  if (activeFilters[type].includes(value)) activeFilters[type] = activeFilters[type].filter(v => v !== value);
-  else activeFilters[type].push(value);
+  if (activeFilters[type].includes(value)) {
+    activeFilters[type] = activeFilters[type].filter(v => v !== value);
+  } else {
+    activeFilters[type].push(value);
+  }
 }
 
 /**
@@ -35,7 +36,11 @@ function renderFilterChips(categories, subcategories, styles) {
     const chip = document.createElement('div');
     chip.textContent = c.name;
     chip.className = 'cstm-chip' + (activeFilters.category.includes(c.name) ? ' active' : '');
-    chip.onclick = () => { toggleFilter('category', c.name); renderFilterChips(categories, subcategories, styles); renderItems(); };
+    chip.onclick = () => {
+      toggleFilter('category', c.name);
+      renderFilterChips(categories, subcategories, styles);
+      renderItems();
+    };
     categoryChips.appendChild(chip);
   });
 
@@ -44,7 +49,11 @@ function renderFilterChips(categories, subcategories, styles) {
     const chip = document.createElement('div');
     chip.textContent = s.name;
     chip.className = 'cstm-chip' + (activeFilters.subcategory.includes(s.name) ? ' active' : '');
-    chip.onclick = () => { toggleFilter('subcategory', s.name); renderFilterChips(categories, subcategories, styles); renderItems(); };
+    chip.onclick = () => {
+      toggleFilter('subcategory', s.name);
+      renderFilterChips(categories, subcategories, styles);
+      renderItems();
+    };
     subcatChips.appendChild(chip);
   });
 
@@ -53,7 +62,11 @@ function renderFilterChips(categories, subcategories, styles) {
     const chip = document.createElement('div');
     chip.textContent = s.name;
     chip.className = 'cstm-chip' + (activeFilters.style.includes(s.name) ? ' active' : '');
-    chip.onclick = () => { toggleFilter('style', s.name); renderFilterChips(categories, subcategories, styles); renderItems(); };
+    chip.onclick = () => {
+      toggleFilter('style', s.name);
+      renderFilterChips(categories, subcategories, styles);
+      renderItems();
+    };
     styleChips.appendChild(chip);
   });
 }
@@ -62,6 +75,7 @@ function renderFilterChips(categories, subcategories, styles) {
  * Render les costumes filtrés
  */
 function renderItems() {
+  if (!container) return;
   container.innerHTML = '';
 
   currentItems.forEach(item => {
@@ -72,9 +86,9 @@ function renderItems() {
     const div = document.createElement('div');
     div.className = 'cstm-costume-card' + (selectedItems.includes(item.id) ? ' selected' : '');
 
+    // ⚡ Image principale + hover cycle
     const img = document.createElement('img');
-    // ⚡ Pseudo-image si pas de photo
-    img.src = (item.photos?.[0]) ? item.photos[0] : 'data:image/svg+xml;charset=UTF-8,' +
+    img.src = item.photos?.[0]?.url || 'data:image/svg+xml;charset=UTF-8,' +
       encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
         <rect width="200" height="200" fill="#ddd"/>
         <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="16">No Image</text>
@@ -85,13 +99,13 @@ function renderItems() {
       if (!item.photos?.length) return;
       hoverInterval = setInterval(() => {
         idx = (idx + 1) % item.photos.length;
-        img.src = item.photos[idx];
+        img.src = item.photos[idx].url;
       }, 1000);
     });
     div.addEventListener('mouseleave', () => {
       clearInterval(hoverInterval);
       idx = 0;
-      img.src = (item.photos?.[0]) ? item.photos[0] : img.src;
+      img.src = item.photos?.[0]?.url || img.src;
     });
     div.appendChild(img);
 
@@ -115,7 +129,6 @@ function renderItems() {
  * Render le panier plus bas
  */
 function renderCart() {
-  // Ajout d'une zone panier en bas
   const cartContainer = document.getElementById('cstm-cartBottom');
   if (!cartContainer) return;
 
@@ -176,21 +189,20 @@ export async function init() {
     filtersSidebar.classList.toggle('cstm-collapsed');
     filtersToggle.classList.toggle('cstm-collapsed');
   });
+
   cartToggle.addEventListener('click', async () => {
     // Ouvre le modal avec les items sélectionnés
     const itemsForModal = selectedItems.map(id => {
       const item = currentItems.find(i => i.id === id);
       return item ? {
         name: item.name,
-        category: item.category_name,
-        img: item.photos?.[0] || ''
+        category_name: item.category_name,
+        photos: item.photos
       } : null;
     }).filter(Boolean);
 
     await openBookingModal(itemsForModal);
   });
-
-
 
   await loadData();
 }
