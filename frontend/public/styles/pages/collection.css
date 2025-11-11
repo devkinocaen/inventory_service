@@ -1,4 +1,3 @@
-/* ---- Global ---- */
 body {
   font-family: sans-serif;
   margin: 0;
@@ -7,7 +6,7 @@ body {
   overflow: hidden;
 }
 
-/* ---- Sidebar Filtres ---- */
+/* Sidebar Filtres */
 #filtersSidebar {
   position: fixed;
   left: 0;
@@ -23,7 +22,7 @@ body {
 }
 #filtersSidebar.collapsed { transform: translateX(-100%); }
 
-/* ---- Zone principale ---- */
+/* Zone principale */
 #main {
   flex: 1;
   padding: 10px;
@@ -36,9 +35,8 @@ body {
   z-index: 1;
 }
 
-/* ---- Cartes ---- */
+/* Cartes */
 .costume-card {
-  position: relative;
   border: 1px solid #ccc;
   border-radius: 6px;
   overflow: hidden;
@@ -51,7 +49,6 @@ body {
   transition: transform 0.2s, box-shadow 0.2s;
   width: 100%;
   height: 150px;
-  z-index: 1;
 }
 .costume-card:hover {
   transform: translateY(-3px);
@@ -62,23 +59,19 @@ body {
   width: 100%;
   height: 100px;
   object-fit: cover;
-  display: block;
-  flex-shrink: 0;
 }
 .costume-name {
   margin-top: 4px;
   font-size: 0.85em;
   text-align: center;
-  flex-shrink: 0;
 }
 
-/* ---- Sidebar Panier ---- */
+/* Sidebar Panier */
 #cartSidebar {
   position: fixed;
   right: 0;
   top: 0;
   width: 200px;
-  height: auto;
   max-height: 80vh;
   background: rgba(255,255,255,0.95);
   box-shadow: -2px 0 6px rgba(0,0,0,0.2);
@@ -90,9 +83,24 @@ body {
 }
 #cartSidebar.collapsed { transform: translateX(100%); }
 
-/* ---- Boutons flottants ---- */
-#cartToggle,
-#filtersToggle { z-index: 1000; }
+/* Boutons flottants */
+#filtersToggle, #cartToggle { z-index: 1000; }
+#filtersToggle {
+  position: fixed;
+  left: 260px;
+  top: 20px;
+  background: #4CAF50;
+  color: #fff;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: left 0.3s, transform 0.2s;
+}
+#filtersToggle:hover { transform: scale(1.1); }
+#filtersToggle.collapsed { left: 20px; }
 
 #cartToggle {
   position: fixed;
@@ -104,31 +112,14 @@ body {
   padding: 12px 14px;
   border-radius: 50%;
   cursor: pointer;
-  transition: right 0.3s, transform 0.2s;
   font-size: 22px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: right 0.3s, transform 0.2s;
 }
 #cartToggle:hover { transform: scale(1.1); }
 #cartToggle.collapsed { right: 20px; }
 
-#filtersToggle {
-  position: fixed;
-  left: 260px;
-  top: 20px;
-  background: #4CAF50;
-  color: #fff;
-  border: none;
-  padding: 10px 12px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: left 0.3s, transform 0.2s;
-  font-size: 20px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-#filtersToggle:hover { transform: scale(1.1); }
-#filtersToggle.collapsed { left: 20px; }
-
-/* ---- Chips ---- */
+/* Chips */
 .chip {
   display: inline-block;
   padding: 4px 8px;
@@ -143,26 +134,24 @@ body {
   color: #fff;
 }
 
+/* Date filters */
 .date-filters {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin: 8px 0;
 }
-
 .date-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .date-row label {
   width: 24px;
   font-size: 0.85em;
   color: #333;
   text-align: right;
 }
-
 .date-row input[type="date"] {
   flex: 1;
   padding: 4px 6px;

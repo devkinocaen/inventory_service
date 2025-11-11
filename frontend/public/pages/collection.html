@@ -5,26 +5,26 @@
 <title>Collection</title>
 <link rel="stylesheet" href="./styles/collection.css">
 </head>
-<body class="collection-page">
+<body>
 
 <!-- Sidebar Filtres -->
-<aside id="collection-filtersSidebar" class="collapsed">
+<aside id="filtersSidebar" class="collapsed">
   <h3>Filtres</h3>
   <div><strong>Catégorie</strong></div>
-  <div id="collection-categoryChips" class="collection-chip-list"></div>
+  <div id="categoryChips" class="chip-list"></div>
   <div><strong>Sous-catégorie</strong></div>
-  <div id="collection-subcatChips" class="collection-chip-list"></div>
+  <div id="subcatChips" class="chip-list"></div>
   <div><strong>Style</strong></div>
-  <div id="collection-styleChips" class="collection-chip-list"></div>
+  <div id="styleChips" class="chip-list"></div>
 
   <hr>
   <div><strong>Période</strong></div>
-  <div class="collection-date-filters">
-    <div class="collection-date-row">
+  <div class="date-filters">
+    <div class="date-row">
       <label for="filterStartDate">Du</label>
       <input type="date" id="filterStartDate">
     </div>
-    <div class="collection-date-row">
+    <div class="date-row">
       <label for="filterEndDate">Au</label>
       <input type="date" id="filterEndDate">
     </div>
@@ -32,14 +32,14 @@
 </aside>
 
 <!-- Zone principale -->
-<div id="collection-main"></div>
+<div id="main"></div>
 
 <!-- Sidebar Panier -->
-<div id="collection-cartSidebar" class="collapsed"></div>
+<div id="cartSidebar" class="collapsed"></div>
 
 <!-- Boutons flottants -->
-<button id="collection-filtersToggle" class="collapsed">🔍</button>
-<button id="collection-cartToggle" class="collapsed">🛒</button>
+<button id="filtersToggle" class="collapsed">🔍</button>
+<button id="cartToggle" class="collapsed">🛒</button>
 
 <script type="module" src="./js/pages/collection.js"></script>
 </body>
