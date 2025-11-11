@@ -183,3 +183,119 @@
   border:none;
   border-top:1px solid #ddd;
 }
+
+/* ==========================
+   Styles pour les costumes
+   ========================== */
+.cstm-costume-card {
+  position: relative;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.cstm-costume-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid #eee;
+}
+
+.cstm-costume-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ Items sélectionnés */
+.cstm-costume-card.selected {
+  border-color: #0078ff;
+  box-shadow: 0 0 0 3px rgba(0, 120, 255, 0.25);
+  transform: scale(1.02);
+}
+
+.cstm-costume-card.selected::after {
+  content: "✓";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #0078ff;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Nom du costume */
+.cstm-costume-name {
+  text-align: center;
+  padding: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Panier en bas */
+#cstm-cartBottom {
+  background: #f9f9f9;
+  border-top: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+#cstm-cartBottom h4 {
+  margin-top: 0;
+  color: #444;
+}
+
+/* ==========================
+   Filtres (chips)
+   ========================== */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 9999px;
+  background: #f7f7f7;
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+}
+
+.filter-chip:hover {
+  background: #f0f0f0;
+  border-color: #aaa;
+  transform: translateY(-1px);
+}
+
+/* ✅ État sélectionné */
+.filter-chip.selected {
+  background: #0078ff;
+  color: white;
+  border-color: #0078ff;
+  box-shadow: 0 0 0 3px rgba(0, 120, 255, 0.25);
+  transform: scale(1.05);
+}
+
+/* ✅ Effet de rebond au clic */
+.filter-chip:active {
+  transform: scale(0.95);
+}
+
+/* Optionnel : icône ou croix dans la chip */
+.filter-chip .chip-icon {
+  font-size: 1rem;
+  line-height: 1;
+}

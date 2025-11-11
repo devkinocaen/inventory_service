@@ -24,51 +24,44 @@ function toggleFilter(type, value) {
 }
 
 /**
- * Render les filtres sous forme de chips
+ * Render les filtres sous forme de chips stylées
  */
 function renderFilterChips(categories, subcategories, styles) {
   const categoryChips = document.getElementById('cstm-categoryChips');
   const subcatChips = document.getElementById('cstm-subcatChips');
   const styleChips = document.getElementById('cstm-styleChips');
 
+  if (!categoryChips || !subcatChips || !styleChips) return;
+
+  const makeChip = (name, type) => {
+    const chip = document.createElement('div');
+    chip.textContent = name;
+    chip.className = 'filter-chip' + (activeFilters[type].includes(name) ? ' selected' : '');
+    chip.onclick = () => {
+      toggleFilter(type, name);
+      renderFilterChips(categories, subcategories, styles);
+      renderItems();
+    };
+    return chip;
+  };
+
+  // --- Catégories ---
   categoryChips.innerHTML = '';
-  categories.forEach(c => {
-    const chip = document.createElement('div');
-    chip.textContent = c.name;
-    chip.className = 'cstm-chip' + (activeFilters.category.includes(c.name) ? ' active' : '');
-    chip.onclick = () => {
-      toggleFilter('category', c.name);
-      renderFilterChips(categories, subcategories, styles);
-      renderItems();
-    };
-    categoryChips.appendChild(chip);
-  });
+  categories.forEach(c => categoryChips.appendChild(makeChip(c.name, 'category')));
 
+  // --- Sous-catégories ---
   subcatChips.innerHTML = '';
-  subcategories.forEach(s => {
-    const chip = document.createElement('div');
-    chip.textContent = s.name;
-    chip.className = 'cstm-chip' + (activeFilters.subcategory.includes(s.name) ? ' active' : '');
-    chip.onclick = () => {
-      toggleFilter('subcategory', s.name);
-      renderFilterChips(categories, subcategories, styles);
-      renderItems();
-    };
-    subcatChips.appendChild(chip);
-  });
+  if (activeFilters.category.length > 0) {
+    // On ne montre que les sous-catégories appartenant à une catégorie sélectionnée
+    const filteredSubcats = subcategories.filter(sc =>
+      activeFilters.category.includes(sc.category_name)
+    );
+    filteredSubcats.forEach(s => subcatChips.appendChild(makeChip(s.name, 'subcategory')));
+  }
 
+  // --- Styles ---
   styleChips.innerHTML = '';
-  styles.forEach(s => {
-    const chip = document.createElement('div');
-    chip.textContent = s.name;
-    chip.className = 'cstm-chip' + (activeFilters.style.includes(s.name) ? ' active' : '');
-    chip.onclick = () => {
-      toggleFilter('style', s.name);
-      renderFilterChips(categories, subcategories, styles);
-      renderItems();
-    };
-    styleChips.appendChild(chip);
-  });
+  styles.forEach(s => styleChips.appendChild(makeChip(s.name, 'style')));
 }
 
 /**
@@ -126,7 +119,7 @@ function renderItems() {
 }
 
 /**
- * Render le panier plus bas
+ * Render le panier en bas
  */
 function renderCart() {
   const cartContainer = document.getElementById('cstm-cartBottom');
@@ -164,19 +157,17 @@ async function loadData() {
 }
 
 /**
- * Init function à appeler après que le HTML soit injecté
+ * Initialisation après injection du HTML
  */
 export async function init() {
   client = await initClient();
 
-  // DOM Elements
   filtersSidebar = document.getElementById('cstm-filtersSidebar');
   filtersToggle = document.getElementById('cstm-filtersToggle');
   cartSidebar = document.getElementById('cstm-cartSidebar');
   cartToggle = document.getElementById('cstm-cartToggle');
   container = document.getElementById('cstm-main');
 
-  // ⚡ Créer conteneur panier en bas si inexistant
   if (!document.getElementById('cstm-cartBottom')) {
     const bottomCart = document.createElement('div');
     bottomCart.id = 'cstm-cartBottom';
@@ -184,14 +175,12 @@ export async function init() {
     container.parentNode.appendChild(bottomCart);
   }
 
-  // Toggle sidebar events
   filtersToggle.addEventListener('click', () => {
     filtersSidebar.classList.toggle('cstm-collapsed');
     filtersToggle.classList.toggle('cstm-collapsed');
   });
 
   cartToggle.addEventListener('click', async () => {
-    // Ouvre le modal avec les items sélectionnés
     const itemsForModal = selectedItems.map(id => {
       const item = currentItems.find(i => i.id === id);
       return item ? {
