@@ -102,9 +102,13 @@ function renderItems() {
     });
     div.appendChild(img);
 
+    // Nom + taille + prix/jour
+                         console.log ('item', item)
     const name = document.createElement('div');
     name.className = 'cstm-costume-name';
-    name.textContent = item.name;
+    name.innerHTML = `<strong>${item.name}</strong><br>
+                      Taille: ${item.size_label || '-'}<br>
+                      Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}`;
     div.appendChild(name);
 
     div.addEventListener('click', () => {
@@ -129,11 +133,14 @@ function renderCart() {
   selectedItems.forEach(id => {
     const item = currentItems.find(i => i.id === id);
     if (!item) return;
+
     const div = document.createElement('div');
-    div.textContent = item.name;
+    div.className = 'cart-item';
+    div.innerHTML = `<strong>${item.name}</strong> | Taille: ${item.size_label || '-'} | Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}`;
     cartContainer.appendChild(div);
   });
 }
+
 
 /**
  * Charge les données depuis la base SQL

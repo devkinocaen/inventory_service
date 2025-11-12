@@ -5,9 +5,11 @@ DECLARE
     v_owner INT;
     v_manager INT;
     v_size_id INT;
+    v_size_type_id INT;
     v_cat_id INT;
     v_subcat_id INT;
     v_storage_id INT;
+    v_new_label TEXT;
 BEGIN
     -- fallback owner/manager : première organisation
     SELECT id INTO v_owner FROM inventory.organization ORDER BY id LIMIT 1;
@@ -56,11 +58,23 @@ BEGIN
             RETURNING id INTO v_subcat_id;
         END IF;
 
-        -- Size si présent
+        -- Size : soit récupérer size_label, soit créer une nouvelle taille
         IF r.size_label IS NOT NULL AND trim(r.size_label) <> '' THEN
             SELECT id INTO v_size_id FROM inventory.size WHERE label = r.size_label LIMIT 1;
         ELSE
-            v_size_id := NULL;
+            -- Choisir un type de taille aléatoire
+            SELECT id INTO v_size_type_id
+            FROM inventory.size_type
+            ORDER BY random()
+            LIMIT 1;
+
+            -- Créer un nouveau label de taille basé sur l'index i
+            v_new_label := format('Taille %s', i);
+
+            -- Insérer la nouvelle taille
+            INSERT INTO inventory.size(size_type_id, label)
+            VALUES (v_size_type_id, v_new_label)
+            RETURNING id INTO v_size_id;
         END IF;
 
         -- Insertion finale
