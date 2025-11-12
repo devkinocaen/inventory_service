@@ -69,17 +69,37 @@ export function closeBookingModal() {
 export function renderBookingItems() {
   if (!itemsContainer) return;
   itemsContainer.innerHTML = '';
-
-  for (const item of bookingItems) {
+  bookingItems.forEach(item => {
     const div = document.createElement('div');
     div.className = 'cart-item';
 
+    // ⚡ Image principale + fallback
     const img = document.createElement('img');
-    img.src = item.photos?.[0] || 'https://placehold.co/60x60?text=+';
+    img.src = item.photos?.[0]?.url || 'data:image/svg+xml;charset=UTF-8,' +
+      encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60">
+        <rect width="60" height="60" fill="#ddd"/>
+        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="10">No Image</text>
+      </svg>`);
+
+    // Optional: cycle images on hover
+    let hoverInterval, idx = 0;
+    div.addEventListener('mouseenter', () => {
+      if (!item.photos?.length) return;
+      hoverInterval = setInterval(() => {
+        idx = (idx + 1) % item.photos.length;
+        img.src = item.photos[idx].url;
+      }, 1000);
+    });
+    div.addEventListener('mouseleave', () => {
+      clearInterval(hoverInterval);
+      idx = 0;
+      img.src = item.photos?.[0]?.url || img.src;
+    });
+
     div.appendChild(img);
 
     const info = document.createElement('div');
-    info.style.flex = '1'; // pour alignement correct
+    info.style.flex = '1';
 
     const name = document.createElement('div');
     name.className = 'cart-item-name';
@@ -94,8 +114,9 @@ export function renderBookingItems() {
     div.appendChild(info);
 
     itemsContainer.appendChild(div);
-  }
+  });
 }
+
 
 // -----------------------------
 // Initialisation du modal et des selects
