@@ -33,7 +33,7 @@
   grid-gap: 8px;
   overflow-y: auto;
   margin-left: 0;
-  position: relative; /* important pour les boutons absolus */
+  position: relative;
   z-index: 1;
 }
 
@@ -87,24 +87,12 @@
 }
 #cstm-cartSidebar.cstm-collapsed { transform: translateX(100%); }
 
-/* ---- Boutons flottants centrés horizont. sur la 1ère ligne ---- */
-#cstm-filtersToggle,
-#cstm-cartToggle {
-  position: fixed; /* par rapport à la fenêtre */
-  top: 120px;      /* ajuster selon la hauteur du header / top du tableau */
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  z-index: 1000;
-  transition: transform 0.2s;
-}
-
+/* ---- Boutons flottants ---- */
 #cstm-filtersToggle {
-  position: fixed;       /* reste visible même au scroll */
-  top: 50%;              /* milieu vertical de la fenêtre */
-  left: 20px;            /* légèrement décalé du bord gauche */
-  transform: translateY(-50%); /* centre exact sur le milieu */
+  position: fixed;
+  top: 50%;
+  left: 20px;
+  transform: translateY(-50%);
   background: #4CAF50;
   color: #fff;
   border: none;
@@ -119,8 +107,8 @@
 
 #cstm-cartToggle {
   position: fixed;
-  top: 50%;              /* milieu vertical de la fenêtre */
-  right: 20px;           /* légèrement décalé du bord droit */
+  top: 45%; /* légèrement au-dessus du centre */
+  right: 20px;
   transform: translateY(-50%);
   background: #e53935;
   color: #fff;
@@ -134,9 +122,26 @@
   transition: transform 0.2s;
 }
 
-#cstm-filtersToggle:hover,
-#cstm-cartToggle:hover { transform: scale(1.1); }
+#cstm-orgToggle {
+  position: fixed;
+  top: 55%; /* légèrement en dessous du centre */
+  right: 20px;
+  transform: translateY(-50%);
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  padding: 12px 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 1000;
+  transition: transform 0.2s;
+}
 
+#cstm-filtersToggle:hover,
+#cstm-cartToggle:hover,
+#cstm-orgToggle:hover { transform: scale(1.1); }
 
 /* ---- Chips ---- */
 .cstm-chip {

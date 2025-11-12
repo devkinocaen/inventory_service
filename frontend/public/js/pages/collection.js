@@ -1,8 +1,16 @@
 // js/pages/collection.js
-import { fetchReservables, fetchCategories, fetchSubcategories, fetchStyles } from '../libs/sql/index.js';
+import {
+    fetchReservables,
+    fetchCategories,
+    fetchSubcategories,
+    fetchStyles
+} from '../libs/sql/index.js';
+
 import { initClient } from '../libs/client.js';
 import { openBookingModal } from '../modals/booking_modal.js';
+import { openOrgModal } from '../modals/org_modal.js'; // symétrique
 import { formatServerError } from '../libs/helpers.js';
+
 
 let client;
 let currentItems = [];
@@ -45,21 +53,17 @@ function renderFilterChips(categories, subcategories, styles) {
     return chip;
   };
 
-  // --- Catégories ---
   categoryChips.innerHTML = '';
   categories.forEach(c => categoryChips.appendChild(makeChip(c.name, 'category')));
 
-  // --- Sous-catégories ---
   subcatChips.innerHTML = '';
   if (activeFilters.category.length > 0) {
-    // On ne montre que les sous-catégories appartenant à une catégorie sélectionnée
     const filteredSubcats = subcategories.filter(sc =>
       activeFilters.category.includes(sc.category_name)
     );
     filteredSubcats.forEach(s => subcatChips.appendChild(makeChip(s.name, 'subcategory')));
   }
 
-  // --- Styles ---
   styleChips.innerHTML = '';
   styles.forEach(s => styleChips.appendChild(makeChip(s.name, 'style')));
 }
@@ -79,7 +83,6 @@ function renderItems() {
     const div = document.createElement('div');
     div.className = 'cstm-costume-card' + (selectedItems.includes(item.id) ? ' selected' : '');
 
-    // ⚡ Image principale + hover cycle
     const img = document.createElement('img');
     img.src = item.photos?.[0]?.url || 'data:image/svg+xml;charset=UTF-8,' +
       encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
@@ -102,8 +105,6 @@ function renderItems() {
     });
     div.appendChild(img);
 
-    // Nom + taille + prix/jour
-                         console.log ('item', item)
     const name = document.createElement('div');
     name.className = 'cstm-costume-name';
     name.innerHTML = `<strong>${item.name}</strong><br>
@@ -140,7 +141,6 @@ function renderCart() {
     cartContainer.appendChild(div);
   });
 }
-
 
 /**
  * Charge les données depuis la base SQL
@@ -201,4 +201,5 @@ export async function init() {
   });
 
   await loadData();
+
 }

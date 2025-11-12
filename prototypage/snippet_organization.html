@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Modal Organisation + Personnes</title>
+<style>
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+.org-modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+.org-modal-dialog {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 900px;
+  max-width: 95%;
+  max-height: 90%;
+  overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+.org-section {
+  margin-bottom: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+}
+.org-section legend {
+  font-weight: bold;
+  padding: 0 6px;
+}
+.org-form-group {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.org-form-group label {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.org-form-group input,
+.org-form-group select {
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.org-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+.org-btn-primary {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.org-btn-secondary {
+  background: #ddd;
+  color: #333;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.person-list {
+  margin-top: 10px;
+}
+.person-item {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto;
+  gap: 6px;
+  align-items: center;
+}
+.person-item input,
+.person-item select {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.person-item button {
+  background: #e53935;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div id="org-modal" class="org-modal-overlay">
+  <div class="org-modal-dialog">
+    <h2>Organisation</h2>
+
+    <fieldset class="org-section">
+      <legend>Informations Organisation</legend>
+      <div class="org-form-group">
+        <label for="organizationName">Nom</label>
+        <input type="text" id="organizationName" />
+      </div>
+      <div class="org-form-group">
+        <label for="organizationAddress">Adresse</label>
+        <input type="text" id="organizationAddress" />
+      </div>
+      <div class="org-form-group">
+        <label for="organizationReferent">Référent</label>
+        <select id="organizationReferent"></select>
+      </div>
+    </fieldset>
+
+    <fieldset class="org-section">
+      <legend>Personnes liées</legend>
+      <div id="personList" class="person-list">
+      </div>
+      <button type="button" id="addPersonBtn">Ajouter Personne</button>
+    </fieldset>
+
+    <div class="org-form-actions">
+      <button id="cancelOrgBtn" class="org-btn-secondary">Annuler</button>
+      <button id="saveOrgBtn" class="org-btn-primary">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const personList = document.getElementById('personList');
+const addPersonBtn = document.getElementById('addPersonBtn');
+
+function createPersonItem() {
+  const div = document.createElement('div');
+  div.className = 'person-item';
+
+  div.innerHTML = `
+    <input type="text" placeholder="Nom" class="person-lastname" />
+    <input type="text" placeholder="Prénom" class="person-firstname" />
+    <input type="email" placeholder="Email" class="person-email" />
+    <input type="text" placeholder="Téléphone" class="person-phone" />
+    <input type="text" placeholder="Rôle" class="person-role" />
+    <button type="button" class="remove-person-btn">✕</button>
+  `;
+
+  div.querySelector('.remove-person-btn').addEventListener('click', () => {
+    div.remove();
+  });
+
+  return div;
+}
+
+addPersonBtn.addEventListener('click', () => {
+  personList.appendChild(createPersonItem());
+});
+
+// Bouton annuler
+document.getElementById('cancelOrgBtn').addEventListener('click', () => {
+  alert('Annuler modal (ici tu peux fermer le modal)');
+});
+
+// Bouton enregistrer
+document.getElementById('saveOrgBtn').addEventListener('click', () => {
+  const orgName = document.getElementById('organizationName').value;
+  const orgAddress = document.getElementById('organizationAddress').value;
+  const referentId = document.getElementById('organizationReferent').value;
+
+  const persons = [];
+  personList.querySelectorAll('.person-item').forEach(item => {
+    persons.push({
+      lastname: item.querySelector('.person-lastname').value,
+      firstname: item.querySelector('.person-firstname').value,
+      email: item.querySelector('.person-email').value,
+      phone: item.querySelector('.person-phone').value,
+      role: item.querySelector('.person-role').value
+    });
+  });
+
+  console.log({ orgName, orgAddress, referentId, persons });
+  alert('Voir console pour les données');
+});
+</script>
+
+</body>
+</html>

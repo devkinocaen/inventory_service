@@ -1,10 +1,17 @@
 import { initClient } from '../libs/client.js';
-import { fetchReservables, fetchOrganizations, fetchOrganizationReferents } from '../libs/sql/index.js';
+import {
+  fetchReservables,
+  fetchOrganizations,
+  fetchOrganizationReferents,
+  upsertOrganization
+} from '../libs/sql/index.js';
 import { formatServerError } from '../libs/helpers.js';
+import { createModal } from '../libs/ui/createModal.js';
 
 let client;
 let modal, dialog, itemsContainer, cancelBtn, validateBtn;
 let bookingItems = [];
+
 
 // -----------------------------
 // Charger modal dans le DOM
@@ -31,6 +38,13 @@ export async function loadBookingModal() {
     cancelBtn.addEventListener('click', closeBookingModal);
     cancelBtn.dataset.bound = 'true';
   }
+
+  // --- Bind du bouton "Ajouter / Modifier" (id présent dans ton HTML : #addOrg) ---
+  const addOrgBtn = document.getElementById('add-edit-organization-btn');
+  if (addOrgBtn && !addOrgBtn.dataset.bound) {
+    addOrgBtn.addEventListener('click', handleAddEditOrganization);
+    addOrgBtn.dataset.bound = 'true';
+  }
 }
 
 // -----------------------------
@@ -43,14 +57,9 @@ export async function openBookingModal(selectedItems = []) {
   bookingItems = selectedItems || [];
   renderBookingItems();
 
-  // 🔹 Reset animation
   dialog.classList.remove('show');
   modal.classList.remove('hidden');
-
-  // Force reflow pour relancer transition
-  void dialog.offsetWidth;
-
-  // Jouer l'animation
+  void dialog.offsetWidth; // reset animation
   dialog.classList.add('show');
 }
 
@@ -73,7 +82,6 @@ export function renderBookingItems() {
     const div = document.createElement('div');
     div.className = 'cart-item';
 
-    // ⚡ Image principale + fallback
     const img = document.createElement('img');
     img.src = item.photos?.[0]?.url || 'data:image/svg+xml;charset=UTF-8,' +
       encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60">
@@ -81,7 +89,6 @@ export function renderBookingItems() {
         <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="10">No Image</text>
       </svg>`);
 
-    // Optional: cycle images on hover
     let hoverInterval, idx = 0;
     div.addEventListener('mouseenter', () => {
       if (!item.photos?.length) return;
@@ -96,30 +103,25 @@ export function renderBookingItems() {
       img.src = item.photos?.[0]?.url || img.src;
     });
 
-    div.appendChild(img);
-
     const info = document.createElement('div');
     info.style.flex = '1';
-
     const name = document.createElement('div');
     name.className = 'cart-item-name';
     name.textContent = item.name || '';
-
     const cat = document.createElement('div');
     cat.className = 'cart-item-cat';
     cat.textContent = item.category_name || '';
-
     info.appendChild(name);
     info.appendChild(cat);
-    div.appendChild(info);
 
+    div.appendChild(img);
+    div.appendChild(info);
     itemsContainer.appendChild(div);
   });
 }
 
-
 // -----------------------------
-// Initialisation du modal et des selects
+// Initialisation du modal
 // -----------------------------
 export async function initBookingModal() {
   client = await initClient();
@@ -135,7 +137,7 @@ export async function initBookingModal() {
     const refSelect = document.getElementById('referent');
 
     if (orgSelect) {
-      orgSelect.innerHTML = ''; // 🔹 éviter doublons
+      orgSelect.innerHTML = '';
       orgs.forEach(o => {
         const opt = document.createElement('option');
         opt.value = o.id;
@@ -145,7 +147,7 @@ export async function initBookingModal() {
     }
 
     if (refSelect) {
-      refSelect.innerHTML = ''; // 🔹 éviter doublons
+      refSelect.innerHTML = '';
       refs.forEach(r => {
         const opt = document.createElement('option');
         opt.value = r.id;
@@ -154,9 +156,88 @@ export async function initBookingModal() {
       });
     }
   } catch (err) {
-    console.error(
-      '[Booking Modal] Erreur chargement organisations / référents :',
-      formatServerError(err.message || err)
-    );
+    console.error('[Booking Modal] Erreur chargement organisations / référents :', formatServerError(err.message || err));
   }
+}
+
+
+
+let currentOrgModalOpen = false; // ⚡ garde trace si le modal est déjà ouvert
+
+// -----------------------------
+// Corps du listener "Ajouter / Éditer Organisation"
+// -----------------------------
+export async function handleAddEditOrganization() {
+  if (currentOrgModalOpen) return; // ⚡ éviter plusieurs modals ouverts en même temps
+  currentOrgModalOpen = true;
+
+  try {
+    const orgSelect = document.getElementById('organization');
+    if (!orgSelect) throw new Error('Select organisation introuvable');
+
+    const selectedOrgId = orgSelect.value || null;
+    const selectedOrgName = orgSelect.options[orgSelect.selectedIndex]?.textContent || '';
+
+    // Champs pour le modal
+    const fields = [
+      { key: 'name', label: 'Nom de l’organisation', type: 'text', value: selectedOrgName },
+      { key: 'email', label: 'Email', type: 'text', value: '' },
+      { key: 'phone', label: 'Téléphone', type: 'text', value: '' },
+      { key: 'private', label: 'Privée', type: 'checkbox', checked: false }
+    ];
+
+    // Création du modal via createModal
+    createModal(
+      selectedOrgId ? 'Modifier Organisation' : 'Ajouter Organisation',
+      fields,
+      async (updatedFields) => {
+        try {
+          // ⚡ Upsert organisation
+          const updatedOrga = await upsertOrganization(client, {
+            id: selectedOrgId,
+            name: updatedFields.name,
+            email: updatedFields.email,
+            phone: updatedFields.phone,
+            private: updatedFields.private
+          });
+
+          // 🔄 Mettre à jour le select organisation
+          const orgs = await fetchOrganizations(client);
+          orgSelect.innerHTML = '';
+          orgs.forEach(o => {
+            const opt = document.createElement('option');
+            opt.value = o.id;
+            opt.textContent = o.name;
+            orgSelect.appendChild(opt);
+          });
+
+          // 🔹 Reselect l’organisation modifiée
+          if (updatedOrga?.id) orgSelect.value = updatedOrga.id;
+
+          // 🔄 Rafraîchir les référents pour l’organisation sélectionnée
+          await refreshReferentsForSelectedOrg();
+
+        } catch (err) {
+          console.error('[handleAddEditOrganization] Upsert erreur:', err);
+          alert('Erreur lors de la sauvegarde : ' + err.message);
+        } finally {
+          currentOrgModalOpen = false; // ⚡ libération état modal
+        }
+      }
+    );
+
+  } catch (err) {
+    console.error('[handleAddEditOrganization] Erreur modal organisation :', err);
+    alert('Impossible d’ouvrir le modal organisation : ' + err.message);
+    currentOrgModalOpen = false; // ⚡ libérer même en cas d’erreur
+  }
+}
+
+// -----------------------------
+// Bind du bouton "Ajouter / Modifier" dans loadBookingModal
+// -----------------------------
+const addOrgBtn = document.getElementById('add-edit-organization-btn');
+if (addOrgBtn && !addOrgBtn.dataset.bound) {
+  addOrgBtn.addEventListener('click', handleAddEditOrganization);
+  addOrgBtn.dataset.bound = 'true';
 }

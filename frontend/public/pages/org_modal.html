@@ -1,0 +1,47 @@
+<div id="org-modal" class="org-modal-overlay hidden">
+  <div class="org-modal-dialog">
+    <h2 class="org-modal-title">Nouvelle Organisation</h2>
+
+    <div class="org-form-grid">
+
+      <!-- Nom -->
+      <div class="org-form-group">
+        <label for="organizationName">🏛️ Nom de l’organisation</label>
+        <input type="text" id="organizationName" class="org-input" />
+      </div>
+
+      <!-- Email -->
+      <div class="org-form-group">
+        <label for="organizationEmail">✉️ Email</label>
+        <input type="text" id="organizationEmail" class="org-input" />
+      </div>
+
+      <!-- Téléphone -->
+      <div class="org-form-group">
+        <label for="organizationPhone">📞 Téléphone</label>
+        <input type="text" id="organizationPhone" class="org-input" />
+      </div>
+
+      <!-- Privée -->
+      <div class="org-form-group">
+        <label>
+          <input type="checkbox" id="organizationPrivate" />
+          Privée
+        </label>
+      </div>
+
+      <!-- Référents -->
+      <div class="org-form-group org-form-group-full">
+        <label for="referent">👤 Référent</label>
+        <select id="referent" class="org-select"></select>
+      </div>
+
+      <!-- Actions -->
+      <div class="org-form-group org-form-group-full org-form-actions">
+        <button class="org-btn-secondary" id="cancel-org-btn">Annuler</button>
+        <button class="org-btn-primary" id="save-org-btn">Enregistrer</button>
+      </div>
+
+    </div>
+  </div>
+</div>

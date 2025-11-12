@@ -36,6 +36,7 @@ CREATE TABLE inventory.person (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
+    address VARCHAR(150),
     email VARCHAR(150),
     phone VARCHAR(30),
     UNIQUE (first_name, last_name)
@@ -44,8 +45,20 @@ CREATE TABLE inventory.person (
 CREATE TABLE inventory.organization (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL UNIQUE,
-    referent_id INT REFERENCES inventory.person(id)
+    address VARCHAR(200),
+    referent_id INT REFERENCES inventory.person(id) ON DELETE SET NULL
 );
+
+-- ===========================
+-- Lien organisation ↔ personnes
+-- ===========================
+CREATE TABLE inventory.organization_person (
+    organization_id INT NOT NULL REFERENCES inventory.organization(id) ON DELETE CASCADE,
+    person_id INT NOT NULL REFERENCES inventory.person(id) ON DELETE CASCADE,
+    role VARCHAR(100),  -- optionnel (ex : "costumier", "bénévole", "gestionnaire", etc.)
+    PRIMARY KEY (organization_id, person_id)
+);
+
 
 -- ===========================
 -- Lieux de stockage
@@ -155,18 +168,49 @@ CREATE TABLE inventory.booking_reference (
 -- ===========================
 CREATE TABLE inventory.reservable_booking (
     id SERIAL PRIMARY KEY,
-    reservable_batch_id INT REFERENCES inventory.reservable_batch(id) NOT NULL,
-    renter_organization_id INT REFERENCES inventory.organization(id) NOT NULL,
-    booking_reference_id INT REFERENCES inventory.booking_reference(id) NOT NULL,
+
+    -- Lot d'objets réservé
+    reservable_batch_id INT NOT NULL
+        REFERENCES inventory.reservable_batch(id)
+        ON DELETE CASCADE,
+
+    -- Organisation locataire
+    renter_organization_id INT NOT NULL
+        REFERENCES inventory.organization(id),
+
+    -- Personne qui effectue la réservation (ex : costumière)
+    booking_person_id INT
+        REFERENCES inventory.person(id),
+
+    -- Personne qui retire les objets
+    pickup_person_id INT
+        REFERENCES inventory.person(id),
+
+    -- Personne qui les ramène
+    return_person_id INT
+        REFERENCES inventory.person(id),
+
+    -- Référence du type de réservation (ex : prêt, location)
+    booking_reference_id INT NOT NULL
+        REFERENCES inventory.booking_reference(id),
+
+    -- Période de réservation
     start_date TIMESTAMP NOT NULL,
-    end_date TIMESTAMP NOT NULL,
+    end_date   TIMESTAMP NOT NULL,
+
+    -- Période temporelle (calculée)
     period tsrange GENERATED ALWAYS AS (tsrange(start_date, end_date, '[]')) STORED,
+
+    -- Contraintes de cohérence
     CHECK (end_date > start_date),
+
+    -- Empêche les réservations qui se chevauchent pour un même lot
     EXCLUDE USING gist (
         reservable_batch_id WITH =,
         period WITH &&
     )
 );
+
 
 -- ===========================
 -- Trigger de cohérence : catégorie / sous-catégorie
