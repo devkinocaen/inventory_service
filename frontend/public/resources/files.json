@@ -9,14 +9,6 @@
       ]
     },
   {
-    "file": "$BASE_PATH/pages/booking.html",
-    "title": "Réservations",
-    "user": "admin,dev",
-    "scripts": [
-        "../js/pages/booking.js"
-    ]
-  },
-  {
     "file": "$BASE_PATH/pages/planning.html",
     "title": "Planning",
     "user": "admin,dev",

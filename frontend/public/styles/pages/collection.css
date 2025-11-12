@@ -299,3 +299,17 @@
   font-size: 1rem;
   line-height: 1;
 }
+
+/* ==========================
+   Séparateurs entre filtres
+   ========================== */
+.filter-section {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.filter-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}

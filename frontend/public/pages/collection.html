@@ -10,26 +10,39 @@
   <!-- ---- Sidebar Filtres ---- -->
   <aside id="cstm-filtersSidebar" class="cstm-collapsed">
     <h3>Filtres</h3>
-    <div><strong>Catégorie</strong></div>
-    <div id="cstm-categoryChips" class="cstm-chip-list"></div>
-    <div><strong>Sous-catégorie</strong></div>
-    <div id="cstm-subcatChips" class="cstm-chip-list"></div>
-    <div><strong>Style</strong></div>
-    <div id="cstm-styleChips" class="cstm-chip-list"></div>
+
+    <div class="filter-section">
+      <div><strong>Catégorie</strong></div>
+      <div id="cstm-categoryChips" class="cstm-chip-list"></div>
+    </div>
+
+    <div class="filter-section">
+      <div><strong>Sous-catégorie</strong></div>
+      <div id="cstm-subcatChips" class="cstm-chip-list"></div>
+    </div>
+
+    <div class="filter-section">
+      <div><strong>Style</strong></div>
+      <div id="cstm-styleChips" class="cstm-chip-list"></div>
+    </div>
 
     <hr class="cstm-divider">
-    <div><strong>Période</strong></div>
-    <div class="cstm-date-filters">
-      <div class="cstm-date-row">
-        <label for="cstm-filterStartDate">Du</label>
-        <input type="date" id="cstm-filterStartDate">
-      </div>
-      <div class="cstm-date-row">
-        <label for="cstm-filterEndDate">Au</label>
-        <input type="date" id="cstm-filterEndDate">
+
+    <div class="filter-section">
+      <div><strong>Période</strong></div>
+      <div class="cstm-date-filters">
+        <div class="cstm-date-row">
+          <label for="cstm-filterStartDate">Du</label>
+          <input type="date" id="cstm-filterStartDate">
+        </div>
+        <div class="cstm-date-row">
+          <label for="cstm-filterEndDate">Au</label>
+          <input type="date" id="cstm-filterEndDate">
+        </div>
       </div>
     </div>
   </aside>
+
 
   <!-- ---- Sidebar Panier ---- -->
   <div id="cstm-cartSidebar" class="cstm-collapsed"></div>
