@@ -21,22 +21,24 @@ $PSQL -v ON_ERROR_STOP=1 -q -c "DROP FUNCTION IF EXISTS check_reservable_categor
 
 echo "Suppression des tables..."
 tables=(
-    "reservable_booking"
-    "reservable_batch_link"
-    "reservable_batch"
-    "reservable_style_link"
-    "reservable"
-    "size"
-    "size_type"
-    "reservable_subcategory"
-    "reservable_category"
-    "booking_reference"
-    "reservable_style"
-    "storage_location"
-    "organization"
-    "person"
     "app_config"
+    "person"
+    "organization"
+    "organization_person"
+    "storage_location"
+    "reservable_style"
+    "booking_reference"
+    "reservable_category"
+    "reservable_subcategory"
+    "size_type"
+    "size"
+    "reservable"
+    "reservable_style_link"
+    "reservable_batch"
+    "reservable_batch_link"
+    "reservable_booking"
 )
+
 
 for table in "${tables[@]}"; do
     echo "Dropping table $table..."

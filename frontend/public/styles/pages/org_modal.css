@@ -207,3 +207,12 @@
 .org-btn-save:hover {
   background: #005fcc;
 }
+
+.org-btn-delete {
+  background: #e8e8e8;
+  color: red;
+}
+
+.org-btn-delete:hover {
+  background: #005fcc;
+}

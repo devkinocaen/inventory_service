@@ -1,7 +1,8 @@
 CREATE OR REPLACE FUNCTION inventory.upsert_organization(
     p_name TEXT,
+    p_referent_id INT,
     p_address TEXT DEFAULT NULL,
-    p_referent_id INT DEFAULT NULL
+    p_person_ids INT[] DEFAULT '{}'
 )
 RETURNS TABLE(
     id INT,
@@ -12,17 +13,21 @@ RETURNS TABLE(
 AS $$
 DECLARE
     v_org_id INT;
-    v_valid_referent INT;
+    v_existing_ids INT[];
+    v_pid INT;
+    v_referent_phone TEXT;
 BEGIN
-    -- Vérifier que le referent existe
-    IF p_referent_id IS NOT NULL THEN
-        SELECT id INTO v_valid_referent
-        FROM inventory.person
-        WHERE id = p_referent_id;
+    -- Vérifier que le referent existe et a un numéro de téléphone
+    IF p_referent_id IS NULL THEN
+        RAISE EXCEPTION 'Le référent est obligatoire';
+    END IF;
 
-        IF v_valid_referent IS NULL THEN
-            RAISE EXCEPTION 'Referent ID % n''existe pas', p_referent_id;
-        END IF;
+    SELECT phone INTO v_referent_phone
+    FROM inventory.person
+    WHERE id = p_referent_id;
+
+    IF v_referent_phone IS NULL THEN
+        RAISE EXCEPTION 'Le référent doit avoir un numéro de téléphone';
     END IF;
 
     -- Vérifier ou insérer l’organisation
@@ -42,7 +47,24 @@ BEGIN
         WHERE id = v_org_id;
     END IF;
 
-    -- Retourner l’enregistrement complet
+    -- Récupérer les liens existants
+    SELECT array_agg(person_id) INTO v_existing_ids
+    FROM inventory.organization_person
+    WHERE organization_id = v_org_id;
+
+    -- Supprimer les liens qui ne sont plus dans p_person_ids
+    DELETE FROM inventory.organization_person
+    WHERE organization_id = v_org_id
+      AND person_id <> ALL (p_person_ids);
+
+    -- Ajouter les nouveaux liens
+    FOREACH v_pid IN ARRAY p_person_ids LOOP
+        INSERT INTO inventory.organization_person(organization_id, person_id)
+        VALUES (v_org_id, v_pid)
+        ON CONFLICT (organization_id, person_id) DO NOTHING;
+    END LOOP;
+
+    -- Retourner l’organisation
     RETURN QUERY
     SELECT o.id, o.name, o.address, o.referent_id
     FROM inventory.organization o

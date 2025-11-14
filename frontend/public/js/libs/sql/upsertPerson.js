@@ -1,5 +1,6 @@
+import { single } from '../helpers.js';
+
 export async function upsertPerson(client, {
-  id = null,
   first_name,
   last_name,
   email = null,
@@ -7,7 +8,6 @@ export async function upsertPerson(client, {
   address = null
 }) {
   const { data, error } = await client.rpc('upsert_person', {
-    p_id: id,
     p_first_name: first_name,
     p_last_name: last_name,
     p_email: email,
@@ -20,5 +20,5 @@ export async function upsertPerson(client, {
     throw new Error(error.message || 'Erreur lors de l’upsert personne');
   }
 
-  return data?.[0] || null;
+  return single (data);
 }
