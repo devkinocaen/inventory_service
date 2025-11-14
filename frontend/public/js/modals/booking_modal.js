@@ -2,11 +2,8 @@ import { initClient } from '../libs/client.js';
 import {
   fetchReservables,
   fetchOrganizations,
-  fetchOrganizationReferents,
-  upsertOrganization
 } from '../libs/sql/index.js';
 import { formatServerError } from '../libs/helpers.js';
-import { createModal } from '../libs/ui/createModal.js';
 
 let client;
 let modal, dialog, itemsContainer, cancelBtn, validateBtn;
@@ -37,13 +34,6 @@ export async function loadBookingModal() {
   if (cancelBtn && !cancelBtn.dataset.bound) {
     cancelBtn.addEventListener('click', closeBookingModal);
     cancelBtn.dataset.bound = 'true';
-  }
-
-  // --- Bind du bouton "Ajouter / Modifier" (id présent dans ton HTML : #addOrg) ---
-  const addOrgBtn = document.getElementById('add-edit-organization-btn');
-  if (addOrgBtn && !addOrgBtn.dataset.bound) {
-    addOrgBtn.addEventListener('click', handleAddEditOrganization);
-    addOrgBtn.dataset.bound = 'true';
   }
 }
 
@@ -128,13 +118,11 @@ export async function initBookingModal() {
   await loadBookingModal();
 
   try {
-    const [orgs, refs] = await Promise.all([
+    const [orgs ] = await Promise.all([
       fetchOrganizations(client),
-      fetchOrganizationReferents(client)
     ]);
 
     const orgSelect = document.getElementById('organization');
-    const refSelect = document.getElementById('referent');
 
     if (orgSelect) {
       orgSelect.innerHTML = '';
@@ -146,98 +134,9 @@ export async function initBookingModal() {
       });
     }
 
-    if (refSelect) {
-      refSelect.innerHTML = '';
-      refs.forEach(r => {
-        const opt = document.createElement('option');
-        opt.value = r.id;
-        opt.textContent = r.name;
-        refSelect.appendChild(opt);
-      });
-    }
   } catch (err) {
-    console.error('[Booking Modal] Erreur chargement organisations / référents :', formatServerError(err.message || err));
+    console.error('[Booking Modal] Erreur chargement organisations :', formatServerError(err.message || err));
   }
 }
 
 
-
-let currentOrgModalOpen = false; // ⚡ garde trace si le modal est déjà ouvert
-
-// -----------------------------
-// Corps du listener "Ajouter / Éditer Organisation"
-// -----------------------------
-export async function handleAddEditOrganization() {
-  if (currentOrgModalOpen) return; // ⚡ éviter plusieurs modals ouverts en même temps
-  currentOrgModalOpen = true;
-
-  try {
-    const orgSelect = document.getElementById('organization');
-    if (!orgSelect) throw new Error('Select organisation introuvable');
-
-    const selectedOrgId = orgSelect.value || null;
-    const selectedOrgName = orgSelect.options[orgSelect.selectedIndex]?.textContent || '';
-
-    // Champs pour le modal
-    const fields = [
-      { key: 'name', label: 'Nom de l’organisation', type: 'text', value: selectedOrgName },
-      { key: 'email', label: 'Email', type: 'text', value: '' },
-      { key: 'phone', label: 'Téléphone', type: 'text', value: '' },
-      { key: 'private', label: 'Privée', type: 'checkbox', checked: false }
-    ];
-
-    // Création du modal via createModal
-    createModal(
-      selectedOrgId ? 'Modifier Organisation' : 'Ajouter Organisation',
-      fields,
-      async (updatedFields) => {
-        try {
-          // ⚡ Upsert organisation
-          const updatedOrga = await upsertOrganization(client, {
-            id: selectedOrgId,
-            name: updatedFields.name,
-            email: updatedFields.email,
-            phone: updatedFields.phone,
-            private: updatedFields.private
-          });
-
-          // 🔄 Mettre à jour le select organisation
-          const orgs = await fetchOrganizations(client);
-          orgSelect.innerHTML = '';
-          orgs.forEach(o => {
-            const opt = document.createElement('option');
-            opt.value = o.id;
-            opt.textContent = o.name;
-            orgSelect.appendChild(opt);
-          });
-
-          // 🔹 Reselect l’organisation modifiée
-          if (updatedOrga?.id) orgSelect.value = updatedOrga.id;
-
-          // 🔄 Rafraîchir les référents pour l’organisation sélectionnée
-          await refreshReferentsForSelectedOrg();
-
-        } catch (err) {
-          console.error('[handleAddEditOrganization] Upsert erreur:', err);
-          alert('Erreur lors de la sauvegarde : ' + err.message);
-        } finally {
-          currentOrgModalOpen = false; // ⚡ libération état modal
-        }
-      }
-    );
-
-  } catch (err) {
-    console.error('[handleAddEditOrganization] Erreur modal organisation :', err);
-    alert('Impossible d’ouvrir le modal organisation : ' + err.message);
-    currentOrgModalOpen = false; // ⚡ libérer même en cas d’erreur
-  }
-}
-
-// -----------------------------
-// Bind du bouton "Ajouter / Modifier" dans loadBookingModal
-// -----------------------------
-const addOrgBtn = document.getElementById('add-edit-organization-btn');
-if (addOrgBtn && !addOrgBtn.dataset.bound) {
-  addOrgBtn.addEventListener('click', handleAddEditOrganization);
-  addOrgBtn.dataset.bound = 'true';
-}

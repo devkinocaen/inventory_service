@@ -14,5 +14,7 @@ export { fetchSubcategories } from './fetchSubcategories.js';
 export { fetchOrganizations } from './fetchOrganizations.js';
 export { fetchOrganizationReferents } from './fetchOrganizationReferents.js';
 export { upsertOrganization } from './upsertOrganization.js';
+export { upsertPerson } from './upsertPerson.js';
+
 
 

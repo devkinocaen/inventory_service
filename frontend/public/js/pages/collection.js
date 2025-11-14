@@ -8,7 +8,7 @@ import {
 
 import { initClient } from '../libs/client.js';
 import { openBookingModal } from '../modals/booking_modal.js';
-import { openOrgModal } from '../modals/org_modal.js'; // symétrique
+import { openOrgModal } from '../modals/org_modal.js';
 import { formatServerError } from '../libs/helpers.js';
 
 
@@ -18,7 +18,7 @@ let selectedItems = [];
 let activeFilters = { category: [], subcategory: [], style: [] };
 
 // ---- DOM Elements ----
-let filtersSidebar, filtersToggle, cartSidebar, cartToggle, container;
+let filtersSidebar, filtersToggle, cartToggle, orgToggle, container;
 
 /**
  * Toggle filtre sélectionné
@@ -171,8 +171,8 @@ export async function init() {
 
   filtersSidebar = document.getElementById('cstm-filtersSidebar');
   filtersToggle = document.getElementById('cstm-filtersToggle');
-  cartSidebar = document.getElementById('cstm-cartSidebar');
   cartToggle = document.getElementById('cstm-cartToggle');
+  orgToggle = document.getElementById('cstm-orgToggle');
   container = document.getElementById('cstm-main');
 
   if (!document.getElementById('cstm-cartBottom')) {
@@ -199,6 +199,20 @@ export async function init() {
 
     await openBookingModal(itemsForModal);
   });
+                       
+   orgToggle.addEventListener('click', async () => {
+     const itemsForModal = selectedItems.map(id => {
+       const item = currentItems.find(i => i.id === id);
+       return item ? {
+         name: item.name,
+         category_name: item.category_name,
+         photos: item.photos
+       } : null;
+     }).filter(Boolean);
+
+     await openOrgModal();
+   });
+
 
   await loadData();
 
