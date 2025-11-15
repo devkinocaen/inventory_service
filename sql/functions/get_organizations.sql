@@ -3,7 +3,10 @@ RETURNS TABLE(
     id TEXT,
     name TEXT,
     referent_id TEXT,
-    referent_name TEXT,
+    referent_first_name TEXT,
+    referent_last_name TEXT,
+    referent_address TEXT,
+    referent_phone TEXT,
     persons JSONB
 )
 AS $$
@@ -13,16 +16,19 @@ BEGIN
         o.id::TEXT,
         o.name::TEXT,
         o.referent_id::TEXT,
-        CONCAT(pr.first_name, ' ', pr.last_name) AS referent_name,
+        pr.first_name::TEXT AS referent_first_name,
+        pr.last_name::TEXT AS referent_last_name,
+        pr.address::TEXT AS referent_address,
+        pr.phone::TEXT AS referent_phone,
         COALESCE(
             JSONB_AGG(
-                DISTINCT JSONB_BUILD_OBJECT(
+                JSONB_BUILD_OBJECT(
                     'id', p.id,
-                    'first_name', p.first_name,
-                    'last_name', p.last_name,
-                    'email', p.email,
-                    'phone', p.phone,
-                    'role', op.role
+                    'first_name', p.first_name::TEXT,
+                    'last_name', p.last_name::TEXT,
+                    'email', p.email::TEXT,
+                    'phone', p.phone::TEXT,
+                    'role', op.role::TEXT
                 )
                 ORDER BY p.last_name, p.first_name
             ) FILTER (WHERE p.id IS NOT NULL),
@@ -32,7 +38,7 @@ BEGIN
     LEFT JOIN inventory.person pr ON pr.id = o.referent_id
     LEFT JOIN inventory.organization_person op ON op.organization_id = o.id
     LEFT JOIN inventory.person p ON p.id = op.person_id
-    GROUP BY o.id, o.name, o.referent_id, pr.first_name, pr.last_name
+    GROUP BY o.id, o.name, o.referent_id, pr.first_name, pr.last_name, pr.address, pr.phone
     ORDER BY o.name;
 END;
 $$ LANGUAGE plpgsql;

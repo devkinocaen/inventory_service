@@ -1,84 +1,19 @@
-roles:
-dev:
-  select: all
-  insert: all
-  update: all
-  delete: all
+dev.select=all
+dev.insert=all
+dev.update=all
+dev.delete=all
 
-admin:
-  select: all
-  insert:
-    - app_config
-    - person
-    - organization
-    - storage_location
-    - reservable_style
-    - reservable_category
-    - reservable_subcategory
-    - size_type
-    - size
-    - reservable
-    - reservable_style_link
-    - reservable_batch
-    - reservable_batch_link
-    - booking_reference
-    - reservable_booking
-  update:
-    - app_config
-    - person
-    - organization
-    - storage_location
-    - reservable_style
-    - reservable_category
-    - reservable_subcategory
-    - size_type
-    - size
-    - reservable
-    - reservable_style_link
-    - reservable_batch
-    - reservable_batch_link
-    - booking_reference
-    - reservable_booking
-  delete:
-    - app_config
-    - person
-    - organization
-    - storage_location
-    - reservable_style
-    - reservable_category
-    - reservable_subcategory
-    - size_type
-    - size
-    - reservable
-    - reservable_style_link
-    - reservable_batch
-    - reservable_batch_link
-    - booking_reference
-    - reservable_booking
+admin.select=all
+admin.insert=app_config,person,organization,storage_location,reservable_style,reservable_category,reservable_subcategory,size_type,size,reservable,reservable_style_link,reservable_batch,reservable_batch_link,booking_reference,reservable_booking
+admin.update=app_config,person,organization,storage_location,reservable_style,reservable_category,reservable_subcategory,size_type,size,reservable,reservable_style_link,reservable_batch,reservable_batch_link,booking_reference,reservable_booking
+admin.delete=app_config,person,organization,storage_location,reservable_style,reservable_category,reservable_subcategory,size_type,size,reservable,reservable_style_link,reservable_batch,reservable_batch_link,booking_reference,reservable_booking
 
-viewer:
-  select: all
-  insert: []
-  update: []
-  delete: []
+viewer.select=all
+viewer.insert=none
+viewer.update=none
+viewer.delete=none
 
-anon:
-  select:
-    - app_config
-    - person
-    - organization
-    - storage_location
-    - reservable_style
-    - reservable_category
-    - reservable_subcategory
-    - size_type
-    - size
-    - reservable
-    - reservable_style_link
-    - reservable_batch
-    - reservable_batch_link
-    - booking_reference
-    - reservable_booking
-  insert: []
-  update: []
-  delete: []
+anon.select=app_config,person,organization,storage_location,reservable_style,reservable_category,reservable_subcategory,size_type,size,reservable,reservable_style_link,reservable_batch,reservable_batch_link,booking_reference,reservable_booking
+anon.insert=none
+anon.update=none
+anon.delete=none

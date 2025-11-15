@@ -10,6 +10,9 @@ RETURNS TABLE(
     address TEXT,
     referent_id INT
 )
+LANGUAGE plpgsql
+SECURITY DEFINER
+
 AS $$
 DECLARE
     v_org_id INT;
@@ -17,23 +20,30 @@ DECLARE
     v_pid INT;
     v_referent_phone TEXT;
 BEGIN
-    -- Vérifier que le referent existe et a un numéro de téléphone
+    -----------------------------------------------------------------------
+    -- 1) Vérifier que le référent existe et possède un numéro de téléphone
+    -----------------------------------------------------------------------
     IF p_referent_id IS NULL THEN
         RAISE EXCEPTION 'Le référent est obligatoire';
     END IF;
 
-    SELECT phone INTO v_referent_phone
-    FROM inventory.person
-    WHERE id = p_referent_id;
+    SELECT p.phone
+    INTO v_referent_phone
+    FROM inventory.person AS p
+    WHERE p.id = p_referent_id;
 
     IF v_referent_phone IS NULL THEN
         RAISE EXCEPTION 'Le référent doit avoir un numéro de téléphone';
     END IF;
 
-    -- Vérifier ou insérer l’organisation
-    SELECT id INTO v_org_id
-    FROM inventory.organization
-    WHERE name = p_name
+
+    ----------------------------------------------------
+    -- 2) Upsert organisation (via SELECT + UPDATE/INSERT)
+    ----------------------------------------------------
+    SELECT o.id
+    INTO v_org_id
+    FROM inventory.organization AS o
+    WHERE o.name = p_name
     LIMIT 1;
 
     IF v_org_id IS NULL THEN
@@ -44,30 +54,51 @@ BEGIN
         UPDATE inventory.organization
         SET address = COALESCE(p_address, address),
             referent_id = COALESCE(p_referent_id, referent_id)
-        WHERE id = v_org_id;
+        WHERE organization.id = v_org_id;
     END IF;
 
-    -- Récupérer les liens existants
-    SELECT array_agg(person_id) INTO v_existing_ids
-    FROM inventory.organization_person
-    WHERE organization_id = v_org_id;
 
-    -- Supprimer les liens qui ne sont plus dans p_person_ids
-    DELETE FROM inventory.organization_person
-    WHERE organization_id = v_org_id
-      AND person_id <> ALL (p_person_ids);
+    ----------------------------------------------------
+    -- 3) Récupérer les liens existants
+    ----------------------------------------------------
+    SELECT array_agg(op.person_id)
+    INTO v_existing_ids
+    FROM inventory.organization_person AS op
+    WHERE op.organization_id = v_org_id;
 
-    -- Ajouter les nouveaux liens
+
+    ----------------------------------------------------
+    -- 4) Supprimer les liens absents dans p_person_ids
+    --
+    -- IMPORTANT :
+    --   AND person_id <> ALL(p_person_ids)  ❌  NE FONCTIONNE PAS
+    --   Cela garde seulement ceux qui sont ≠ de TOUS les éléments,
+    --   ce qui n’est pas le comportement voulu.
+    --
+    --   Il faut utiliser: person_id NOT IN (SELECT UNNEST(p_person_ids))
+    ----------------------------------------------------
+    DELETE FROM inventory.organization_person AS op
+    WHERE op.organization_id = v_org_id
+      AND op.person_id NOT IN (SELECT UNNEST(p_person_ids));
+
+
+    ----------------------------------------------------
+    -- 5) Ajouter les nouveaux liens
+    ----------------------------------------------------
     FOREACH v_pid IN ARRAY p_person_ids LOOP
-        INSERT INTO inventory.organization_person(organization_id, person_id)
+        INSERT INTO inventory.organization_person (organization_id, person_id)
         VALUES (v_org_id, v_pid)
         ON CONFLICT (organization_id, person_id) DO NOTHING;
     END LOOP;
 
-    -- Retourner l’organisation
+
+    ----------------------------------------------------
+    -- 6) Retourner l’enregistrement final
+    ----------------------------------------------------
     RETURN QUERY
     SELECT o.id, o.name, o.address, o.referent_id
-    FROM inventory.organization o
+    FROM inventory.organization AS o
     WHERE o.id = v_org_id;
+
 END;
-$$ LANGUAGE plpgsql;
+$$;
