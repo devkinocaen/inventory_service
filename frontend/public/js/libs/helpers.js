@@ -407,3 +407,21 @@ export function timeStringToHours(str) {
   if (isNaN(h) || isNaN(m)) return null;
   return h + m / 60;
 }
+
+/**
+ * Convertit une Date en string utilisable dans <input type="datetime-local">
+ * ex: 2025-11-16T14:05
+ */
+export function formatDateForDatetimeLocal(date) {
+  if (!(date instanceof Date) || isNaN(date)) return '';
+
+  const pad = n => String(n).padStart(2, '0');
+
+  return (
+    date.getFullYear() + '-' +
+    pad(date.getMonth() + 1) + '-' +
+    pad(date.getDate()) + 'T' +
+    pad(date.getHours()) + ':' +
+    pad(date.getMinutes())
+  );
+}

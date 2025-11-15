@@ -5,7 +5,7 @@ import {
   createBooking
 } from '../libs/sql/index.js';
 import { isAvailable } from '../libs/sql/isAvailable.js';
-import { formatServerError } from '../libs/helpers.js';
+import { formatServerError, formatDateForDatetimeLocal } from '../libs/helpers.js';
 import { populateSelect } from '../libs/ui/populateSelect.js';
 
 let client;
@@ -57,17 +57,38 @@ export async function loadBookingModal() {
 // -----------------------------
 // Ouvrir modal réservation
 // -----------------------------
-export async function openBookingModal(selectedItems = []) {
-    if (!selectedItems || selectedItems.length === 0) {
-      alert('Aucun article sélectionné pour la réservation.');
-      return;
-    }
+export async function openBookingModal(selectedItems = [], dates = {}) {
+  if (!selectedItems || selectedItems.length === 0) {
+    alert('Aucun article sélectionné pour la réservation.');
+    return;
+  }
+
   await initBookingModal();
   if (!modal || !dialog) return;
 
   bookingItems = selectedItems || [];
   renderBookingItems();
 
+  // --------------------------
+  // Initialisation date/heure
+  // --------------------------
+  const { start, end } = dates ?? {};
+
+  const now = new Date();
+  const tomorrow = new Date(now.getTime() + 24 * 3600 * 1000);
+
+  const startInit = start
+    ? roundDateByMinute(start, 'down')
+    : formatDateForDatetimeLocal(now);
+
+  const endInit = end
+    ? roundDateByMinute(end, 'up')
+    : formatDateForDatetimeLocal(tomorrow);
+
+  startDateInput.value = startInit;
+  endDateInput.value = endInit;
+
+  // --------------------------
   dialog.classList.remove('show');
   modal.classList.remove('hidden');
   void dialog.offsetWidth;

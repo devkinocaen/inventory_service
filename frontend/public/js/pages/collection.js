@@ -17,6 +17,10 @@ let currentItems = [];
 let selectedItems = [];
 let activeFilters = { category: [], subcategory: [], style: [], gender: [] };
 
+let currentFilterStart = null;
+let currentFilterEnd = null;
+
+
 // Variables globales pour les données de filtre
 let currentCategories = [];
 let currentSubcategories = [];
@@ -86,8 +90,15 @@ async function renderItems() {
   if (!container) return;
   container.innerHTML = '';
 
-  let filterStartDate = document.getElementById('cstm-filterStartDate')?.value || null;
-  let filterEndDate = document.getElementById('cstm-filterEndDate')?.value || null;
+  // On utilise les valeurs globales, pas celles du DOM
+  let filterStartDate = currentFilterStart
+    ? currentFilterStart.toISOString()
+    : null;
+
+  let filterEndDate = currentFilterEnd
+    ? currentFilterEnd.toISOString()
+    : null;
+
   const now = new Date();
 
   if (filterStartDate && new Date(filterStartDate).getTime() < now.getTime()) filterStartDate = null;
@@ -151,11 +162,17 @@ async function renderItems() {
     div.appendChild(name);
 
     div.addEventListener('click', () => {
-      if (selectedItems.includes(item.id)) selectedItems = selectedItems.filter(i => i !== item.id);
-      else selectedItems.push(item.id);
-      renderItems();
-      renderCart();
+      if (selectedItems.includes(item.id)) {
+        selectedItems = selectedItems.filter(i => i !== item.id);
+        div.classList.remove('selected'); // update visuel
+      } else {
+        selectedItems.push(item.id);
+        div.classList.add('selected'); // update visuel
+      }
+
+      renderCart(); // uniquement mettre à jour le panier
     });
+
 
     container.appendChild(div);
   }
@@ -240,7 +257,10 @@ export async function init() {
       } : null;
     }).filter(Boolean);
 
-    await openBookingModal(itemsForModal);
+    await openBookingModal(itemsForModal, {
+      start: currentFilterStart,
+      end: currentFilterEnd
+    });
   });
 
   orgToggle.addEventListener('click', async () => {
@@ -257,8 +277,15 @@ export async function init() {
   });
 
   document.getElementById('cstm-applyDateFilter')?.addEventListener('click', () => {
+    const start = document.getElementById('cstm-filterStartDate')?.value || null;
+    const end   = document.getElementById('cstm-filterEndDate')?.value || null;
+
+    currentFilterStart = start ? new Date(start) : null;
+    currentFilterEnd   = end   ? new Date(end)   : null;
+
     renderItems();
   });
+
 
 
   await loadData();
