@@ -16,6 +16,8 @@ export { upsertOrganization } from './upsertOrganization.js';
 export { upsertPerson } from './upsertPerson.js';
 export { deletePerson } from './deletePerson.js';
 export { deleteOrganization } from './deleteOrganization.js';
+export { isAvailable } from './isAvailable.js';
+export { createReservableBatch } from './createReservableBatch.js';
 
 
 

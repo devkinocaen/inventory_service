@@ -1,14 +1,18 @@
 import { initClient } from '../libs/client.js';
 import {
-  fetchReservables,
   fetchOrganizations,
+  createReservableBatch,
+  createBooking
 } from '../libs/sql/index.js';
+import { isAvailable } from '../libs/sql/isAvailable.js';
 import { formatServerError } from '../libs/helpers.js';
+import { populateSelect } from '../libs/ui/populateSelect.js';
 
 let client;
 let modal, dialog, itemsContainer, cancelBtn, validateBtn;
+let orgSelect, bookingPersonSelect, startDateInput, endDateInput;
 let bookingItems = [];
-
+let organizations = [];
 
 // -----------------------------
 // Charger modal dans le DOM
@@ -24,16 +28,29 @@ export async function loadBookingModal() {
   }
 
   modal = document.getElementById('booking-modal');
-  if (!modal) return;
-
   dialog = modal.querySelector('.booking-modal-dialog');
   itemsContainer = document.getElementById('booking-items');
   cancelBtn = document.getElementById('cancel-booking-btn');
   validateBtn = document.getElementById('validate-booking-btn');
 
+  orgSelect = document.getElementById('organization');
+  bookingPersonSelect = document.getElementById('pickup_person');
+  startDateInput = document.getElementById('startDate');
+  endDateInput = document.getElementById('endDate');
+
   if (cancelBtn && !cancelBtn.dataset.bound) {
     cancelBtn.addEventListener('click', closeBookingModal);
     cancelBtn.dataset.bound = 'true';
+  }
+
+  if (validateBtn && !validateBtn.dataset.bound) {
+    validateBtn.addEventListener('click', handleBookingValidate);
+    validateBtn.dataset.bound = 'true';
+  }
+
+  if (orgSelect && !orgSelect.dataset.bound) {
+    orgSelect.addEventListener('change', updateBookingPersons);
+    orgSelect.dataset.bound = 'true';
   }
 }
 
@@ -41,7 +58,7 @@ export async function loadBookingModal() {
 // Ouvrir modal réservation
 // -----------------------------
 export async function openBookingModal(selectedItems = []) {
-  await loadBookingModal();
+  await initBookingModal();
   if (!modal || !dialog) return;
 
   bookingItems = selectedItems || [];
@@ -49,7 +66,7 @@ export async function openBookingModal(selectedItems = []) {
 
   dialog.classList.remove('show');
   modal.classList.remove('hidden');
-  void dialog.offsetWidth; // reset animation
+  void dialog.offsetWidth;
   dialog.classList.add('show');
 }
 
@@ -71,7 +88,6 @@ export function renderBookingItems() {
   bookingItems.forEach(item => {
     const div = document.createElement('div');
     div.className = 'cart-item';
-
     const img = document.createElement('img');
     img.src = item.photos?.[0]?.url || 'data:image/svg+xml;charset=UTF-8,' +
       encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60">
@@ -118,25 +134,89 @@ export async function initBookingModal() {
   await loadBookingModal();
 
   try {
-    const [orgs ] = await Promise.all([
-      fetchOrganizations(client),
-    ]);
+    organizations = await fetchOrganizations(client);
 
-    const orgSelect = document.getElementById('organization');
+    populateSelect(orgSelect, organizations, null, {
+      labelField: 'name',
+      placeholder: '-- Choisir une organisation --'
+    });
 
-    if (orgSelect) {
-      orgSelect.innerHTML = '';
-      orgs.forEach(o => {
-        const opt = document.createElement('option');
-        opt.value = o.id;
-        opt.textContent = o.name;
-        orgSelect.appendChild(opt);
-      });
-    }
-
+    updateBookingPersons();
   } catch (err) {
     console.error('[Booking Modal] Erreur chargement organisations :', formatServerError(err.message || err));
   }
 }
 
+// -----------------------------
+// Met à jour le select des personnes de l’organisation
+// -----------------------------
+function updateBookingPersons() {
+  const orgId = orgSelect.value;
+ console.log ('orgSelect', orgSelect)
+  console.log ('orgId', orgId)
 
+  const org = organizations.find(o => o.id === orgId);
+console.log ('organizations', organizations)
+console.log ('org', org)
+
+  if (!org) {
+    populateSelect(bookingPersonSelect, [], null, { placeholder: '-- Choisir la personne de retrait --' });
+    return;
+  }
+
+  populateSelect(bookingPersonSelect, org.persons || [], org.referent_id, {
+    labelField: (p) => `${p.first_name} ${p.last_name} (${p.role || ''})`,
+    placeholder: '-- Choisir la personne de retrait --',
+    disablePlaceholder: true
+  });
+}
+                       
+// -----------------------------
+// Validation réservation
+// -----------------------------
+async function handleBookingValidate() {
+ try {
+   const orgId = parseInt(orgSelect.value);
+   const bookingPersonId = parseInt(bookingPersonSelect.value); // booking person
+   const startDate = startDateInput.value;
+   const endDate = endDateInput.value;
+
+   if (!orgId || !bookingPersonId || !startDate || !endDate) {
+     alert('Veuillez remplir toutes les informations obligatoires');
+     return;
+   }
+
+   // Vérification disponibilité de chaque item
+   for (const item of bookingItems) {
+     const available = await isAvailable(client, item.id, startDate, endDate);
+     if (!available) {
+       alert(`L’article "${item.name}" n’est pas disponible sur cette période.`);
+       return;
+     }
+   }
+
+   // Création du batch
+   const batch = await createReservableBatch(client, bookingItems.map(i => i.id));
+
+   // Détermine le pickupPerson : si "immediate checkout" coché, c'est bookingPerson
+   const immediateCheckout = document.getElementById('immediate_checkout')?.checked ?? false;
+   const pickupPersonId = immediateCheckout ? bookingPersonId : null;
+
+   // Création de la réservation
+   await createBooking(client, {
+     p_reservable_batch_id: batch.id,
+     p_renter_organization_id: orgId,
+     p_booking_person_id: bookingPersonId,
+     p_start_date: startDate,
+     p_end_date: endDate,
+     p_pickup_person_id: pickupPersonId,
+     p_booking_reference_id: null
+   });
+
+   alert('Réservation créée avec succès !');
+   closeBookingModal();
+ } catch (err) {
+   console.error('[Booking Modal] Erreur création réservation :', err);
+   alert(`Erreur : ${formatServerError(err.message || err)}`);
+ }
+}

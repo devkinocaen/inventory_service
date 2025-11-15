@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION inventory.create_booking(
     p_booking_person_id      INTEGER,
     p_start_date             TIMESTAMP,
     p_end_date               TIMESTAMP,
+    p_pickup_person_id       INTEGER DEFAULT NULL,
     p_booking_reference_id   INTEGER DEFAULT NULL
 )
 RETURNS inventory.reservable_booking
@@ -18,6 +19,7 @@ BEGIN
         reservable_batch_id,
         renter_organization_id,
         booking_person,
+        pickup_person,
         return_person,
         start_date,
         end_date,
@@ -27,6 +29,7 @@ BEGIN
         p_reservable_batch_id,
         p_renter_organization_id,
         p_booking_person_id,
+        p_pickup_person_id,
         NULL,
         p_start_date,
         p_end_date,

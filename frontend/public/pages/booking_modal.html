@@ -17,12 +17,12 @@
 
       <!-- Organisation & Référent -->
       <div class="booking-form-group booking-form-group-full booking-org-line">
-        <label>🏛️ Emprunnteur</label>
+        <label>🏛️ Emprunteur</label>
         <div class="booking-org-referent-row">
           <div class="booking-org-select">
             <select id="organization" class="booking-select"></select>
           </div>
-          <select id="pickup_person" class="booking-select"></select>
+          <select id="booking_person" class="booking-select"></select>
         </div>
       </div>
 
@@ -36,6 +36,14 @@
       <div class="booking-form-group booking-form-group-full">
         <h3>🧺 Articles sélectionnés</h3>
         <div class="booking-cart-items" id="booking-items"></div>
+      </div>
+
+      <!-- Option sortie immédiate -->
+      <div class="booking-form-group booking-form-group-full">
+        <label>
+          <input type="checkbox" id="immediate_checkout" />
+          Sortir le panier immédiatement
+        </label>
       </div>
 
       <!-- Actions -->
