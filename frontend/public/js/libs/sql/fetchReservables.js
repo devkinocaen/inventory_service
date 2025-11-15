@@ -5,8 +5,11 @@ export async function fetchReservables(client, filters = {}) {
     p_category_id: filters.p_category_id ?? null,
     p_subcategory_id: filters.p_subcategory_id ?? null,
     p_gender: filters.p_gender ?? null,
-    p_style_ids: filters.p_style_ids ?? null
+    p_style_ids: filters.p_style_ids ?? null,
+    p_start_date: filters.p_start_date ?? null,
+    p_end_date: filters.p_end_date ?? null
   };
+
   console.log('fetchReservables params', params);
 
   const { data, error } = await client.rpc('get_reservables', params);

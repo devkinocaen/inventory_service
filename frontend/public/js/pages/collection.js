@@ -71,15 +71,42 @@ function renderFilterChips(categories, subcategories, styles) {
 /**
  * Render les costumes filtrés
  */
-function renderItems() {
+/**
+ * Récupère et affiche les items filtrés selon la sidebar
+ */
+async function renderItems() {
   if (!container) return;
   container.innerHTML = '';
 
-  currentItems.forEach(item => {
-    if (activeFilters.category.length && !activeFilters.category.includes(item.category_name)) return;
-    if (activeFilters.subcategory.length && !activeFilters.subcategory.includes(item.subcategory_name)) return;
-    if (activeFilters.style.length && !activeFilters.style.includes(item.style_names?.[0])) return;
+  // Récupère les filtres de la sidebar
+  const filterStartDate = document.getElementById('cstm-filterStartDate')?.value || null;
+  const filterEndDate = document.getElementById('cstm-filterEndDate')?.value || null;
 
+  const filters = {
+    p_category_id: activeFilters.category.length ? activeFilters.category.map(name => {
+      const cat = currentCategories.find(c => c.name === name);
+      return cat?.id ?? null;
+    }).filter(Boolean) : null,
+    p_subcategory_id: activeFilters.subcategory.length ? activeFilters.subcategory.map(name => {
+      const sub = currentSubcategories.find(sc => sc.name === name);
+      return sub?.id ?? null;
+    }).filter(Boolean) : null,
+    p_style_ids: activeFilters.style.length ? activeStyles
+      .filter(s => activeFilters.style.includes(s.name))
+      .map(s => s.id) : null,
+    p_start_date: filterStartDate,
+    p_end_date: filterEndDate
+  };
+
+  try {
+    currentItems = await fetchReservables(client, filters);
+  } catch (err) {
+    console.error('[Collection] Erreur fetchReservables :', err);
+    return;
+  }
+
+  for (const item of currentItems) {
+    // Création de la carte
     const div = document.createElement('div');
     div.className = 'cstm-costume-card' + (selectedItems.includes(item.id) ? ' selected' : '');
 
@@ -89,20 +116,6 @@ function renderItems() {
         <rect width="200" height="200" fill="#ddd"/>
         <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="16">No Image</text>
       </svg>`);
-
-    let hoverInterval, idx = 0;
-    div.addEventListener('mouseenter', () => {
-      if (!item.photos?.length) return;
-      hoverInterval = setInterval(() => {
-        idx = (idx + 1) % item.photos.length;
-        img.src = item.photos[idx].url;
-      }, 1000);
-    });
-    div.addEventListener('mouseleave', () => {
-      clearInterval(hoverInterval);
-      idx = 0;
-      img.src = item.photos?.[0]?.url || img.src;
-    });
     div.appendChild(img);
 
     const name = document.createElement('div');
@@ -120,8 +133,10 @@ function renderItems() {
     });
 
     container.appendChild(div);
-  });
+  }
 }
+
+
 
 /**
  * Render le panier en bas
@@ -213,6 +228,8 @@ export async function init() {
      await openOrgModal();
    });
 
+ document.getElementById('cstm-filterStartDate')?.addEventListener('change', renderItems);
+ document.getElementById('cstm-filterEndDate')?.addEventListener('change', renderItems);
 
   await loadData();
 
