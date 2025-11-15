@@ -79,8 +79,28 @@ async function renderItems() {
   container.innerHTML = '';
 
   // Récupère les filtres de la sidebar
-  const filterStartDate = document.getElementById('cstm-filterStartDate')?.value || null;
-  const filterEndDate = document.getElementById('cstm-filterEndDate')?.value || null;
+  let filterStartDate = document.getElementById('cstm-filterStartDate')?.value || null;
+  let filterEndDate = document.getElementById('cstm-filterEndDate')?.value || null;
+
+  // Vérification des dates
+  const now = new Date();
+  if (filterStartDate) {
+    const start = new Date(filterStartDate);
+    if (start < now) filterStartDate = null; // date passée => on ignore
+  }
+  if (filterEndDate) {
+    const end = new Date(filterEndDate);
+    if (end < now) filterEndDate = null; // date passée => on ignore
+  }
+
+  // Vérifie cohérence start < end
+  if (filterStartDate && filterEndDate) {
+    if (new Date(filterStartDate) >= new Date(filterEndDate)) {
+      alert('La date de fin doit être après la date de début');
+      filterStartDate = null;
+      filterEndDate = null; // on ignore le filtre
+    }
+  }
 
   const filters = {
     p_category_id: activeFilters.category.length ? activeFilters.category.map(name => {

@@ -87,27 +87,39 @@
 }
 #cstm-cartSidebar.cstm-collapsed { transform: translateX(100%); }
 
-/* ---- Boutons flottants ---- */
+/* ---- Bouton filtre / poignée ---- */
 #cstm-filtersToggle {
-  position: fixed;
+  position: fixed;       /* toujours fixé par rapport à la fenêtre */
   top: 50%;
-  left: 20px;
+  left: 0;               /* bord gauche de l'écran */
   transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
   background: #4CAF50;
   color: #fff;
   border: none;
-  padding: 10px 12px;
   border-radius: 50%;
   cursor: pointer;
   font-size: 20px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  z-index: 1000;
-  transition: transform 0.2s;
+  z-index: 1001;
+  transition: left 0.3s, transform 0.2s;
 }
+
+/* Décalage quand la sidebar est ouverte */
+#cstm-filtersSidebar:not(.cstm-collapsed) ~ #cstm-filtersToggle {
+  left: 240px;  /* largeur sidebar */
+}
+
+/* Décalage quand la sidebar est fermée */
+#cstm-filtersSidebar.cstm-collapsed ~ #cstm-filtersToggle {
+  left: 0;      /* collé au bord gauche */
+}
+
 
 #cstm-cartToggle {
   position: fixed;
-  top: 45%; /* légèrement au-dessus du centre */
+  top: 45%;
   right: 20px;
   transform: translateY(-50%);
   background: #e53935;
@@ -124,7 +136,7 @@
 
 #cstm-orgToggle {
   position: fixed;
-  top: 55%; /* légèrement en dessous du centre */
+  top: 55%;
   right: 20px;
   transform: translateY(-50%);
   background: #1976d2;
@@ -183,6 +195,28 @@
   border-radius: 6px;
   font-size: 0.9em;
 }
+
+/* Bouton Valider pour dates */
+.cstm-apply-filters {
+  margin-top: 8px;
+}
+.cstm-apply-filters button {
+  width: 100%;
+  padding: 6px 0;
+  background: #4CAF50;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95em;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.cstm-apply-filters button:hover {
+  background: #45a049;
+  transform: scale(1.02);
+}
+
+/* Séparateur */
 .cstm-divider {
   margin:10px 0;
   border:none;
@@ -215,7 +249,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* ✅ Items sélectionnés */
 .cstm-costume-card.selected {
   border-color: #0078ff;
   box-shadow: 0 0 0 3px rgba(0, 120, 255, 0.25);
