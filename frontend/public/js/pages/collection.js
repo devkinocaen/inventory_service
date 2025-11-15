@@ -15,7 +15,12 @@ import { formatServerError } from '../libs/helpers.js';
 let client;
 let currentItems = [];
 let selectedItems = [];
-let activeFilters = { category: [], subcategory: [], style: [] };
+let activeFilters = { category: [], subcategory: [], style: [], gender: [] };
+
+// Variables globales pour les données de filtre
+let currentCategories = [];
+let currentSubcategories = [];
+let currentStyles = [];
 
 // ---- DOM Elements ----
 let filtersSidebar, filtersToggle, cartToggle, orgToggle, container;
@@ -38,8 +43,9 @@ function renderFilterChips(categories, subcategories, styles) {
   const categoryChips = document.getElementById('cstm-categoryChips');
   const subcatChips = document.getElementById('cstm-subcatChips');
   const styleChips = document.getElementById('cstm-styleChips');
+    const genderChips = document.getElementById('cstm-genderChips'); // nouvelle div dans ton HTML
 
-  if (!categoryChips || !subcatChips || !styleChips) return;
+  if (!categoryChips || !subcatChips || !styleChips || !genderChips) return;
 
   const makeChip = (name, type) => {
     const chip = document.createElement('div');
@@ -66,11 +72,13 @@ function renderFilterChips(categories, subcategories, styles) {
 
   styleChips.innerHTML = '';
   styles.forEach(s => styleChips.appendChild(makeChip(s.name, 'style')));
+    
+    // Genre (constantes fixes)
+    const genders = ['Homme', 'Femme', 'Unisexe'];
+    genderChips.innerHTML = '';
+    genders.forEach(g => genderChips.appendChild(makeChip(g, 'gender')));
 }
 
-/**
- * Render les costumes filtrés
- */
 /**
  * Récupère et affiche les items filtrés selon la sidebar
  */
@@ -78,42 +86,40 @@ async function renderItems() {
   if (!container) return;
   container.innerHTML = '';
 
-  // Récupère les filtres de la sidebar
   let filterStartDate = document.getElementById('cstm-filterStartDate')?.value || null;
   let filterEndDate = document.getElementById('cstm-filterEndDate')?.value || null;
-
-  // Vérification des dates
   const now = new Date();
-  if (filterStartDate) {
-    const start = new Date(filterStartDate);
-    if (start < now) filterStartDate = null; // date passée => on ignore
-  }
-  if (filterEndDate) {
-    const end = new Date(filterEndDate);
-    if (end < now) filterEndDate = null; // date passée => on ignore
-  }
 
-  // Vérifie cohérence start < end
-  if (filterStartDate && filterEndDate) {
-    if (new Date(filterStartDate) >= new Date(filterEndDate)) {
-      alert('La date de fin doit être après la date de début');
-      filterStartDate = null;
-      filterEndDate = null; // on ignore le filtre
-    }
+  if (filterStartDate && new Date(filterStartDate).getTime() < now.getTime()) filterStartDate = null;
+  if (filterEndDate && new Date(filterEndDate).getTime() < now.getTime()) filterEndDate = null;
+  if (filterStartDate && filterEndDate && new Date(filterStartDate) >= new Date(filterEndDate)) {
+    alert('La date de fin doit être après la date de début');
+    filterStartDate = null;
+    filterEndDate = null;
   }
 
   const filters = {
-    p_category_id: activeFilters.category.length ? activeFilters.category.map(name => {
-      const cat = currentCategories.find(c => c.name === name);
-      return cat?.id ?? null;
-    }).filter(Boolean) : null,
-    p_subcategory_id: activeFilters.subcategory.length ? activeFilters.subcategory.map(name => {
-      const sub = currentSubcategories.find(sc => sc.name === name);
-      return sub?.id ?? null;
-    }).filter(Boolean) : null,
-    p_style_ids: activeFilters.style.length ? activeStyles
-      .filter(s => activeFilters.style.includes(s.name))
-      .map(s => s.id) : null,
+    // Maintenant on passe des tableaux pour catégories et sous-catégories
+    p_category_ids: activeFilters.category.length
+      ? currentCategories
+          .filter(c => activeFilters.category.includes(c.name))
+          .map(c => c.id)
+      : null,
+
+    p_subcategory_ids: activeFilters.subcategory.length
+      ? currentSubcategories
+          .filter(sc => activeFilters.subcategory.includes(sc.name))
+          .map(sc => sc.id)
+      : null,
+
+    // Styles restent un tableau
+    p_style_ids: activeFilters.style.length
+      ? currentStyles
+          .filter(s => activeFilters.style.includes(s.name))
+          .map(s => s.id)
+      : null,
+    p_gender: activeFilters.gender.length ? activeFilters.gender : null,
+
     p_start_date: filterStartDate,
     p_end_date: filterEndDate
   };
@@ -126,7 +132,6 @@ async function renderItems() {
   }
 
   for (const item of currentItems) {
-    // Création de la carte
     const div = document.createElement('div');
     div.className = 'cstm-costume-card' + (selectedItems.includes(item.id) ? ' selected' : '');
 
@@ -155,7 +160,6 @@ async function renderItems() {
     container.appendChild(div);
   }
 }
-
 
 
 /**
@@ -190,6 +194,10 @@ async function loadData() {
     ]);
 
     currentItems = items;
+    currentCategories = categories;
+    currentSubcategories = subcategories;
+    currentStyles = styles;
+
     renderFilterChips(categories, subcategories, styles);
     renderItems();
     renderCart();
@@ -214,12 +222,12 @@ export async function init() {
     const bottomCart = document.createElement('div');
     bottomCart.id = 'cstm-cartBottom';
     bottomCart.style.marginTop = '2rem';
-    container.parentNode.appendChild(bottomCart);
+    if (container?.parentNode) container.parentNode.appendChild(bottomCart);
   }
 
   filtersToggle.addEventListener('click', () => {
-    filtersSidebar.classList.toggle('cstm-collapsed');
-    filtersToggle.classList.toggle('cstm-collapsed');
+    filtersSidebar?.classList.toggle('cstm-collapsed');
+    filtersToggle?.classList.toggle('cstm-collapsed');
   });
 
   cartToggle.addEventListener('click', async () => {
@@ -234,23 +242,22 @@ export async function init() {
 
     await openBookingModal(itemsForModal);
   });
-                       
-   orgToggle.addEventListener('click', async () => {
-     const itemsForModal = selectedItems.map(id => {
-       const item = currentItems.find(i => i.id === id);
-       return item ? {
-         name: item.name,
-         category_name: item.category_name,
-         photos: item.photos
-       } : null;
-     }).filter(Boolean);
 
-     await openOrgModal();
-   });
+  orgToggle.addEventListener('click', async () => {
+    const itemsForModal = selectedItems.map(id => {
+      const item = currentItems.find(i => i.id === id);
+      return item ? {
+        name: item.name,
+        category_name: item.category_name,
+        photos: item.photos
+      } : null;
+    }).filter(Boolean);
 
- document.getElementById('cstm-filterStartDate')?.addEventListener('change', renderItems);
- document.getElementById('cstm-filterEndDate')?.addEventListener('change', renderItems);
+    await openOrgModal(itemsForModal);
+  });
+
+  document.getElementById('cstm-filterStartDate')?.addEventListener('change', renderItems);
+  document.getElementById('cstm-filterEndDate')?.addEventListener('change', renderItems);
 
   await loadData();
-
 }

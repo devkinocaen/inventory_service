@@ -1,8 +1,8 @@
 CREATE OR REPLACE FUNCTION inventory.get_reservables(
     p_type inventory.reservable_type DEFAULT NULL,
-    p_category_id INT DEFAULT NULL,
-    p_subcategory_id INT DEFAULT NULL,
-    p_gender inventory.reservable_gender DEFAULT NULL,
+    p_category_ids INT[] DEFAULT NULL,
+    p_subcategory_ids INT[] DEFAULT NULL,
+    p_gender inventory.reservable_gender[] DEFAULT NULL, -- <- vecteur
     p_style_ids INT[] DEFAULT NULL,
     p_start_date TIMESTAMP DEFAULT NULL,
     p_end_date TIMESTAMP DEFAULT NULL
@@ -79,9 +79,9 @@ BEGIN
     LEFT JOIN inventory.reservable_style rs ON rs.id = rsl.style_id
     WHERE
         (p_type IS NULL OR r.inventory_type = p_type)
-        AND (p_category_id IS NULL OR r.category_id = p_category_id)
-        AND (p_subcategory_id IS NULL OR r.subcategory_id = p_subcategory_id)
-        AND (p_gender IS NULL OR r.gender = p_gender)
+        AND (p_category_ids IS NULL OR r.category_id = ANY(p_category_ids))
+        AND (p_subcategory_ids IS NULL OR r.subcategory_id = ANY(p_subcategory_ids))
+        AND (p_gender IS NULL OR r.gender = ANY(p_gender)) -- <- comparaison tableau
         AND (
             p_style_ids IS NULL
             OR EXISTS (

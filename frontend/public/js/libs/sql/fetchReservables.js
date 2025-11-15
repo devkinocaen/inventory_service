@@ -1,11 +1,20 @@
 // js/api/fetchReservables.js
 export async function fetchReservables(client, filters = {}) {
+  // Prépare les params en respectant le nouveau RPC
   const params = {
     p_type: filters.p_type ?? null,
-    p_category_id: filters.p_category_id ?? null,
-    p_subcategory_id: filters.p_subcategory_id ?? null,
-    p_gender: filters.p_gender ?? null,
-    p_style_ids: filters.p_style_ids ?? null,
+    p_category_ids: Array.isArray(filters.p_category_ids) && filters.p_category_ids.length
+      ? filters.p_category_ids
+      : null,
+    p_subcategory_ids: Array.isArray(filters.p_subcategory_ids) && filters.p_subcategory_ids.length
+      ? filters.p_subcategory_ids
+      : null,
+    p_gender: Array.isArray(filters.p_gender) && filters.p_gender.length
+      ? filters.p_gender
+      : null, // <- maintenant vecteur
+    p_style_ids: Array.isArray(filters.p_style_ids) && filters.p_style_ids.length
+      ? filters.p_style_ids
+      : null,
     p_start_date: filters.p_start_date ?? null,
     p_end_date: filters.p_end_date ?? null
   };
