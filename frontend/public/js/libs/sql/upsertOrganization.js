@@ -18,8 +18,6 @@ export async function upsertOrganization(client, {
     p_person_ids: person_ids
   });
     
-    consoel.error ('error in upsertOrganization', error)
-
   if (error) {
     console.error('[upsertOrganization] Erreur serveur :', error);
     throw new Error(error.message || 'Erreur lors de la mise à jour de l’organisation');

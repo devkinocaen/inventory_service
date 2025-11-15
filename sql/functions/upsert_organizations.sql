@@ -12,7 +12,6 @@ RETURNS TABLE(
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
-
 AS $$
 DECLARE
     v_org_id INT;
@@ -36,7 +35,6 @@ BEGIN
         RAISE EXCEPTION 'Le référent doit avoir un numéro de téléphone';
     END IF;
 
-
     ----------------------------------------------------
     -- 2) Upsert organisation (via SELECT + UPDATE/INSERT)
     ----------------------------------------------------
@@ -49,14 +47,13 @@ BEGIN
     IF v_org_id IS NULL THEN
         INSERT INTO inventory.organization (name, address, referent_id)
         VALUES (p_name, p_address, p_referent_id)
-        RETURNING id INTO v_org_id;
+        RETURNING organization.id INTO v_org_id;
     ELSE
-        UPDATE inventory.organization
-        SET address = COALESCE(p_address, address),
-            referent_id = COALESCE(p_referent_id, referent_id)
+        UPDATE inventory.organization AS organization
+        SET address = COALESCE(p_address, organization.address),
+            referent_id = COALESCE(p_referent_id, organization.referent_id)
         WHERE organization.id = v_org_id;
     END IF;
-
 
     ----------------------------------------------------
     -- 3) Récupérer les liens existants
@@ -66,21 +63,12 @@ BEGIN
     FROM inventory.organization_person AS op
     WHERE op.organization_id = v_org_id;
 
-
     ----------------------------------------------------
     -- 4) Supprimer les liens absents dans p_person_ids
-    --
-    -- IMPORTANT :
-    --   AND person_id <> ALL(p_person_ids)  ❌  NE FONCTIONNE PAS
-    --   Cela garde seulement ceux qui sont ≠ de TOUS les éléments,
-    --   ce qui n’est pas le comportement voulu.
-    --
-    --   Il faut utiliser: person_id NOT IN (SELECT UNNEST(p_person_ids))
     ----------------------------------------------------
     DELETE FROM inventory.organization_person AS op
     WHERE op.organization_id = v_org_id
       AND op.person_id NOT IN (SELECT UNNEST(p_person_ids));
-
 
     ----------------------------------------------------
     -- 5) Ajouter les nouveaux liens
@@ -91,12 +79,11 @@ BEGIN
         ON CONFLICT (organization_id, person_id) DO NOTHING;
     END LOOP;
 
-
     ----------------------------------------------------
     -- 6) Retourner l’enregistrement final
     ----------------------------------------------------
     RETURN QUERY
-    SELECT o.id, o.name, o.address, o.referent_id
+    SELECT o.id, o.name::TEXT, o.address::TEXT, o.referent_id
     FROM inventory.organization AS o
     WHERE o.id = v_org_id;
 

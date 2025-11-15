@@ -138,7 +138,7 @@ token: null, // JWT stocké après login
     // ==============================
     // RPC
     // ==============================
-     async rpc(functionName, params = {}, DEBUG = true) {
+     async rpc(functionName, params = {}, DEBUG = false) {
        this.ensureValidToken(true);
 
        const idBase = localStorage.getItem("currentDataBase");
