@@ -450,7 +450,8 @@ async function saveOrganization() {
     closeOrgModal();
   } catch (err) {
     console.error('[upsertOrganization]', err);
-    alert('Erreur lors de la sauvegarde de l’organisation. Voir console.');
+      alert(`❌ Impossible d’enregistrer :\n\n${err.message}`);
+
   }
 }
 

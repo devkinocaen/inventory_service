@@ -17,6 +17,8 @@ export async function upsertOrganization(client, {
     p_referent_id: referent_id,
     p_person_ids: person_ids
   });
+    
+    consoel.error ('error in upsertOrganization', error)
 
   if (error) {
     console.error('[upsertOrganization] Erreur serveur :', error);

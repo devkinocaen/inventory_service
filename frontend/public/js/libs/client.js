@@ -138,48 +138,60 @@ token: null, // JWT stocké après login
     // ==============================
     // RPC
     // ==============================
-     async rpc(functionName, params = {}, DEBUG = false) {
-          this.ensureValidToken(true);
+     async rpc(functionName, params = {}, DEBUG = true) {
+       this.ensureValidToken(true);
 
-         const idBase = localStorage.getItem("currentDataBase");
-        if (!idBase) {
-            alert("❌ Aucun identifiant de base défini ! Veuillez sélectionner une base avant de continuer.");
-            throw new Error("Aucun identifiant de base défini");
-            }
-         if (DEBUG) {
-            const payload = parseJwt(this.token);
-            console.log("🔍 JWT payload:", payload);
-            const role = payload?.app_metadata?.role;
-            if (role) console.log("✅ JWT role OK:", role);
-          }
+       const idBase = localStorage.getItem("currentDataBase");
+       if (!idBase) {
+         alert("❌ Aucun identifiant de base défini !");
+         throw new Error("Aucun identifiant de base défini");
+       }
 
-          const headers = {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.token}`,
-          };
+       if (DEBUG) {
+         const payload = parseJwt(this.token);
+         console.log("🔍 JWT payload:", payload);
+         const role = payload?.app_metadata?.role;
+         if (role) console.log("✅ JWT role OK:", role);
+       }
 
-          const options = {
-            method: "POST",
-            headers,
-            body: JSON.stringify(params || {}),
-          };
-         
-         if (DEBUG) {
-             console.log ('functionName ', functionName)
-             console.log (' -- with options', options)
-         }
-         
-          const res = await fetch(`${this.baseUrl}/rpc/${idBase}/${functionName}`, options);
-          if (!res.ok) {
-            const text = await res.text();
-            throw new Error(`RPC ${functionName} failed (${res.status}): ${text}`);
-          }
+       const headers = {
+         "Content-Type": "application/json",
+         Authorization: `Bearer ${this.token}`,
+       };
 
-          const { data, error } = await res.json();
-          if (DEBUG) console.log(`🔹 RPC ${functionName} response:`, { data, error });
+       const options = {
+         method: "POST",
+         headers,
+         body: JSON.stringify(params || {}),
+       };
 
-          return { data, error };
-    },
+       if (DEBUG) {
+         console.log("functionName ", functionName);
+         console.log(" -- with options", options);
+       }
+
+       const res = await fetch(`${this.baseUrl}/rpc/${idBase}/${functionName}`, options);
+
+       // ========== 🔥 NOUVELLE PARTIE: meilleure gestion des erreurs ==========
+       let payload = null;
+       try {
+         payload = await res.json();      // lit même si 400 / 500
+       } catch (_) {
+         // fallback si la réponse n’est pas du JSON
+         payload = { error: await res.text() };
+       }
+
+       if (!res.ok) {
+         const errMsg = payload.error || `Erreur HTTP ${res.status}`;
+         throw new Error(errMsg);         // ⬅️ ENFIN un message propre !
+       }
+       // ======================================================================
+
+       if (DEBUG) console.log(`🔹 RPC ${functionName} response:`, payload);
+
+       return payload;
+     },
+
 
     // ==============================
     // GET
