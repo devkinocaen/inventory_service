@@ -256,8 +256,10 @@ export async function init() {
     await openOrgModal(itemsForModal);
   });
 
-  document.getElementById('cstm-filterStartDate')?.addEventListener('change', renderItems);
-  document.getElementById('cstm-filterEndDate')?.addEventListener('change', renderItems);
+  document.getElementById('cstm-applyDateFilter')?.addEventListener('click', () => {
+    renderItems();
+  });
+
 
   await loadData();
 }
