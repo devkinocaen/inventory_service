@@ -18,7 +18,7 @@ export async function upsertOrganization(client, {
   }
 
   // Transforme le tableau pour la fonction PostgreSQL
-  const p_person_roles = persons.map(p => ({
+  const person_roles = persons.map(p => ({
     person_id: p.id,
     role: p.role || null
   }));
@@ -27,7 +27,7 @@ export async function upsertOrganization(client, {
     p_name: name,
     p_address: address,
     p_referent_id: referent_id,
-    p_person_roles
+    p_person_roles: person_roles
   });
 
   if (error) {

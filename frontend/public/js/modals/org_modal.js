@@ -348,9 +348,8 @@ function selectOrganization(orgId) {
   orgNameInput.value = org.name || '';
   orgAddressInput.value = org.address || '';
 
-  // if server provided referent info (fields names depend on your RPC), prefer id
+  // ajouter le référent si présent
   if (org.referent_id) {
-    // add referent row
     addPersonRow({
       id: org.referent_id,
       first_name: org.referent_first_name || '',
@@ -361,9 +360,8 @@ function selectOrganization(orgId) {
     });
   }
 
-  // add other persons (org.persons is expected JSONB array)
+  // ajouter les autres personnes
   (org.persons || []).forEach(p => {
-    // avoid duplicate of referent
     if (org.referent_id && String(p.id) === String(org.referent_id)) return;
     addPersonRow({
       id: p.id,
@@ -375,13 +373,22 @@ function selectOrganization(orgId) {
     });
   });
 
-  // if no person rows, add one empty row
+  // si pas de lignes, ajouter une vide
   if (!personList.querySelector('.person-item')) addPersonRow();
+
+  // **mettre à jour le select référent pour refléter l'organisation sélectionnée**
+  updateReferentSelect();
+
+  // si org.referent_id est défini, forcer la sélection
+  if (org.referent_id) {
+    orgReferentSelect.value = String(org.referent_id);
+  }
 }
+
 
 // -----------------------------
 // Sauvegarder organisation
-// - upsertOrganization expects referent_id and person_ids (array)
+// - upsertOrganization expects referent_id and person_roles (array)
 // -----------------------------
 async function saveOrganization() {
   if (!orgNameInput.value.trim()) {
@@ -439,6 +446,10 @@ async function saveOrganization() {
     const savedOrg = await upsertOrganization(client, orgData);
     console.log('Organisation enregistrée', savedOrg);
     await loadOrganizations();
+    if (orgSelect) orgSelect.value = savedOrg.id;
+
+    alert('✅ Organisation enregistrée avec succès.');
+
    // closeOrgModal();
   } catch (err) {
     console.error('[upsertOrganization]', err);
