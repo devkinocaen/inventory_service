@@ -17,19 +17,19 @@
     ]
   },
   {
-    "file": "$BASE_PATH/pages/config.html",
-    "title": "Configuration",
-    "user": "admin,dev",
-    "scripts": [
-      "../js/pages/config.js"
-    ]
-  },
-  {
     "file": "$BASE_PATH/pages/inventory.html",
     "title": "Gestion du stock",
     "user": "admin,dev",
     "scripts": [
         "../js/pages/inventory.js"
+    ]
+  },
+  {
+    "file": "$BASE_PATH/pages/config.html",
+    "title": "Configuration",
+    "user": "admin,dev",
+    "scripts": [
+      "../js/pages/config.js"
     ]
   }
 ]
