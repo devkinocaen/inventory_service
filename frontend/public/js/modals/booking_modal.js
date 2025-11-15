@@ -34,7 +34,7 @@ export async function loadBookingModal() {
   validateBtn = document.getElementById('validate-booking-btn');
 
   orgSelect = document.getElementById('organization');
-  bookingPersonSelect = document.getElementById('pickup_person');
+  bookingPersonSelect = document.getElementById('booking_person');
   startDateInput = document.getElementById('startDate');
   endDateInput = document.getElementById('endDate');
 
@@ -58,6 +58,10 @@ export async function loadBookingModal() {
 // Ouvrir modal réservation
 // -----------------------------
 export async function openBookingModal(selectedItems = []) {
+    if (!selectedItems || selectedItems.length === 0) {
+      alert('Aucun article sélectionné pour la réservation.');
+      return;
+    }
   await initBookingModal();
   if (!modal || !dialog) return;
 
@@ -151,21 +155,11 @@ export async function initBookingModal() {
 // Met à jour le select des personnes de l’organisation
 // -----------------------------
 function updateBookingPersons() {
-  const orgId = orgSelect.value;
- console.log ('orgSelect', orgSelect)
-  console.log ('orgId', orgId)
-
+  const orgId = parseInt(orgSelect.value);
   const org = organizations.find(o => o.id === orgId);
-console.log ('organizations', organizations)
-console.log ('org', org)
-
-  if (!org) {
-    populateSelect(bookingPersonSelect, [], null, { placeholder: '-- Choisir la personne de retrait --' });
-    return;
-  }
 
   populateSelect(bookingPersonSelect, org.persons || [], org.referent_id, {
-    labelField: (p) => `${p.first_name} ${p.last_name} (${p.role || ''})`,
+    labelField: (p) => `${p.first_name} ${p.last_name}${p.role ? ` (${p.role})` : ''}`,
     placeholder: '-- Choisir la personne de retrait --',
     disablePlaceholder: true
   });

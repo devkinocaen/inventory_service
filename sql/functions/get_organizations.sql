@@ -1,9 +1,9 @@
 CREATE OR REPLACE FUNCTION inventory.get_organizations()
 RETURNS TABLE(
-    id TEXT,
+    id INT,
     name TEXT,
     address TEXT,
-    referent_id TEXT,
+    referent_id INT,
     referent_first_name TEXT,
     referent_last_name TEXT,
     referent_phone TEXT,
@@ -15,10 +15,10 @@ AS $$
 BEGIN
     RETURN QUERY
     SELECT
-        o.id::TEXT,
+        o.id,
         o.name::TEXT,
         o.address::TEXT,
-        o.referent_id::TEXT,
+        o.referent_id,
         pr.first_name::TEXT AS referent_first_name,
         pr.last_name::TEXT AS referent_last_name,
         pr.phone::TEXT AS referent_phone,
