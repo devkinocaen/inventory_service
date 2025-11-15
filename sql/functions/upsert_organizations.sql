@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION inventory.upsert_organization(
     p_name TEXT,
     p_referent_id INT,
     p_address TEXT DEFAULT NULL,
-    p_person_ids INT[] DEFAULT '{}'
+    p_person_roles JSONB DEFAULT '[]'  -- [{"person_id":7,"role":"manager"}, ...]
 )
 RETURNS TABLE(
     id INT,
@@ -17,7 +17,9 @@ DECLARE
     v_org_id INT;
     v_existing_ids INT[];
     v_pid INT;
+    v_prole TEXT;
     v_referent_phone TEXT;
+    v_item JSONB;
 BEGIN
     -----------------------------------------------------------------------
     -- 1) Vérifier que le référent existe et possède un numéro de téléphone
@@ -36,7 +38,7 @@ BEGIN
     END IF;
 
     ----------------------------------------------------
-    -- 2) Upsert organisation (via SELECT + UPDATE/INSERT)
+    -- 2) Upsert organisation
     ----------------------------------------------------
     SELECT o.id
     INTO v_org_id
@@ -56,31 +58,31 @@ BEGIN
     END IF;
 
     ----------------------------------------------------
-    -- 3) Récupérer les liens existants
-    ----------------------------------------------------
-    SELECT array_agg(op.person_id)
-    INTO v_existing_ids
-    FROM inventory.organization_person AS op
-    WHERE op.organization_id = v_org_id;
-
-    ----------------------------------------------------
-    -- 4) Supprimer les liens absents dans p_person_ids
+    -- 3) Supprimer les liens absents
     ----------------------------------------------------
     DELETE FROM inventory.organization_person AS op
     WHERE op.organization_id = v_org_id
-      AND op.person_id NOT IN (SELECT UNNEST(p_person_ids));
+      AND op.person_id NOT IN (
+          SELECT (item->>'person_id')::INT
+          FROM jsonb_array_elements(p_person_roles) AS item
+      );
 
     ----------------------------------------------------
-    -- 5) Ajouter les nouveaux liens
+    -- 4) Ajouter / mettre à jour les liens avec rôle
     ----------------------------------------------------
-    FOREACH v_pid IN ARRAY p_person_ids LOOP
-        INSERT INTO inventory.organization_person (organization_id, person_id)
-        VALUES (v_org_id, v_pid)
-        ON CONFLICT (organization_id, person_id) DO NOTHING;
+    FOR v_item IN SELECT * FROM jsonb_array_elements(p_person_roles)
+    LOOP
+        v_pid := (v_item->>'person_id')::INT;
+        v_prole := v_item->>'role';
+
+        INSERT INTO inventory.organization_person (organization_id, person_id, role)
+        VALUES (v_org_id, v_pid, v_prole)
+        ON CONFLICT (organization_id, person_id)
+        DO UPDATE SET role = EXCLUDED.role;
     END LOOP;
 
     ----------------------------------------------------
-    -- 6) Retourner l’enregistrement final
+    -- 5) Retourner l’organisation
     ----------------------------------------------------
     RETURN QUERY
     SELECT o.id, o.name::TEXT, o.address::TEXT, o.referent_id

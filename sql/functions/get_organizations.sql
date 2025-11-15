@@ -2,23 +2,25 @@ CREATE OR REPLACE FUNCTION inventory.get_organizations()
 RETURNS TABLE(
     id TEXT,
     name TEXT,
+    address TEXT,
     referent_id TEXT,
     referent_first_name TEXT,
     referent_last_name TEXT,
-    referent_address TEXT,
     referent_phone TEXT,
     persons JSONB
 )
+LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 BEGIN
     RETURN QUERY
     SELECT
         o.id::TEXT,
         o.name::TEXT,
+        o.address::TEXT,
         o.referent_id::TEXT,
         pr.first_name::TEXT AS referent_first_name,
         pr.last_name::TEXT AS referent_last_name,
-        pr.address::TEXT AS referent_address,
         pr.phone::TEXT AS referent_phone,
         COALESCE(
             JSONB_AGG(
@@ -30,7 +32,7 @@ BEGIN
                     'phone', p.phone::TEXT,
                     'role', op.role::TEXT
                 )
-                ORDER BY p.last_name, p.first_name
+                ORDER BY p.first_name, p.last_name
             ) FILTER (WHERE p.id IS NOT NULL),
             '[]'::JSONB
         ) AS persons
@@ -41,4 +43,4 @@ BEGIN
     GROUP BY o.id, o.name, o.referent_id, pr.first_name, pr.last_name, pr.address, pr.phone
     ORDER BY o.name;
 END;
-$$ LANGUAGE plpgsql;
+$$;

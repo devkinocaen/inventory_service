@@ -326,7 +326,7 @@ async function loadOrganizations() {
   if (!client) client = await initClient();
   organizations = await fetchOrganizations(client);
   if (!orgSelect) return;
-
+console.log ('organizations', organizations)
   orgSelect.innerHTML = '<option value="">-- Choisir une organisation --</option>';
   organizations.forEach(org => {
     const opt = document.createElement('option');
@@ -389,36 +389,27 @@ async function saveOrganization() {
     return;
   }
 
-  // Ensure all visible rows with names are saved in DB (call upsertPerson for any row lacking dataset.personId)
+  // Collecte toutes les personnes visibles dans la liste
   const rows = Array.from(personList.querySelectorAll('.person-item'));
-  const personIds = [];
+  const persons = [];
 
   for (const row of rows) {
     const fn = row.querySelector('.person-firstname')?.value.trim() || '';
     const ln = row.querySelector('.person-lastname')?.value.trim() || '';
     const email = row.querySelector('.person-email')?.value.trim() || null;
     const phone = row.querySelector('.person-phone')?.value.trim() || null;
+    const role = row.querySelector('.person-role')?.value.trim() || null; // récupère le rôle
 
-    if (!fn || !ln) {
-      // ignore empty rows
-      continue;
-    }
+    if (!fn || !ln) continue; // ignore les lignes vides
 
-    if (row.dataset.personId) {
-      personIds.push(row.dataset.personId);
-    } else {
-      // create now
+    let personId = row.dataset.personId;
+
+    if (!personId) {
       try {
-        const saved = await upsertPerson(client, {
-          first_name: fn,
-          last_name: ln,
-          email,
-          phone,
-          address: null
-        });
-        if (saved && saved.id) {
-          row.dataset.personId = String(saved.id);
-          personIds.push(String(saved.id));
+        const saved = await upsertPerson(client, { first_name: fn, last_name: ln, email, phone, address: null });
+        if (saved?.id) {
+          personId = String(saved.id);
+          row.dataset.personId = personId;
         }
       } catch (err) {
         console.error('[saveOrganization] upsertPerson failed', err);
@@ -426,9 +417,10 @@ async function saveOrganization() {
         return;
       }
     }
+
+    persons.push({ id: Number(personId), role });
   }
 
-  // referent: we expect referent select value to be a person id (string) or empty
   const referentId = orgReferentSelect.value || null;
   if (!referentId) {
     alert('Le référent est obligatoire pour créer/modifier une organisation.');
@@ -439,21 +431,21 @@ async function saveOrganization() {
     id: selectedOrgId || null,
     name: orgNameInput.value.trim(),
     address: orgAddressInput.value.trim() || null,
-    referent_id: referentId,
-    person_ids: personIds
+    referent_id: Number(referentId),
+    persons // tableau { id, role }
   };
 
   try {
     const savedOrg = await upsertOrganization(client, orgData);
     console.log('Organisation enregistrée', savedOrg);
     await loadOrganizations();
-    closeOrgModal();
+   // closeOrgModal();
   } catch (err) {
     console.error('[upsertOrganization]', err);
-      alert(`❌ Impossible d’enregistrer :\n\n${err.message}`);
-
+    alert(`❌ Impossible d’enregistrer :\n\n${err.message}`);
   }
 }
+
 
 // -----------------------------
 // Supprimer organisation
@@ -476,7 +468,7 @@ async function confirmDeleteOrganization() {
       orgSelect.value = '';
     }
 
-    closeOrgModal();
+ //   closeOrgModal();
   } catch (err) {
     console.error('[deleteOrganization]', err);
     alert('Erreur lors de la suppression de l’organisation');
