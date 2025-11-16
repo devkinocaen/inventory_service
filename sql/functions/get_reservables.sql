@@ -11,7 +11,7 @@ RETURNS TABLE (
     id INT,
     name TEXT,
     description TEXT,
-    price_per_day NUMERIC(10,2),
+    price_per_day double precision,
     photos JSONB,
     gender inventory.reservable_gender,
     privacy inventory.privacy_type,
