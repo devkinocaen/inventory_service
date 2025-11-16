@@ -25,6 +25,8 @@ export { upsertCategory } from './upsertCategory.js';
 export { deleteCategory } from './deleteCategory.js';
 export { upsertSubcategory } from './upsertSubcategory.js';
 export { deleteSubcategory } from './deleteSubcategory.js';
+export { fetchSubcategoriesByCategory } from './fetchSubcategoriesByCategory.js';
+
 
 
 

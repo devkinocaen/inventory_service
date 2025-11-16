@@ -1,60 +1,168 @@
-/* 🔹 Base configuration session */
+/* === Base configuration page === */
 .config-session-page {
   font-family: Arial, sans-serif;
-}
-.config-session-container {
-  width: 100% !important;
-  max-width: 800px !important;  /* ou la largeur que tu veux */
-  box-sizing: border-box !important;
+  background: #f5f5f5;
+  padding: 20px;
+  color: #333;
 }
 
-/* === Fix alignement config-row === */
-.config-row {
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  margin-bottom: 1em !important;
+.config-session-container {
+  max-width: 1200px;
+  margin: auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* === Titres et sections === */
+h2 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  border-left: 4px solid #888;
+  padding-left: 10px;
+}
+
+h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+hr {
+  margin: 25px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+
+/* === Row flex === */
+.config-row,
+.horizontal-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1em;
 }
 
 .config-row label {
-  display: block !important;
-  flex: 0 0 180px !important;
-  text-align: right !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  line-height: 1.2 !important;
+  flex: 0 0 150px;
+  text-align: right;
+  white-space: nowrap;
 }
 
-.config-row select {
-  flex: 0 0 250px !important;
-  height: 36px !important;
-  padding: 0 8px !important;
-  box-sizing: border-box !important;
+.config-row input,
+.config-row select,
+.horizontal-row select {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
 }
 
-.config-row .edit-button {
-  flex-shrink: 0 !important;
-  height: 36px !important;
+.horizontal-row button {
+  flex-shrink: 0;
 }
 
-/* 🔹 Facultatif : pour bien isoler les autres labels en dehors des .config-row */
-body.config-session-page > label {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
+/* === Boutons === */
+.record-button {
+  background-color: #2196f3;
+  color: white;
+  border: 1px solid #1976d2;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.record-button:hover {
+  background-color: #0b79d0;
 }
 
-
-.config-session-page .config-row .edit-button {
-  background-color: #4caf50 !important;
-  color: white !important;
-  border: 1px solid #ccc !important;
+.danger-button {
+  background-color: #c62828;
+  color: white;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.danger-button:hover {
+  background-color: #a71d1d;
 }
 
-.config-session-page .config-row .record-button {
-  background-color: #2196f3 !important;
-  color: white !important;
-  border: 1px solid #1976d2 !important;
+.edit-button {
+  background-color: #4caf50;
+  color: white;
+  border: 1px solid #3e8e41;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.edit-button:hover {
+  background-color: #388e3c;
 }
 
+/* === Inputs readonly === */
+.readonly-input {
+  background: #eee;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* === Styles / Catégories / Sous-catégories === */
+.section-box {
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.15);
+  margin-bottom:25px;
+}
+
+.three-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+
+.list-block {
+  background:#fafafa;
+  border:1px solid #ddd;
+  padding:10px;
+  border-radius:10px;
+  min-height:120px;
+  max-height:250px;
+  overflow-y:auto;
+}
+
+.item {
+  display:flex;
+  align-items:center;
+  padding:6px 8px;
+  background:#fff;
+  border-radius:6px;
+  border:1px solid #ccc;
+  margin-top:6px;
+  cursor:pointer;
+}
+
+.item span { flex:1; }
+
+.item.selected {
+  background:#0b79d0;
+  color:white;
+}
+
+/* === Inputs & buttons inside section-box === */
+.section-box input[type="text"] {
+  padding:6px 10px;
+  border-radius:6px;
+  border:1px solid #999;
+  width:100%;
+  box-sizing:border-box;
+  margin-bottom:6px;
+}
+
+.section-box button {
+  margin-bottom:6px;
+}

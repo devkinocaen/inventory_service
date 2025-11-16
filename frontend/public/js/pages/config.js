@@ -3,6 +3,16 @@ import { initClient } from '../libs/client.js';
 import {
     fetchAppConfig,
     upsertAppConfig,
+    fetchStyles,
+    upsertStyle,
+    deleteStyle,
+    fetchCategories,
+    upsertCategory,
+    deleteCategory,
+    fetchSubcategories,
+    fetchSubcategoriesByCategory,
+    upsertSubcategory,
+    deleteSubcategory
 } from '../libs/sql/index.js';
 
 import { setStatusMsg,
@@ -261,3 +271,144 @@ export function cleanup() {
 
 }
 
+
+
+// 🔹 Gestion Styles / Catégories / Sous-catégories
+const styleInput = document.getElementById('styleInput');
+const btnAddStyle = document.getElementById('btnAddStyle');
+const styleList = document.getElementById('styleList');
+
+const categoryInput = document.getElementById('categoryInput');
+const btnAddCategory = document.getElementById('btnAddCategory');
+const categoryList = document.getElementById('categoryList');
+
+const subCategoryInput = document.getElementById('subCategoryInput');
+const btnAddSubCategory = document.getElementById('btnAddSubCategory');
+const subCategoryList = document.getElementById('subCategoryList');
+
+let styles = [];
+let categories = [];
+let subCategories = {}; // { categoryId: [subcat,...] }
+let selectedCategoryId = null;
+
+// --- Render functions ---
+function renderStyles() {
+    styleList.innerHTML = '';
+    styles.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.textContent = s.name;
+        div.onclick = async () => {
+            if (confirm(`Supprimer le style "${s.name}" ?`)) {
+                try {
+                    await deleteStyle(client, s.id);
+                    await loadStyles();
+                } catch (err) {
+                    alert(`Erreur suppression style: ${formatServerError(err)}`);
+                }
+            }
+        };
+        styleList.appendChild(div);
+    });
+}
+
+function renderCategories() {
+    categoryList.innerHTML = '';
+    categories.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'item' + (selectedCategoryId === c.id ? ' selected' : '');
+        div.textContent = c.name;
+        div.onclick = async () => {
+            selectedCategoryId = c.id;
+            await loadSubCategories(c.id);
+            renderCategories();
+        };
+        categoryList.appendChild(div);
+    });
+}
+
+function renderSubCategories() {
+    subCategoryList.innerHTML = '';
+    if (!selectedCategoryId) {
+        subCategoryList.innerHTML = '<i>Sélectionnez une catégorie</i>';
+        return;
+    }
+    const list = subCategories[selectedCategoryId] || [];
+    list.forEach(sc => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.textContent = sc.name;
+        div.onclick = async () => {
+            if (confirm(`Supprimer la sous-catégorie "${sc.name}" ?`)) {
+                try {
+                    await deleteSubcategory(client, sc.id);
+                    await loadSubCategories(selectedCategoryId);
+                } catch (err) {
+                    alert(`Erreur suppression sous-catégorie: ${formatServerError(err)}`);
+                }
+            }
+        };
+        subCategoryList.appendChild(div);
+    });
+}
+
+// --- Load data ---
+async function loadStyles() {
+    styles = await fetchStyles(client);
+    renderStyles();
+}
+
+async function loadCategories() {
+    categories = await fetchCategories(client);
+    renderCategories();
+}
+
+async function loadSubCategories(categoryId) {
+    subCategories[categoryId] = await fetchSubcategoriesByCategory(client, categoryId);
+    renderSubCategories();
+}
+
+// --- Event listeners ---
+btnAddStyle.onclick = async () => {
+    const name = styleInput.value.trim();
+    if (!name) return;
+    try {
+        await upsertStyle(client, { name });
+        styleInput.value = '';
+        await loadStyles();
+    } catch (err) {
+        alert(`Erreur ajout style: ${formatServerError(err)}`);
+    }
+};
+
+btnAddCategory.onclick = async () => {
+    const name = categoryInput.value.trim();
+    if (!name) return;
+    try {
+        const newCat = await upsertCategory(client, { name });
+        categoryInput.value = '';
+        await loadCategories();
+    } catch (err) {
+        alert(`Erreur ajout catégorie: ${formatServerError(err)}`);
+    }
+};
+
+btnAddSubCategory.onclick = async () => {
+    if (!selectedCategoryId) {
+        alert('❌ Sélectionnez d’abord une catégorie');
+        return;
+    }
+    const name = subCategoryInput.value.trim();
+    if (!name) return;
+    try {
+        await upsertSubcategory(client, { categoryId: selectedCategoryId, name });
+        subCategoryInput.value = '';
+        await loadSubCategories(selectedCategoryId);
+    } catch (err) {
+        alert(`Erreur ajout sous-catégorie: ${formatServerError(err)}`);
+    }
+};
+
+// --- Initial load ---
+await loadStyles();
+await loadCategories();
