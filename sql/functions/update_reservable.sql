@@ -10,11 +10,11 @@ CREATE OR REPLACE FUNCTION inventory.update_reservable(
     p_size TEXT DEFAULT NULL,
     p_gender inventory.reservable_gender DEFAULT NULL,
     p_privacy inventory.privacy_type DEFAULT NULL,
-    p_price_per_day NUMERIC(10,2) DEFAULT NULL,
+    p_price_per_day double precision DEFAULT NULL,
     p_description TEXT DEFAULT NULL,
     p_photos JSONB DEFAULT NULL,
-    p_rstatus inventory.reservable_status DEFAULT NULL,
-    p_qstatus inventory.reservable_quality DEFAULT NULL
+    p_status inventory.reservable_status DEFAULT NULL,
+    p_quality inventory.reservable_quality DEFAULT NULL
 )
 RETURNS VOID
 LANGUAGE plpgsql
@@ -35,8 +35,8 @@ BEGIN
         price_per_day = COALESCE(p_price_per_day, price_per_day),
         description = COALESCE(p_description, description),
         photos = COALESCE(p_photos, photos),
-        rstatus = COALESCE(p_rstatus, rstatus),
-        qstatus = COALESCE(p_qstatus, qstatus)
+        status = COALESCE(p_status, status),
+        quality = COALESCE(p_quality, quality)
     WHERE id = p_id;
 END;
 $$;

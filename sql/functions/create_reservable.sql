@@ -9,7 +9,7 @@ CREATE OR REPLACE FUNCTION inventory.create_reservable(
     p_size TEXT DEFAULT '',
     p_gender inventory.reservable_gender DEFAULT 'unisex',
     p_privacy inventory.privacy_type DEFAULT 'private',
-    p_price_per_day NUMERIC(10,2) DEFAULT 0,
+    p_price_per_day double precision DEFAULT 0,
     p_description TEXT DEFAULT '',
     p_photos JSONB DEFAULT '[]'::jsonb,
     p_rstatus inventory.reservable_status DEFAULT 'disponible',

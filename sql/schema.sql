@@ -130,7 +130,7 @@ CREATE TABLE inventory.reservable (
     size TEXT DEFAULT '',
     gender inventory.reservable_gender DEFAULT 'unisex',
     privacy inventory.privacy_type DEFAULT 'private',
-    price_per_day NUMERIC(10,2) DEFAULT 0,
+    price_per_day double precision DEFAULT 0,
     description TEXT DEFAULT '',
     photos JSONB DEFAULT '[]'::jsonb
 );

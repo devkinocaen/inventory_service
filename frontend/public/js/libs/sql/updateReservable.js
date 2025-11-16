@@ -18,8 +18,8 @@ export async function updateReservable(client, {
   price_per_day = null,
   description = null,
   photos = null,
-  rstatus = null,
-  qstatus = null
+  status = null,
+  quality = null
 }) {
   const { data, error } = await client.rpc('update_reservable', {
     p_id: id,
@@ -33,11 +33,11 @@ export async function updateReservable(client, {
     p_size: size,
     p_gender: gender,
     p_privacy: privacy,
-    p_price_per_day: price_per_day,
+    p_price_per_day: price_per_day != null ? Number(price_per_day) : null,
     p_description: description,
     p_photos: photos,
-    p_rstatus: rstatus,
-    p_qstatus: qstatus
+    p_status: status,
+    p_quality: quality
   });
 
   if (error) {
