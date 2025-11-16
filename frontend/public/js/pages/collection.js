@@ -251,6 +251,7 @@ export async function init() {
     const itemsForModal = selectedItems.map(id => {
       const item = currentItems.find(i => i.id === id);
       return item ? {
+        id: item.id,              // indispensable
         name: item.name,
         category_name: item.category_name,
         photos: item.photos
@@ -261,6 +262,7 @@ export async function init() {
       start: currentFilterStart,
       end: currentFilterEnd
     });
+
   });
 
   orgToggle.addEventListener('click', async () => {

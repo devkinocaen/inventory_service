@@ -245,51 +245,27 @@ export function decodeUnicode(str) {
   
   return str;
 }
-
-
-// Fonction principale pour formater les erreurs du serveur
+           
+// Fonction pour formater proprement les erreurs serveur
 export function formatServerError(err) {
-  if (!err) return 'Erreur inconnue';
+ if (!err) return 'Erreur inconnue';
 
-  let msg = '';
+ // Si c'est un objet
+ if (typeof err === 'object') {
+   // Cas classique pour ton RPC backend
+   if (err.detail) return err.detail.split('\n')[0]; // première ligne seulement
+   if (err.error) return err.error.split('\n')[0];
+   if (err.message) return err.message.split('\n')[0];
 
-  try {
-    let jsonPart = null;
+   // Si rien de connu, stringify
+       console.log ('stringify', err)
+   return JSON.stringify(err);
+ }
 
-    // Chercher le JSON dans la chaîne
-    if (err.message) {
-      const match = err.message.match(/\{.*\}/s);
-      if (match) jsonPart = match[0];
-    }
-
-    let parsed = null;
-    if (jsonPart) {
-      try {
-        parsed = JSON.parse(jsonPart);
-      } catch {
-        parsed = null;
-      }
-    }
-
-    if (parsed && parsed.error) {
-      msg = parsed.error.split('\n')[0]; // garder juste la première ligne
-    } else if (err.error) {
-      msg = err.error;
-    } else if (typeof err === 'string') {
-      msg = err;
-    } else {
-      msg = JSON.stringify(err);
-    }
-
-    // Décoder les séquences Unicode et les sauts de ligne
-    msg = decodeUnicode(msg);
-
-  } catch (e) {
-    msg = 'Erreur inconnue';
-  }
-
-  return msg;
+ // Si c'est déjà une string
+ return err.toString().split('\n')[0];
 }
+
 
 export function formatPhoneNumber(phone_number) {
     if (!phone_number) return "";

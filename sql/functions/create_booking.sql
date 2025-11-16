@@ -7,23 +7,33 @@ CREATE OR REPLACE FUNCTION inventory.create_booking(
     p_pickup_person_id       INTEGER DEFAULT NULL,
     p_booking_reference_id   INTEGER DEFAULT NULL
 )
-RETURNS inventory.reservable_booking
+RETURNS TABLE (
+    id                     INTEGER,
+    reservable_batch_id    INTEGER,
+    renter_organization_id INTEGER,
+    booking_person_id      INTEGER,
+    pickup_person_id       INTEGER,
+    return_person_id       INTEGER,
+    booking_reference_id   INTEGER,
+    start_date             TIMESTAMP,
+    end_date               TIMESTAMP,
+    period                 TEXT
+)
 LANGUAGE plpgsql
 VOLATILE
 SECURITY DEFINER
 AS $$
-DECLARE
-    new_row inventory.reservable_booking;
 BEGIN
+    RETURN QUERY
     INSERT INTO inventory.reservable_booking (
         reservable_batch_id,
         renter_organization_id,
-        booking_person,
-        pickup_person,
-        return_person,
+        booking_person_id,
+        pickup_person_id,
+        return_person_id,
         start_date,
         end_date,
-        booking_reference
+        booking_reference_id
     )
     VALUES (
         p_reservable_batch_id,
@@ -35,9 +45,17 @@ BEGIN
         p_end_date,
         p_booking_reference_id
     )
-    RETURNING * INTO new_row;
-
-    RETURN new_row;
+    RETURNING
+        reservable_booking.id,
+        reservable_booking.reservable_batch_id,
+        reservable_booking.renter_organization_id,
+        reservable_booking.booking_person_id,
+        reservable_booking.pickup_person_id,
+        reservable_booking.return_person_id,
+        reservable_booking.booking_reference_id,
+        reservable_booking.start_date,
+        reservable_booking.end_date,
+        tsrange(reservable_booking.start_date, reservable_booking.end_date)::text AS period;
 
 EXCEPTION WHEN OTHERS THEN
     RAISE;

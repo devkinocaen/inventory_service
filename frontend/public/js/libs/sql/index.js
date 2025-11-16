@@ -18,6 +18,8 @@ export { deletePerson } from './deletePerson.js';
 export { deleteOrganization } from './deleteOrganization.js';
 export { isAvailable } from './isAvailable.js';
 export { createReservableBatch } from './createReservableBatch.js';
+export { upsertBookingReference } from './upsertBookingReference.js';
+
 
 
 

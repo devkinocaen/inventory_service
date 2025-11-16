@@ -2,7 +2,8 @@ import { initClient } from '../libs/client.js';
 import {
   fetchOrganizations,
   createReservableBatch,
-  createBooking
+  upsertBookingReference,
+  createBooking,
 } from '../libs/sql/index.js';
 import { isAvailable } from '../libs/sql/isAvailable.js';
 import { formatServerError, formatDateForDatetimeLocal } from '../libs/helpers.js';
@@ -187,51 +188,76 @@ function updateBookingPersons() {
 }
                        
 // -----------------------------
-// Validation réservation
+// Validation réservation avec création automatique de booking_reference
 // -----------------------------
 async function handleBookingValidate() {
- try {
-   const orgId = parseInt(orgSelect.value);
-   const bookingPersonId = parseInt(bookingPersonSelect.value); // booking person
-   const startDate = startDateInput.value;
-   const endDate = endDateInput.value;
+  try {
+    const orgId = parseInt(orgSelect.value);
+    const bookingPersonId = parseInt(bookingPersonSelect.value);
+    const startDate = startDateInput.value;
+    const endDate = endDateInput.value;
 
-   if (!orgId || !bookingPersonId || !startDate || !endDate) {
-     alert('Veuillez remplir toutes les informations obligatoires');
-     return;
-   }
+    if (!orgId || !bookingPersonId || !startDate || !endDate) {
+      alert('Veuillez remplir toutes les informations obligatoires');
+      return;
+    }
 
-   // Vérification disponibilité de chaque item
-   for (const item of bookingItems) {
-     const available = await isAvailable(client, item.id, startDate, endDate);
-     if (!available) {
-       alert(`L’article "${item.name}" n’est pas disponible sur cette période.`);
-       return;
-     }
-   }
+    // Vérification disponibilité de chaque item
+    for (const item of bookingItems) {
+      const available = await isAvailable(client, item.id, startDate, endDate);
+      if (!available) {
+        alert(`L’article "${item.name}" n’est pas disponible sur cette période.`);
+        return;
+      }
+    }
 
-   // Création du batch
-   const batch = await createReservableBatch(client, bookingItems.map(i => i.id));
+    // Création du batch
+    const batchRes = await createReservableBatch(client, bookingItems.map(i => i.id));
+    let batchId;
+    if (Array.isArray(batchRes)) {
+      if (!batchRes.length || !batchRes[0].id) {
+        throw new Error('Batch créé invalide : aucun ID reçu');
+      }
+      batchId = batchRes[0].id;
+    } else if (batchRes && batchRes.id) {
+      batchId = batchRes.id;
+    } else {
+      throw new Error('Batch créé invalide : aucun ID reçu');
+    }
 
-   // Détermine le pickupPerson : si "immediate checkout" coché, c'est bookingPerson
-   const immediateCheckout = document.getElementById('immediate_checkout')?.checked ?? false;
-   const pickupPersonId = immediateCheckout ? bookingPersonId : null;
+    console.log('[Booking Modal] Batch créé avec ID :', batchId);
 
-   // Création de la réservation
-   await createBooking(client, {
-     p_reservable_batch_id: batch.id,
-     p_renter_organization_id: orgId,
-     p_booking_person_id: bookingPersonId,
-     p_start_date: startDate,
-     p_end_date: endDate,
-     p_pickup_person_id: pickupPersonId,
-     p_booking_reference_id: null
-   });
+    // Création ou récupération de la booking reference via la lib
+    const bookingReference = await upsertBookingReference(client, {
+      name: 'LOCATION',
+      description: ''
+    });
+    const bookingReferenceId = bookingReference.id;
 
-   alert('Réservation créée avec succès !');
-   closeBookingModal();
- } catch (err) {
-   console.error('[Booking Modal] Erreur création réservation :', err);
-   alert(`Erreur : ${formatServerError(err.message || err)}`);
- }
+    console.log('[Booking Modal] Booking reference ID :', bookingReferenceId);
+
+    // Détermine le pickupPerson : si "immediate checkout" coché, c'est bookingPerson
+    const immediateCheckout = document.getElementById('immediate_checkout')?.checked ?? false;
+    const pickupPersonId = immediateCheckout ? bookingPersonId : null;
+
+    // Création de la réservation
+    const booking = await createBooking(client, {
+      p_reservable_batch_id: batchId,
+      p_renter_organization_id: orgId,
+      p_booking_person_id: bookingPersonId,
+      p_start_date: startDate,
+      p_end_date: endDate,
+      p_pickup_person_id: pickupPersonId,
+      p_booking_reference_id: bookingReferenceId
+    });
+
+    console.log('[Booking Modal] Réservation créée :', booking);
+
+    alert('Réservation créée avec succès !');
+    closeBookingModal();
+
+  } catch (err) {
+    console.error('[Booking Modal] Erreur création réservation :', err);
+    alert(`Erreur : ${formatServerError(err.message || err)}`);
+  }
 }
