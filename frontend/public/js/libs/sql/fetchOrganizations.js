@@ -1,5 +1,5 @@
 export async function fetchOrganizations(client) {
-    console.log ('client', client)
+ 
   const { data, error } = await client.rpc('get_organizations', {});
   if (error) {
     console.error('[fetchOrganizations] Erreur serveur :', error);

@@ -47,3 +47,44 @@ tr:nth-child(even) {
 .search-bar {
   margin-bottom: 10px;
 }
+
+/* Styles pour les boutons du tableau */
+#stock_table button {
+  padding: 4px 8px;
+  margin: 0 2px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.2s, border 0.2s;
+}
+
+/* Photos */
+#stock_table .btn-photos {
+  background-color: #4caf50;
+  color: white;
+}
+
+#stock_table .btn-photos:hover {
+  background-color: #45a049;
+}
+
+/* Editer */
+#stock_table .btn-edit {
+  background-color: #2196f3;
+  color: white;
+}
+
+#stock_table .btn-edit:hover {
+  background-color: #1976d2;
+}
+
+/* Supprimer */
+#stock_table .btn-delete {
+  background-color: #f44336;
+  color: white;
+}
+
+#stock_table .btn-delete:hover {
+  background-color: #d32f2f;
+}

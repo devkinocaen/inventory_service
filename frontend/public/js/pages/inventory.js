@@ -1,12 +1,20 @@
-// js/pages/inventory.js
-
-import { fetchReservables } from '../libs/sql/index.js'; // ta fonction côté backend
-import {formatServerError } from '../libs/helpers.js'
+import { fetchReservables } from '../libs/sql/index.js';
+import { formatServerError } from '../libs/helpers.js';
 import { initClient } from '../libs/client.js';
 
 const client = await initClient();
-
 let currentItems = [];
+
+// ========== Utilitaire pour afficher le genre ==========
+function displayGender(value) {
+  if (!value) return '';
+  switch (value.toLowerCase()) {
+    case 'male': return 'Homme';
+    case 'female': return 'Femme';
+    case 'unisex': return 'Unisexe';
+    default: return value;
+  }
+}
 
 // ========== Rendu du tableau ==========
 function renderStockTable(items) {
@@ -18,13 +26,26 @@ function renderStockTable(items) {
 
   items.forEach(item => {
     const tr = document.createElement('tr');
+
+    // Styles : tableau N:N -> liste de noms séparés par virgule
+    const stylesList = item.style_names?.join(', ') || '';
+
     tr.innerHTML = `
-      <td>${item.name}</td>
-      <td>${item.type_name || ''}</td>
-      <td>${item.owner_name || ''}</td>
-      <td>${item.manager_name || ''}</td>
-      <td>${item.status_name || ''}</td>
+      <td>${item.name || ''}</td>
+      <td>${item.size || ''}</td>
+      <td>${item.description || ''}</td>
+      <td>${displayGender(item.gender)}</td>
+      <td>${item.price_per_day != null ? item.price_per_day.toFixed(2) : ''}</td>
+      <td>${item.status || ''}</td>
+      <td>${item.quality || ''}</td>
+      <td>${item.category_name || ''}</td>
+      <td>${item.subcategory_name || ''}</td>
+      <td>${stylesList}</td>
+      <td><button class="btn-photos" data-id="${item.id}">Voir</button></td>
+      <td><button class="btn-edit" data-id="${item.id}">Editer</button></td>
+      <td><button class="btn-delete" data-id="${item.id}">Supprimer</button></td>
     `;
+
     tbody.appendChild(tr);
   });
 }
@@ -48,9 +69,7 @@ function setupLookupFilter() {
 // ========== Initialisation ==========
 export async function init() {
   try {
-      
     const items = await fetchReservables(client);
-      
     renderStockTable(items);
     setupLookupFilter();
   } catch (err) {
