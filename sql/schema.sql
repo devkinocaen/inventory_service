@@ -97,18 +97,18 @@ CREATE TABLE inventory.reservable_subcategory (
 -- ===========================
 -- Tailles
 -- ===========================
-CREATE TABLE inventory.size_type (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
-);
+--CREATE TABLE inventory.size_type (
+--    id SERIAL PRIMARY KEY,
+--    name TEXT NOT NULL UNIQUE
+--);
 
-CREATE TABLE inventory.size (
-    id SERIAL PRIMARY KEY,
-    size_type_id INT NOT NULL REFERENCES inventory.size_type(id),
-    label TEXT NOT NULL,
-    description TEXT DEFAULT '',
-    UNIQUE(size_type_id, label)
-);
+--CREATE TABLE inventory.size (
+--    id SERIAL PRIMARY KEY,
+--    size_type_id INT NOT NULL REFERENCES inventory.size_type(id),
+--    label TEXT NOT NULL,
+--    description TEXT DEFAULT '',
+--    UNIQUE(size_type_id, label)
+--);
 
 -- ===========================
 -- Objets réservable
@@ -123,7 +123,7 @@ CREATE TABLE inventory.reservable (
     storage_location_id INT REFERENCES inventory.storage_location(id),
     category_id INT REFERENCES inventory.reservable_category(id),
     subcategory_id INT REFERENCES inventory.reservable_subcategory(id),
-    size_id INT REFERENCES inventory.size(id),
+    size TEXT DEFAULT '',
     gender inventory.reservable_gender DEFAULT 'unisex',
     privacy inventory.privacy_type DEFAULT 'private',
     price_per_day NUMERIC(10,2) DEFAULT 0,

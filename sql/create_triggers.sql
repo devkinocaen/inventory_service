@@ -7,8 +7,6 @@ DECLARE
     'reservable',
     'booking_reference',
     'reservable_style',
-    'size',
-    'size_type',
     'reservable_subcategory',
     'reservable_category',
     'reservable_batch',

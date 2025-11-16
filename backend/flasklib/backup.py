@@ -85,19 +85,20 @@ def register_routes(app):
             dump_file = f"/tmp/{BACKUP_PREFIX}_{database_id}_{ts}.sql"
 
             tables = [
-                "inventory.reservable_booking",
-                "inventory.reservable_style_link",
-                "inventory.reservable",
-                "inventory.booking_reference",
-                "inventory.reservable_style",
-                "inventory.size",
-                "inventory.size_type",
-                "inventory.reservable_subcategory",
-                "inventory.reservable_category",
-                "inventory.organization",
-                "inventory.person",
-                "inventory.storage_location",
-                "inventory.app_config"
+                "inventory.reservable_booking",       # dépend de reservable_batch, reservable, organization, person, booking_reference
+                "inventory.reservable_batch_link",    # dépend de reservable_batch, reservable
+                "inventory.reservable_style_link",    # dépend de reservable_style, reservable
+                "inventory.reservable",               # dépend de category, subcategory, organization, storage_location
+                "inventory.booking_reference",        # indépendant
+                "inventory.reservable_style",         # indépendant
+                "inventory.reservable_subcategory",   # dépend de category
+                "inventory.reservable_category",      # indépendant
+                "inventory.reservable_batch",         # indépendant
+                "inventory.organization_person",      # dépend de organization, person
+                "inventory.organization",             # dépend de person (via referent_id)
+                "inventory.person",                   # indépendant
+                "inventory.storage_location",         # indépendant
+                "inventory.app_config"                # indépendant
             ]
 
 

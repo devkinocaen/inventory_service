@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Exemple Styles / Catégories / Sous-catégories</title>
+<style>
+body { font-family:sans-serif; margin:0; background:#f5f5f5; padding:20px;}
+.container { max-width:1200px; margin:auto;}
+.section-box { background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.15); margin-bottom:25px;}
+h2 { margin-top:40px; border-left:4px solid #888; padding-left:10px;}
+h3 { margin-top:0; margin-bottom:10px;}
+button { padding:6px 12px; border:none; border-radius:6px; cursor:pointer;}
+.record-button { background:#0b79d0; color:white;}
+.danger-button { background:#c62828; color:white;}
+.small-btn { padding:2px 6px; font-size:0.8em; }
+input[type="text"], select { padding:6px 10px; border-radius:6px; border:1px solid #999; width:100%; box-sizing:border-box;}
+.three-columns { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+.list-block { background:#fafafa; border:1px solid #ddd; padding:10px; border-radius:10px; min-height:100px;}
+.item { display:flex; align-items:center; padding:6px 8px; background:#fff; border-radius:6px; border:1px solid #ccc; margin-top:6px; cursor:pointer; }
+.item span { flex:1; }
+.item.selected { background:#0b79d0; color:white; }
+.readonly-input { background:#eee; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- BACKUPS SECTION -->
+  <h2>Gestion des backups et restauration</h2>
+  <div class="section-box">
+    <div style="display:flex; gap:20px; align-items:center;">
+      <label>Version application :</label>
+      <input class="readonly-input" readonly value="1.0.0">
+      <label>Version schéma :</label>
+      <input class="readonly-input" readonly value="2.5">
+    </div>
+    <div style="margin-top:15px; display:flex; gap:15px; align-items:center;">
+      <button class="record-button">Créer un backup</button>
+      <p id="backupStatus"></p>
+    </div>
+    <div style="margin-top:15px; display:flex; gap:15px; align-items:center;">
+      <select>
+        <option>backup_2025_01_10.sql</option>
+        <option>backup_2025_01_15.sql</option>
+      </select>
+      <button class="danger-button">Restaurer</button>
+    </div>
+  </div>
+
+  <!-- STYLES / CATEGORIES / SOUS-CATEGORIES -->
+  <h2>Styles, Catégories & Sous-catégories</h2>
+  <div class="section-box three-columns">
+
+    <!-- Styles -->
+    <div>
+      <h3>Styles</h3>
+      <input type="text" id="styleInput" placeholder="Ajouter un style...">
+      <button class="record-button" onclick="addStyle()">Ajouter</button>
+      <div id="styleList" class="list-block"></div>
+    </div>
+
+    <!-- Catégories -->
+    <div>
+      <h3>Catégories</h3>
+      <input type="text" id="categoryInput" placeholder="Ajouter une catégorie...">
+      <button class="record-button" onclick="addCategory()">Ajouter</button>
+      <div id="categoryList" class="list-block"></div>
+    </div>
+
+    <!-- Sous-catégories -->
+    <div>
+      <h3>Sous-catégories</h3>
+      <input type="text" id="subCategoryInput" placeholder="Ajouter une sous-catégorie...">
+      <button class="record-button" onclick="addSubCategory()">Ajouter</button>
+      <div id="subCategoryList" class="list-block"><i>Sélectionnez une catégorie</i></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const styles = [];
+const categories = [];
+const subCategories = {}; // clé = catégorie, valeur = tableau de sous-catégories
+let selectedCategory = null;
+
+// Ajout style
+function addStyle() {
+    const input = document.getElementById('styleInput');
+    const val = input.value.trim();
+    if (!val || styles.includes(val)) return;
+    styles.push(val);
+    input.value = '';
+    renderStyles();
+}
+
+function renderStyles() {
+    const container = document.getElementById('styleList');
+    container.innerHTML = '';
+    styles.forEach(style => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.textContent = style;
+        container.appendChild(div);
+    });
+}
+
+// Ajout catégorie
+function addCategory() {
+    const input = document.getElementById('categoryInput');
+    const val = input.value.trim();
+    if (!val || categories.includes(val)) return;
+    categories.push(val);
+    subCategories[val] = [];
+    input.value = '';
+    renderCategories();
+}
+
+function renderCategories() {
+    const container = document.getElementById('categoryList');
+    container.innerHTML = '';
+    categories.forEach(cat => {
+        const div = document.createElement('div');
+        div.className = 'item' + (selectedCategory === cat ? ' selected' : '');
+        div.textContent = cat;
+        div.onclick = () => {
+            selectedCategory = cat;
+            renderCategories();
+            renderSubCategories();
+        };
+        container.appendChild(div);
+    });
+}
+
+// Ajout sous-catégorie
+function addSubCategory() {
+    if (!selectedCategory) {
+        alert('Sélectionnez d’abord une catégorie');
+        return;
+    }
+    const input = document.getElementById('subCategoryInput');
+    const val = input.value.trim();
+    if (!val || subCategories[selectedCategory].includes(val)) return;
+    subCategories[selectedCategory].push(val);
+    input.value = '';
+    renderSubCategories();
+}
+
+function renderSubCategories() {
+    const container = document.getElementById('subCategoryList');
+    container.innerHTML = '';
+    if (!selectedCategory) {
+        container.innerHTML = '<i>Sélectionnez une catégorie</i>';
+        return;
+    }
+    subCategories[selectedCategory].forEach(sub => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.textContent = sub;
+        container.appendChild(div);
+    });
+}
+
+// Initialisation avec quelques exemples
+['Casual', 'Chic', 'Sport'].forEach(s => { styles.push(s); });
+['Hauts', 'Bas', 'Accessoires'].forEach(c => { categories.push(c); subCategories[c] = []; });
+subCategories['Hauts'] = ['T-shirt', 'Chemise', 'Pull'];
+subCategories['Bas'] = ['Jean', 'Pantalon', 'Short'];
+subCategories['Accessoires'] = ['Ceinture', 'Chapeau', 'Écharpe'];
+
+renderStyles();
+renderCategories();
+renderSubCategories();
+</script>
+
+
+</body>
+</html>

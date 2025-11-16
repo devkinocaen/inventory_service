@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION inventory.get_reservables(
     p_type inventory.reservable_type DEFAULT NULL,
     p_category_ids INT[] DEFAULT NULL,
     p_subcategory_ids INT[] DEFAULT NULL,
-    p_gender inventory.reservable_gender[] DEFAULT NULL, -- <- vecteur
+    p_gender inventory.reservable_gender[] DEFAULT NULL,
     p_style_ids INT[] DEFAULT NULL,
     p_start_date TIMESTAMP DEFAULT NULL,
     p_end_date TIMESTAMP DEFAULT NULL
@@ -31,8 +31,7 @@ RETURNS TABLE (
     owner_name TEXT,
     manager_id INT,
     manager_name TEXT,
-    size_id INT,
-    size_label TEXT,
+    size TEXT,
     style_ids INT[],
     style_names TEXT[]
 )
@@ -42,8 +41,8 @@ BEGIN
     RETURN QUERY
     SELECT
         r.id,
-        r.name::TEXT,
-        r.description::TEXT,
+        r.name,
+        r.description,
         r.price_per_day,
         r.photos,
         r.gender,
@@ -52,36 +51,34 @@ BEGIN
         NULL::INT AS type_id,
         r.inventory_type::TEXT AS type_name,
         r.category_id,
-        c.name::TEXT AS category_name,
+        c.name AS category_name,
         r.subcategory_id,
-        sc.name::TEXT AS subcategory_name,
+        sc.name AS subcategory_name,
         r.status,
         NULL::INT AS status_id,
         r.status::TEXT AS status_name,
         r.storage_location_id,
-        sl.name::TEXT AS storage_location_name,
+        sl.name AS storage_location_name,
         r.owner_id,
-        o.name::TEXT AS owner_name,
+        o.name AS owner_name,
         r.manager_id,
-        m.name::TEXT AS manager_name,
-        r.size_id,
-        s.label::TEXT AS size_label,
-        array_remove(array_agg(DISTINCT rsl.style_id), NULL) AS style_ids,
-        array_remove(array_agg(DISTINCT rs.name)::TEXT[], NULL) AS style_names
+        m.name AS manager_name,
+        r.size,
+        array_agg(DISTINCT rs.id) FILTER (WHERE rs.id IS NOT NULL) AS style_ids,
+        array_agg(DISTINCT rs.name) FILTER (WHERE rs.name IS NOT NULL) AS style_names
     FROM inventory.reservable r
     LEFT JOIN inventory.reservable_category c ON c.id = r.category_id
     LEFT JOIN inventory.reservable_subcategory sc ON sc.id = r.subcategory_id
     LEFT JOIN inventory.storage_location sl ON sl.id = r.storage_location_id
     LEFT JOIN inventory.organization o ON o.id = r.owner_id
     LEFT JOIN inventory.organization m ON m.id = r.manager_id
-    LEFT JOIN inventory.size s ON s.id = r.size_id
     LEFT JOIN inventory.reservable_style_link rsl ON rsl.reservable_id = r.id
     LEFT JOIN inventory.reservable_style rs ON rs.id = rsl.style_id
     WHERE
         (p_type IS NULL OR r.inventory_type = p_type)
         AND (p_category_ids IS NULL OR r.category_id = ANY(p_category_ids))
         AND (p_subcategory_ids IS NULL OR r.subcategory_id = ANY(p_subcategory_ids))
-        AND (p_gender IS NULL OR r.gender = ANY(p_gender)) -- <- comparaison tableau
+        AND (p_gender IS NULL OR r.gender = ANY(p_gender))
         AND (
             p_style_ids IS NULL
             OR EXISTS (
@@ -96,7 +93,11 @@ BEGIN
             OR p_end_date IS NULL
             OR inventory.is_available(r.id, p_start_date, p_end_date)
         )
-    GROUP BY r.id, c.name, sc.name, sl.name, o.name, m.name, s.label
+    GROUP BY r.id, r.name, r.description, r.price_per_day, r.photos,
+             r.gender, r.privacy, r.inventory_type, r.category_id,
+             c.name, r.subcategory_id, sc.name, r.status,
+             r.storage_location_id, sl.name, r.owner_id, o.name,
+             r.manager_id, m.name, r.size
     ORDER BY r.name;
 END;
 $$;

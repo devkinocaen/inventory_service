@@ -29,17 +29,6 @@ VALUES
   ('Maison de l''asso Kino Caen', '31 rue Norrey, 14000 Caen')
 ON CONFLICT (name) DO NOTHING;
 
--- ===========================================
--- Types de tailles
--- ===========================================
-INSERT INTO inventory.size_type (name)
-VALUES
-  ('Âge'),          -- bébé / 4 - 6 ans / 8 - 10 ans / adulte...
-  ('Vêtement EU'),  -- tailles standard européennes (36, 38, 40…)
-  ('Vêtement US'),  -- tailles US (XS, S, M, L…)
-  ('Chaussure EU'), -- pointure européenne
-  ('Chaussure US')  -- pointure américaine
-ON CONFLICT (name) DO NOTHING;
 
 -- ===========================================
 -- Styles visuels (époques principales et usages, centrés sur la France)

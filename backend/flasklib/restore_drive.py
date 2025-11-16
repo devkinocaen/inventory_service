@@ -26,13 +26,15 @@ RESTORE_ORDER = [
     # 🔹 Personnes et organisations
     "inventory.person",
     "inventory.organization",
+    "inventory.organization_person",
 
     # 🔹 Stockage
     "inventory.storage_location",
 
     # 🔹 Styles et tailles
-    "inventory.size_type",
-    "inventory.size",
+    # size_type et size sont désactivés, on les laisse commentés si non utilisés
+    # "inventory.size_type",
+    # "inventory.size",
     "inventory.reservable_style",
 
     # 🔹 Catégories et sous-catégories
@@ -44,6 +46,8 @@ RESTORE_ORDER = [
 
     # 🔹 Liens N:N styles <-> objets
     "inventory.reservable_style_link",
+    "inventory.reservable_batch",
+    "inventory.reservable_batch_link",
 
     # 🔹 Références de booking
     "inventory.booking_reference",
@@ -56,6 +60,7 @@ RESTORE_ORDER = [
 TRUNCATE_ORDER = [
     # 🔹 Réservations et liens N:N
     "inventory.reservable_booking",
+    "inventory.reservable_batch_link",
     "inventory.reservable_style_link",
 
     # 🔹 Objets réservable
@@ -66,8 +71,8 @@ TRUNCATE_ORDER = [
 
     # 🔹 Styles et tailles
     "inventory.reservable_style",
-    "inventory.size",
-    "inventory.size_type",
+    # "inventory.size",
+    # "inventory.size_type",
 
     # 🔹 Catégories et sous-catégories
     "inventory.reservable_subcategory",
@@ -77,6 +82,7 @@ TRUNCATE_ORDER = [
     "inventory.storage_location",
 
     # 🔹 Organisations et personnes
+    "inventory.organization_person",
     "inventory.organization",
     "inventory.person",
 
@@ -89,16 +95,16 @@ SEQUENCES = [
     "app_config_id_seq",
     "person_id_seq",
     "organization_id_seq",
+    "organization_person_organization_id_seq",  # si nécessaire
+    "organization_person_person_id_seq",        # si nécessaire
     "storage_location_id_seq",
     "reservable_style_id_seq",
-    "size_type_id_seq",
-    "size_id_seq",
+    # "size_type_id_seq",
+    # "size_id_seq",
     "reservable_category_id_seq",
     "reservable_subcategory_id_seq",
-    "reservable_type_id_seq",
-    "reservable_status_id_seq",
+    "reservable_batch_id_seq",
     "reservable_id_seq",
-    "reservable_style_link_reservable_id_seq",  # si besoin
     "booking_reference_id_seq",
     "reservable_booking_id_seq"
 ]
