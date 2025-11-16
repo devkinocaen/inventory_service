@@ -19,7 +19,12 @@ export { deleteOrganization } from './deleteOrganization.js';
 export { isAvailable } from './isAvailable.js';
 export { createReservableBatch } from './createReservableBatch.js';
 export { upsertBookingReference } from './upsertBookingReference.js';
-
+export { upsertStyle } from './upsertStyle.js';
+export { deleteStyle } from './deleteStyle.js';
+export { upsertCategory } from './upsertCategory.js';
+export { deleteCategory } from './deleteCategory.js';
+export { upsertSubcategory } from './upsertSubcategory.js';
+export { deleteSubcategory } from './deleteSubcategory.js';
 
 
 
