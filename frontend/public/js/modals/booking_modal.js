@@ -4,9 +4,15 @@ import {
   createReservableBatch,
   upsertBookingReference,
   createBooking,
+  isAvailable
 } from '../libs/sql/index.js';
-import { isAvailable } from '../libs/sql/isAvailable.js';
-import { formatServerError, formatDateForDatetimeLocal } from '../libs/helpers.js';
+ 
+import {
+    formatServerError,
+    formatDateForDatetimeLocal,
+    roundDateByMinute
+} from '../libs/helpers.js';
+
 import { populateSelect } from '../libs/ui/populateSelect.js';
 
 let client;
@@ -180,12 +186,23 @@ function updateBookingPersons() {
   const orgId = parseInt(orgSelect.value);
   const org = organizations.find(o => o.id === orgId);
 
+  if (!org) {
+    console.warn('[Booking Modal] Organisation introuvable pour id:', orgId);
+    populateSelect(bookingPersonSelect, [], null, {
+      labelField: (p) => `${p.first_name} ${p.last_name}${p.role ? ` (${p.role})` : ''}`,
+      placeholder: '-- Choisir la personne de retrait --',
+      disablePlaceholder: true
+    });
+    return;
+  }
+
   populateSelect(bookingPersonSelect, org.persons || [], org.referent_id, {
     labelField: (p) => `${p.first_name} ${p.last_name}${p.role ? ` (${p.role})` : ''}`,
     placeholder: '-- Choisir la personne de retrait --',
     disablePlaceholder: true
   });
 }
+
                        
 // -----------------------------
 // Validation réservation avec création automatique de booking_reference
