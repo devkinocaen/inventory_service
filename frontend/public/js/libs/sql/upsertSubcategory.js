@@ -1,8 +1,9 @@
-export async function upsertSubcategory(client, { id = null, categoryId, name }) {
+import { single } from '../helpers.js';
+
+export async function upsertSubcategory(client, { categoryId, name }) {
   if (!name) throw new Error('Le nom de la sous-catégorie est obligatoire');
   if (!categoryId) throw new Error('La catégorie parente est obligatoire');
   const { data, error } = await client.rpc('upsert_subcategory', {
-    p_subcategory_id: id,
     p_category_id: categoryId,
     p_name: name
   });
@@ -10,5 +11,5 @@ export async function upsertSubcategory(client, { id = null, categoryId, name })
     console.error('[upsertSubcategory] Erreur serveur :', error);
     throw error;
   }
-  return data?.[0] ?? null;
+  return single (data);
 }

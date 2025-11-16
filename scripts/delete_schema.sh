@@ -51,6 +51,7 @@ enums=(
     "privacy_type"
     "reservable_type"
     "reservable_status"
+    "reservable_quality"
 )
 
 for enum in "${enums[@]}"; do

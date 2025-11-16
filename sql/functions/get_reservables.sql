@@ -22,9 +22,8 @@ RETURNS TABLE (
     category_name TEXT,
     subcategory_id INT,
     subcategory_name TEXT,
-    status inventory.reservable_status,
-    status_id INT,
-    status_name TEXT,
+    status TEXT,
+    quality TEXT,
     storage_location_id INT,
     storage_location_name TEXT,
     owner_id INT,
@@ -41,31 +40,30 @@ BEGIN
     RETURN QUERY
     SELECT
         r.id,
-        r.name,
-        r.description,
+        r.name::text,
+        r.description::text,
         r.price_per_day,
         r.photos,
         r.gender,
         r.privacy,
         r.inventory_type,
         NULL::INT AS type_id,
-        r.inventory_type::TEXT AS type_name,
+        r.inventory_type::text AS type_name,
         r.category_id,
-        c.name AS category_name,
+        c.name::text AS category_name,
         r.subcategory_id,
-        sc.name AS subcategory_name,
-        r.status,
-        NULL::INT AS status_id,
-        r.status::TEXT AS status_name,
+        sc.name::text AS subcategory_name,
+        r.status::text AS status,
+        r.quality::text AS quality,
         r.storage_location_id,
-        sl.name AS storage_location_name,
+        sl.name::text AS storage_location_name,
         r.owner_id,
-        o.name AS owner_name,
+        o.name::text AS owner_name,
         r.manager_id,
-        m.name AS manager_name,
-        r.size,
+        m.name::text AS manager_name,
+        r.size::text,
         array_agg(DISTINCT rs.id) FILTER (WHERE rs.id IS NOT NULL) AS style_ids,
-        array_agg(DISTINCT rs.name) FILTER (WHERE rs.name IS NOT NULL) AS style_names
+        array_agg(DISTINCT rs.name::text) FILTER (WHERE rs.name IS NOT NULL) AS style_names
     FROM inventory.reservable r
     LEFT JOIN inventory.reservable_category c ON c.id = r.category_id
     LEFT JOIN inventory.reservable_subcategory sc ON sc.id = r.subcategory_id
@@ -95,7 +93,7 @@ BEGIN
         )
     GROUP BY r.id, r.name, r.description, r.price_per_day, r.photos,
              r.gender, r.privacy, r.inventory_type, r.category_id,
-             c.name, r.subcategory_id, sc.name, r.status,
+             c.name, r.subcategory_id, sc.name, r.status, r.quality,
              r.storage_location_id, sl.name, r.owner_id, o.name,
              r.manager_id, m.name, r.size
     ORDER BY r.name;

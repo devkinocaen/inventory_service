@@ -18,6 +18,9 @@ CREATE TYPE inventory.reservable_status AS ENUM (
     'disponible', 'indisponible', 'en réparation', 'perdu', 'hors service'
 );
 
+CREATE TYPE inventory.reservable_quality AS ENUM (
+    'neuf', 'bon état', 'abîmé', 'très abîmé', 'inutilisable'
+);
 -- ===========================
 -- Configuration globale
 -- ===========================
@@ -118,6 +121,7 @@ CREATE TABLE inventory.reservable (
     name VARCHAR(150) NOT NULL UNIQUE,
     inventory_type inventory.reservable_type NOT NULL,
     status inventory.reservable_status NOT NULL DEFAULT 'disponible',
+    quality inventory.reservable_quality NOT NULL DEFAULT 'bon état',
     owner_id INT REFERENCES inventory.organization(id) NOT NULL,
     manager_id INT REFERENCES inventory.organization(id) NOT NULL,
     storage_location_id INT REFERENCES inventory.storage_location(id),

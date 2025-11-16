@@ -1,23 +1,51 @@
 DO $$
 DECLARE
-    r RECORD;
-    i INT := 1;
-    v_owner INT;
-    v_manager INT;
-    v_cat_id INT;
-    v_subcat_id INT;
-    v_storage_id INT;
+    rec_temp RECORD;
+    row_index INT := 1;
+
+    -- Organisation / gestion
+    org_owner_id INT;
+    org_manager_id INT;
+
+    -- Stockage
+    storage_location_id INT;
+
+    -- Enums
+    enum_status inventory.reservable_status;
+    enum_quality inventory.reservable_quality;
+    enum_type inventory.reservable_type;
+    enum_gender inventory.reservable_gender;
+    enum_privacy inventory.privacy_type;
+
+    -- Catégories
+    category_id_var INT;
+    subcategory_id_var INT;
+
+    -- Styles
+    style_id INT;
+    style_ids INT[];
+    n_styles INT := 3; -- nombre de styles aléatoires à associer
+
+    -- Reservable inséré
+    inserted_reservable_id INT;
 BEGIN
-    -- fallback owner/manager : première organisation
-    SELECT id INTO v_owner FROM inventory.organization ORDER BY id LIMIT 1;
-    IF v_owner IS NULL THEN
+    -- Choisir au hasard une organisation existante
+    SELECT id INTO org_owner_id
+    FROM inventory.organization
+    ORDER BY random() LIMIT 1;
+
+    IF org_owner_id IS NULL THEN
         RAISE EXCEPTION 'Aucune organisation trouvée. Créez-en au moins une.';
     END IF;
-    v_manager := v_owner;
 
-    -- stockage par défaut
-    SELECT id INTO v_storage_id FROM inventory.storage_location ORDER BY id LIMIT 1;
-    IF v_storage_id IS NULL THEN
+    org_manager_id := org_owner_id;
+
+    -- Choisir au hasard un lieu de stockage existant
+    SELECT id INTO storage_location_id
+    FROM inventory.storage_location
+    ORDER BY random() LIMIT 1;
+
+    IF storage_location_id IS NULL THEN
         RAISE EXCEPTION 'Aucun lieu de stockage trouvé. Créez-en au moins un.';
     END IF;
 
@@ -27,45 +55,63 @@ BEGIN
     END IF;
 
     -- Boucle sur la table temporaire
-    FOR r IN SELECT * FROM reservable_temp_raw LOOP
+    FOR rec_temp IN SELECT * FROM reservable_temp_raw LOOP
 
         -- Ignorer si déjà présent
-        IF EXISTS (SELECT 1 FROM inventory.reservable WHERE name = r.name) THEN
+        IF EXISTS (SELECT 1 FROM inventory.reservable WHERE name = rec_temp.name) THEN
             CONTINUE;
         END IF;
 
-        -- Category : créer si inexistante
-        SELECT id INTO v_cat_id
+        -- Enums aléatoires
+        SELECT enumlabel::inventory.reservable_status INTO enum_status
+        FROM unnest(enum_range(NULL::inventory.reservable_status)) AS enumlabel
+        ORDER BY random() LIMIT 1;
+
+        SELECT enumlabel::inventory.reservable_quality INTO enum_quality
+        FROM unnest(enum_range(NULL::inventory.reservable_quality)) AS enumlabel
+        ORDER BY random() LIMIT 1;
+
+        SELECT enumlabel::inventory.reservable_type INTO enum_type
+        FROM unnest(enum_range(NULL::inventory.reservable_type)) AS enumlabel
+        ORDER BY random() LIMIT 1;
+
+        SELECT enumlabel::inventory.reservable_gender INTO enum_gender
+        FROM unnest(enum_range(NULL::inventory.reservable_gender)) AS enumlabel
+        ORDER BY random() LIMIT 1;
+
+        SELECT enumlabel::inventory.privacy_type INTO enum_privacy
+        FROM unnest(enum_range(NULL::inventory.privacy_type)) AS enumlabel
+        ORDER BY random() LIMIT 1;
+
+        -- Catégorie / sous-catégorie
+        SELECT id INTO category_id_var
         FROM inventory.reservable_category
-        WHERE name = r.category
-        LIMIT 1;
-        IF v_cat_id IS NULL AND r.category IS NOT NULL AND trim(r.category) <> '' THEN
-            INSERT INTO inventory.reservable_category(name) VALUES (r.category)
-            RETURNING id INTO v_cat_id;
+        ORDER BY random() LIMIT 1;
+
+        IF category_id_var IS NULL THEN
+            INSERT INTO inventory.reservable_category(name) VALUES ('Autres')
+            RETURNING id INTO category_id_var;
         END IF;
 
-        -- Subcategory : créer si inexistante
-        IF r.subcategory IS NOT NULL AND trim(r.subcategory) <> '' THEN
-            SELECT id INTO v_subcat_id
-            FROM inventory.reservable_subcategory
-            WHERE name = r.subcategory AND category_id = v_cat_id
-            LIMIT 1;
-            IF v_subcat_id IS NULL THEN
-                INSERT INTO inventory.reservable_subcategory(name, category_id)
-                VALUES (r.subcategory, v_cat_id)
-                RETURNING id INTO v_subcat_id;
-            END IF;
-        ELSE
-            v_subcat_id := NULL;
+        SELECT id INTO subcategory_id_var
+        FROM inventory.reservable_subcategory
+        WHERE category_id = category_id_var
+        ORDER BY random() LIMIT 1;
+
+        IF subcategory_id_var IS NULL THEN
+            INSERT INTO inventory.reservable_subcategory(name, category_id)
+            VALUES ('Autres', category_id_var)
+            RETURNING id INTO subcategory_id_var;
         END IF;
 
-        -- Insertion finale
+        -- Insertion du reservable
         INSERT INTO inventory.reservable (
             name,
             inventory_type,
             owner_id,
             manager_id,
             status,
+            quality,
             storage_location_id,
             category_id,
             subcategory_id,
@@ -77,37 +123,40 @@ BEGIN
             photos
         )
         VALUES (
-            r.name,
-            r.inventory_type::inventory.reservable_type,
-            v_owner,
-            v_manager,
-            COALESCE(NULLIF(r.status,''),'disponible')::inventory.reservable_status,
-            v_storage_id,
-            v_cat_id,
-            v_subcat_id,
-            NULLIF(r.size_label,''),
-            r.gender::inventory.reservable_gender,
-            CASE WHEN r.price_per_day IS NULL OR trim(r.price_per_day) = '' THEN 0 ELSE r.price_per_day::numeric END,
-            COALESCE(NULLIF(r.privacy,''),'private')::inventory.privacy_type,
-            r.description,
+            rec_temp.name,
+            enum_type,
+            org_owner_id,
+            org_manager_id,
+            enum_status,
+            enum_quality,
+            storage_location_id,
+            category_id_var,
+            subcategory_id_var,
+            rec_temp.size,
+            enum_gender,
+            CASE WHEN rec_temp.price_per_day IS NULL OR trim(rec_temp.price_per_day) = '' THEN 0 ELSE rec_temp.price_per_day::numeric END,
+            enum_privacy,
+            rec_temp.description,
             jsonb_build_array(
-                jsonb_build_object(
-                    'url', COALESCE(NULLIF(r.photo_url1,''), format('https://picsum.photos/seed/%sa/150/100', i)),
-                    'caption', 'Vue 1'
-                ),
-                jsonb_build_object(
-                    'url', COALESCE(NULLIF(r.photo_url2,''), format('https://picsum.photos/seed/%sb/150/100', i)),
-                    'caption', 'Vue 2'
-                ),
-                jsonb_build_object(
-                    'url', COALESCE(NULLIF(r.photo_url3,''), format('https://picsum.photos/seed/%sc/150/100', i)),
-                    'caption', 'Vue 3'
-                )
+                jsonb_build_object('url', COALESCE(NULLIF(rec_temp.photo1,''), format('https://picsum.photos/seed/%sa/150/100', row_index)), 'caption','Vue 1'),
+                jsonb_build_object('url', COALESCE(NULLIF(rec_temp.photo2,''), format('https://picsum.photos/seed/%sb/150/100', row_index)), 'caption','Vue 2'),
+                jsonb_build_object('url', COALESCE(NULLIF(rec_temp.photo3,''), format('https://picsum.photos/seed/%sc/150/100', row_index)), 'caption','Vue 3')
             )
         )
-        ON CONFLICT (name) DO NOTHING;
+        RETURNING id INTO inserted_reservable_id;
 
-        i := i + 1;
+        -- Associer N styles aléatoires
+        style_ids := ARRAY(
+            SELECT id FROM inventory.reservable_style ORDER BY random() LIMIT n_styles
+        );
+
+        FOREACH style_id IN ARRAY style_ids LOOP
+            INSERT INTO inventory.reservable_style_link(reservable_id, style_id)
+            VALUES (inserted_reservable_id, style_id)
+            ON CONFLICT DO NOTHING;
+        END LOOP;
+
+        row_index := row_index + 1;
     END LOOP;
 
     -- Réaligner la séquence

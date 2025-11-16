@@ -26,7 +26,8 @@ export { deleteCategory } from './deleteCategory.js';
 export { upsertSubcategory } from './upsertSubcategory.js';
 export { deleteSubcategory } from './deleteSubcategory.js';
 export { fetchSubcategoriesByCategory } from './fetchSubcategoriesByCategory.js';
-
+export { updateReservable } from './updateReservable.js';
+export { createReservable } from './createReservable.js';
 
 
 

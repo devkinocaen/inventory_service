@@ -62,7 +62,7 @@ get_role_list() {
 # ===========================================
 # Tables et rôles
 # ===========================================
-tables="app_config person organization storage_location reservable_style reservable_category reservable_subcategory size_type size reservable reservable_style_link reservable_batch reservable_batch_link booking_reference reservable_booking"
+tables="app_config person organization storage_location reservable_style reservable_category reservable_subcategory reservable reservable_style_link reservable_batch reservable_batch_link booking_reference reservable_booking"
 roles="dev admin viewer anon"
 perms="select insert update delete"
 
