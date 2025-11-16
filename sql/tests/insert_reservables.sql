@@ -29,17 +29,6 @@ DECLARE
     -- Reservable inséré
     inserted_reservable_id INT;
 BEGIN
-    -- Choisir au hasard une organisation existante
-    SELECT id INTO org_owner_id
-    FROM inventory.organization
-    ORDER BY random() LIMIT 1;
-
-    IF org_owner_id IS NULL THEN
-        RAISE EXCEPTION 'Aucune organisation trouvée. Créez-en au moins une.';
-    END IF;
-
-    org_manager_id := org_owner_id;
-
     -- Choisir au hasard un lieu de stockage existant
     SELECT id INTO storage_location_id
     FROM inventory.storage_location
@@ -62,6 +51,17 @@ BEGIN
             CONTINUE;
         END IF;
 
+        -- Tirer deux organisations différentes
+        SELECT o1.id, o2.id INTO org_owner_id, org_manager_id
+        FROM inventory.organization o1
+        JOIN inventory.organization o2 ON o1.id <> o2.id
+        ORDER BY random()
+        LIMIT 1;
+
+        IF org_owner_id IS NULL OR org_manager_id IS NULL THEN
+            RAISE EXCEPTION 'Pas assez d''organisations pour assigner owner et manager différents.';
+        END IF;
+
         -- Enums aléatoires
         SELECT enumlabel::inventory.reservable_status INTO enum_status
         FROM unnest(enum_range(NULL::inventory.reservable_status)) AS enumlabel
@@ -71,9 +71,7 @@ BEGIN
         FROM unnest(enum_range(NULL::inventory.reservable_quality)) AS enumlabel
         ORDER BY random() LIMIT 1;
 
-        SELECT enumlabel::inventory.reservable_type INTO enum_type
-        FROM unnest(enum_range(NULL::inventory.reservable_type)) AS enumlabel
-        ORDER BY random() LIMIT 1;
+        enum_type := 'costume'::inventory.reservable_type;
 
         SELECT enumlabel::inventory.reservable_gender INTO enum_gender
         FROM unnest(enum_range(NULL::inventory.reservable_gender)) AS enumlabel
