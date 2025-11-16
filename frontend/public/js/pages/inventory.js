@@ -80,15 +80,26 @@ function setupLookupFilter() {
   const input = document.getElementById('lookup_item_name');
   const tbody = document.querySelector('#stock_table tbody');
   if (!input || !tbody) return;
+    input.placeholder = "Rechercher... [dans: nom, description, styles]";
 
   input.addEventListener('input', () => {
     const filter = input.value.toLowerCase();
+
     Array.from(tbody.rows).forEach(row => {
-      const nameCell = row.cells[0];
-      row.style.display = nameCell.textContent.toLowerCase().includes(filter) ? '' : 'none';
+      const nameText = row.cells[0].textContent.toLowerCase();
+      const descText = row.cells[2].textContent.toLowerCase();
+      const styleText = row.cells[9].textContent.toLowerCase();
+
+      const match =
+        nameText.includes(filter) ||
+        descText.includes(filter) ||
+        styleText.includes(filter);
+
+      row.style.display = match ? '' : 'none';
     });
   });
 }
+
 
 
 // ========== Initialisation ==========
@@ -96,6 +107,7 @@ export async function init() {
   try {
     const items = await fetchReservables(client);
     renderStockTable(items);
+    initSortableColumns();
     setupLookupFilter();
   } catch (err) {
     console.error('[inventory] Erreur lors de l’initialisation :', formatServerError(err.message));
@@ -220,6 +232,49 @@ function initEditableCells() {
 
       select.addEventListener('blur', cancelEdit);
       select.addEventListener('keydown', e => { if (e.key === 'Escape') cancelEdit(); });
+    });
+  });
+}
+
+// ========= Tri des colonnes =========
+function initSortableColumns() {
+  const table = document.getElementById('stock_table');
+  if (!table) return;
+
+  const headers = table.querySelectorAll('th.sortable');
+  const tbody = table.querySelector('tbody');
+
+  headers.forEach((th, index) => {
+    let asc = true; // sens du tri
+    th.style.cursor = 'pointer';
+
+    th.addEventListener('click', () => {
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+
+      rows.sort((a, b) => {
+        const cellA = a.children[index].textContent.trim().toLowerCase();
+        const cellB = b.children[index].textContent.trim().toLowerCase();
+
+        // Nombre ?
+        const numA = parseFloat(cellA.replace(',', '.'));
+        const numB = parseFloat(cellB.replace(',', '.'));
+        const bothNumbers = !isNaN(numA) && !isNaN(numB);
+
+        if (bothNumbers) {
+          return asc ? numA - numB : numB - numA;
+        }
+
+        // Texte
+        return asc
+          ? cellA.localeCompare(cellB)
+          : cellB.localeCompare(cellA);
+      });
+
+      // Réinjecter les lignes triées
+      tbody.innerHTML = '';
+      rows.forEach(r => tbody.appendChild(r));
+
+      asc = !asc; // On inverse pour le clic suivant
     });
   });
 }
