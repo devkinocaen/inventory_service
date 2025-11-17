@@ -19,6 +19,9 @@
   overflow-y: auto;
   transition: transform 0.3s;
   z-index: 900;
+  display: flex;          /* active flexbox */
+  flex-direction: column; /* colonne verticale */
+  justify-content: center; /* centre verticalement */
 }
 #cstm-filtersSidebar.cstm-collapsed {
   transform: translateX(-100%);

@@ -26,6 +26,13 @@ let currentCategories = [];
 let currentSubcategories = [];
 let currentStyles = [];
 
+const genderMap = {
+  'Homme': 'male',
+  'Femme': 'female',
+  'Unisexe': 'unisex'
+};
+
+
 // ---- DOM Elements ----
 let filtersSidebar, filtersToggle, cartToggle, orgToggle, container;
 
@@ -129,7 +136,11 @@ async function renderItems() {
           .filter(s => activeFilters.style.includes(s.name))
           .map(s => s.id)
       : null,
-    p_gender: activeFilters.gender.length ? activeFilters.gender : null,
+      
+    // Conversion Homme/Femme/Unisexe -> male/female/unisex
+    p_gender: activeFilters.gender.length
+    ? activeFilters.gender.map(g => genderMap[g])
+    : null,
 
     p_start_date: filterStartDate,
     p_end_date: filterEndDate
