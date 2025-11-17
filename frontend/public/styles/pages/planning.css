@@ -1,49 +1,115 @@
-/* Styles globaux pour toutes les pages */
-
-body {
-  font-family: Arial, sans-serif;
-  margin: 20px;
-  background-color: #f9f9f9;
-}
-
-h1 {
-  color: #333;
-}
-
-input {
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-}
-
-.table-wrapper {
-  overflow-x: auto;
-  margin-top: 15px;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  max-height: 500px;
-}
-
-table {
+/* 🔹 Wrapper du tableau pour scroll horizontal */
+.planning-wrapper {
+  position: relative;
   width: 100%;
+  overflow-x: auto;
+}
+
+/* 🔹 Tableau */
+#reservable-planning-table {
   border-collapse: collapse;
+  width: max-content; /* permet au tableau de s’étendre si besoin */
 }
 
-th, td {
-  padding: 8px;
+/* 🔹 Header sticky */
+#reservable-planning-table thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f8f8f8;
+  z-index: 2;
+  padding: 0.3rem 0.5rem;
+  white-space: nowrap;
+  box-sizing: border-box;
   border: 1px solid #ccc;
-  text-align: left;
 }
 
-th {
-  background-color: #e9ecef;
+/* 🔹 Première colonne sticky (nom du reservable) */
+#reservable-planning-table th:first-child,
+#reservable-planning-table td.reservable-name {
+  position: sticky;
+  left: 0;
+  background-color: #fff;
+  z-index: 4;
+  min-width: 140px;
+  padding: 0.3rem 0.5rem;
+  box-shadow: 2px 0 5px -2px rgba(0,0,0,0.2);
+  white-space: nowrap;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
 }
 
-tr:nth-child(even) {
-  background-color: #f2f2f2;
+/* 🔹 Slots de réservation */
+.booking-slot {
+  background-color: #b3d9ff; /* bleu clair */
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #7fbfff;
+  color: #000;
+  font-weight: bold;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease;
 }
 
-.search-bar {
-  margin-bottom: 10px;
+.booking-slot:hover {
+  background-color: #1e90ff; /* bleu plus intense */
+  cursor: pointer;
+}
+
+.empty-slot {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+}
+
+/* 🔹 Ligne des heures / slots */
+.time-slot div {
+  font-size: 0.8em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 💡 Barre de filtres */
+.planning-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.planning-filter-row label {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.planning-filter-row input,
+.planning-filter-row select {
+  padding: 0.3rem 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.planning-filter-row input:hover,
+.planning-filter-row select:hover {
+  border-color: #007bff;
+}
+
+.planning-filter-row input:focus,
+.planning-filter-row select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+}
+
+/* 🔹 Now indicator */
+.planning-now-indicator {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background-color: red;
+  z-index: 100;
+  pointer-events: none;
 }
