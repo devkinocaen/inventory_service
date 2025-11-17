@@ -20,5 +20,5 @@ if [[ -n "${DB_CONFIG:-}" ]]; then
 fi
 
 
-export ALWAYS_DATA_API_REST_URL=https://kinocaen.alwaysdata.net
+export ALWAYS_DATA_API_REST_URL=https://inventory-service.alwaysdata.net
 export RENDER_API_REST_URL=https://gunicorn-hh3p.onrender.com
