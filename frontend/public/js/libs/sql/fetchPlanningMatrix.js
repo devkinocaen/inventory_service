@@ -39,7 +39,16 @@ export async function fetchPlanningMatrix(client, params = {}) {
       start: slot.start,
       end: slot.end,
       reservables: slot.reservables || [],
-      bookings: slot.bookings || [],
+      bookings: (slot.bookings || []).map(bk => ({
+        id: bk.id,
+        start_date: bk.start_date,
+        end_date: bk.end_date,
+        organization_id: bk.organization_id,
+        organization_name: bk.organization_name,
+        referent_first_name: bk.referent_first_name,
+        referent_last_name: bk.referent_last_name,
+        referent_phone: bk.referent_phone
+      })),
       is_reserved: Array.isArray(slot.bookings) && slot.bookings.length > 0
     }))
   }));

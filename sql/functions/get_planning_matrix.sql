@@ -47,12 +47,17 @@ batch_slots AS (
                             'start_date', bk.start_date,
                             'end_date', bk.end_date,
                             'organization_id', bk.renter_organization_id,
-                            'organization_name', org.name
+                            'organization_name', org.name,
+                            'referent_first_name', p.first_name,
+                            'referent_last_name', p.last_name,
+                            'referent_mobile', p.phone
                         )
                     )
                     FROM inventory.reservable_booking bk
                     LEFT JOIN inventory.organization org
                         ON org.id = bk.renter_organization_id
+                    LEFT JOIN inventory.person p
+                        ON p.id = org.referent_id
                     WHERE bk.reservable_batch_id = b.id
                       AND bk.start_date < (s.slot_start + (p_granularity::interval))
                       AND bk.end_date > s.slot_start
