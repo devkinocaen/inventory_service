@@ -1,5 +1,5 @@
 // libs/sql/deleteReservable.js
-export async function deleteReservable(client, { id }) {
+export async function deleteReservable(client, id) {
   if (!id) {
     throw new Error('L\'ID du reservable est obligatoire pour la suppression');
   }

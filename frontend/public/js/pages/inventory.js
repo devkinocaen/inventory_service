@@ -294,18 +294,27 @@ function setupDeleteButtons() {
       const confirmDelete = confirm('Voulez‑vous vraiment supprimer cet item ?');
       if (!confirmDelete) return;
 
+      // Récupérer l'objet complet depuis currentItems
+      const item = currentItems.find(i => i.id === itemId);
+      const itemName = item ? item.name : '(nom inconnu)';
+
       try {
         await deleteReservable(client, itemId);
+
         // Retirer la ligne du tableau
         const row = btn.closest('tr');
         if (row) row.remove();
+
         // Retirer de currentItems
-        currentItems = currentItems.filter(item => item.id !== itemId);
-        console.log(`[inventory] Item ${itemId} supprimé`);
+        currentItems = currentItems.filter(i => i.id !== itemId);
+
+        alert(`✅ L'item "${itemName}" (ID: ${itemId}) a été supprimé avec succès !`);
+        console.log(`[inventory] Item ${itemName} (ID: ${itemId}) supprimé`);
       } catch (err) {
         alert('Erreur lors de la suppression : ' + formatServerError(err));
         console.error('[inventory] deleteReservable error', err);
       }
     });
   });
+
 }

@@ -22,16 +22,16 @@ BEGIN
     RAISE EXCEPTION 'Reservable (id=%) not found', p_reservable_id;
   END IF;
 
-  -- Récupère les batchs associés
-  SELECT array_agg(id)
+  -- Récupère les batchs associés via reservable_batch_link
+  SELECT array_agg(batch_id)
     INTO v_batch_ids
-    FROM inventory.reservable_batch
+    FROM inventory.reservable_batch_link
    WHERE reservable_id = p_reservable_id;
 
-  -- Supprime les réservations liées à ce reservable
+  -- Supprime les réservations liées à ces batchs
   DELETE FROM inventory.reservable_booking
    WHERE reservable_batch_id IN (
-     SELECT id FROM inventory.reservable_batch WHERE reservable_id = p_reservable_id
+     SELECT batch_id FROM inventory.reservable_batch_link WHERE reservable_id = p_reservable_id
    );
 
   -- Supprime les liens styles

@@ -1,4 +1,4 @@
-export async function deleteReservableBatch(client, { id }) {
+export async function deleteReservableBatch(client, id) {
   if (!id) {
     throw new Error('L\'ID du batch est obligatoire pour la suppression');
   }
