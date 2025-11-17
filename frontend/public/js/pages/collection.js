@@ -11,15 +11,18 @@ import { openBookingModal } from '../modals/booking_modal.js';
 import { openOrgModal } from '../modals/org_modal.js';
 import { formatServerError } from '../libs/helpers.js';
 
+import {
+    getDisplayableImageUrl,
+    isInstagramUrl,
+    createInstagramBlockquote
+} from '../libs/image_utils.js';
 
 let client;
 let currentItems = [];
 let selectedItems = [];
 let activeFilters = { category: [], subcategory: [], style: [], gender: [] };
-
 let currentFilterStart = null;
 let currentFilterEnd = null;
-
 
 // Variables globales pour les données de filtre
 let currentCategories = [];
@@ -31,7 +34,6 @@ const genderMap = {
   'Femme': 'female',
   'Unisexe': 'unisex'
 };
-
 
 // ---- DOM Elements ----
 let filtersSidebar, filtersToggle, cartToggle, orgToggle, container;
@@ -55,7 +57,7 @@ function renderFilterChips(categories, subcategories, styles) {
   const categoryChips = document.getElementById('cstm-categoryChips');
   const subcatChips = document.getElementById('cstm-subcatChips');
   const styleChips = document.getElementById('cstm-styleChips');
-  const genderChips = document.getElementById('cstm-genderChips'); // nouvelle div dans ton HTML
+  const genderChips = document.getElementById('cstm-genderChips');
 
   if (!categoryChips || !subcatChips || !styleChips || !genderChips) return;
 
@@ -84,8 +86,7 @@ function renderFilterChips(categories, subcategories, styles) {
 
   styleChips.innerHTML = '';
   styles.forEach(s => styleChips.appendChild(makeChip(s.name, 'style')));
-    
-  // Genre (constantes fixes)
+
   const genders = ['Homme', 'Femme', 'Unisexe'];
   genderChips.innerHTML = '';
   genders.forEach(g => genderChips.appendChild(makeChip(g, 'gender')));
@@ -139,9 +140,8 @@ async function fetchItems() {
 
 /**
  * Render les items dans le DOM
- * @param {Array} itemsToRender tableau d'items (peut être filtré localement pour lookup)
  */
-function renderItems(itemsToRender = currentItems) {
+async function renderItems(itemsToRender = currentItems) {
   if (!container) return;
   container.innerHTML = '';
 
@@ -155,34 +155,15 @@ function renderItems(itemsToRender = currentItems) {
     const div = document.createElement('div');
     div.className = 'cstm-costume-card' + (selectedItems.includes(item.id) ? ' selected' : '');
 
-    const img = document.createElement('img');
-    img.src = item.photos?.[0]?.url || 'data:image/svg+xml;charset=UTF-8,' +
-        encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
-            <rect width="200" height="200" fill="#ddd"/>
-            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="16">No Image</text>
-        </svg>`);
+    const photoContainer = document.createElement('div');
+    photoContainer.className = 'cstm-costume-photo';
+    photoContainer.style.width = '200px';
+    photoContainer.style.height = '200px';
+    photoContainer.style.overflow = 'hidden';
+    photoContainer.style.borderRadius = '4px';
+    div.appendChild(photoContainer);
 
-    if (item.photos && item.photos.length > 1) {
-      let currentIndex = 0;
-      img.src = item.photos[currentIndex].url;
-      let intervalId = null;
-
-      img.addEventListener('mouseenter', () => {
-        intervalId = setInterval(() => {
-          currentIndex = (currentIndex + 1) % item.photos.length;
-          img.src = item.photos[currentIndex].url;
-        }, 1500);
-      });
-
-      img.addEventListener('mouseleave', () => {
-        clearInterval(intervalId);
-        intervalId = null;
-        currentIndex = 0;
-        img.src = item.photos[currentIndex].url;
-      });
-    }
-
-    div.appendChild(img);
+    await renderItemPhoto(item, photoContainer);
 
     const name = document.createElement('div');
     name.className = 'cstm-costume-name';
@@ -206,15 +187,15 @@ function renderItems(itemsToRender = currentItems) {
 }
 
 /**
- * Combine fetch + render selon les filtres sidebar
+ * Combine fetch + render
  */
 async function fetchItemsAndRender() {
   await fetchItems();
-  renderItems();
+  await renderItems();
 }
 
 /**
- * Charge les données depuis la base SQL au démarrage
+ * Chargement initial des données
  */
 async function loadData() {
   try {
@@ -231,14 +212,14 @@ async function loadData() {
     currentStyles = styles;
 
     renderFilterChips(categories, subcategories, styles);
-    renderItems();
+    await renderItems();
   } catch (err) {
     console.error('[Collection] Erreur :', formatServerError(err.message || err));
   }
 }
 
 /**
- * Initialisation après injection du HTML
+ * Initialisation après injection HTML
  */
 export async function init() {
   client = await initClient();
@@ -302,9 +283,116 @@ export async function init() {
     fetchItemsAndRender();
   });
 
-  lookupInput?.addEventListener('input', () => {
-    renderItems(); // applique uniquement la recherche locale
+  lookupInput?.addEventListener('input', async () => {
+    await renderItems();
   });
 
   await loadData();
+}
+
+/**
+ * Afficher une image (URL ou Instagram)
+ */
+async function displayImage(container, url) {
+  container.innerHTML = '';
+  const placeholder = document.createElement('img');
+  placeholder.src = 'https://placehold.co/70x70?text=+';
+  placeholder.style.width = '100%';
+  placeholder.style.height = '100%';
+  placeholder.style.objectFit = 'cover';
+  container.appendChild(placeholder);
+
+  if (!url) return;
+
+  try {
+   // loadingOverlay?.classList.remove('hidden');
+
+    if (isInstagramUrl(url)) {
+      container.innerHTML = '';
+      const bq = createInstagramBlockquote(url);
+      bq.classList.add('photo-instagram-preview');
+
+      const wrapper = document.createElement('div');
+      wrapper.style.width = '300px';
+      wrapper.style.height = '300px';
+      wrapper.style.overflow = 'hidden';
+      wrapper.style.margin = '0 auto';
+      wrapper.style.position = 'relative';
+
+      bq.style.width = '100%';
+      bq.style.height = 'auto';
+      bq.style.transform = 'scale(0.5) translateY(-55px)';
+      bq.style.transformOrigin = 'center';
+      wrapper.appendChild(bq);
+      container.appendChild(wrapper);
+
+      if (window.instgrm) window.instgrm.Embeds.process();
+      return;
+    }
+
+    const { url: displayUrl } = await getDisplayableImageUrl(url, { client: client , withPreview: true });
+    if (displayUrl) {
+      container.innerHTML = '';
+      const imgEl = document.createElement('img');
+      imgEl.src = displayUrl;
+      imgEl.style.width = '100%';
+      imgEl.style.height = '100%';
+      imgEl.style.objectFit = 'cover';
+      container.appendChild(imgEl);
+
+      const linkWrapper = document.createElement('a');
+      linkWrapper.href = url;
+      linkWrapper.target = '_blank';
+      container.replaceChild(linkWrapper, imgEl);
+      linkWrapper.appendChild(imgEl);
+    }
+
+  } catch (err) {
+    console.error('[displayImage] Erreur :', err);
+    container.innerHTML = '';
+    container.appendChild(placeholder);
+  } finally {
+   // loadingOverlay?.classList.add('hidden');
+  }
+}
+
+/**
+ * Affichage d'une photo dans la collection
+ */
+async function renderItemPhoto(item, container) {
+  container.innerHTML = '';
+
+  const placeholder = document.createElement('img');
+  placeholder.src = 'https://placehold.co/200x200?text=+';
+  placeholder.style.width = '100%';
+  placeholder.style.height = '100%';
+  placeholder.style.objectFit = 'cover';
+  container.appendChild(placeholder);
+
+  if (!item.photos || item.photos.length === 0) return;
+
+  let currentIndex = 0;
+  let intervalId = null;
+
+  const showPhoto = async (photo) => {
+    await displayImage(container, photo.url);
+  };
+
+  await showPhoto(item.photos[currentIndex]);
+
+  if (item.photos.length > 1) {
+    container.addEventListener('mouseenter', async () => {
+      intervalId = setInterval(async () => {
+        currentIndex = (currentIndex + 1) % item.photos.length;
+        await showPhoto(item.photos[currentIndex]);
+      }, 1500);
+    });
+
+    container.addEventListener('mouseleave', async () => {
+      clearInterval(intervalId);
+      intervalId = null;
+      currentIndex = 0;
+      await showPhoto(item.photos[currentIndex]);
+    });
+  }
 }
