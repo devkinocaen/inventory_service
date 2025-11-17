@@ -73,23 +73,26 @@ export async function openPhotoModal(client, reservableId, reservableName, onFin
 
 
 // -----------------------------
-// Afficher image (URL ou Instagram)
+// Afficher image (URL ou Instagram) – version complète
 // -----------------------------
 async function displayImage(container, url) {
   container.innerHTML = '';
 
+  // Placeholder par défaut
   const placeholder = document.createElement('img');
   placeholder.src = 'https://placehold.co/70x70?text=+';
   placeholder.style.width = '100%';
   placeholder.style.height = '100%';
   placeholder.style.objectFit = 'cover';
   container.appendChild(placeholder);
+    console.log ('url', url)
 
   if (!url) return;
 
   try {
     loadingOverlay?.classList.remove('hidden');
 
+    // Cas Instagram
     if (isInstagramUrl(url)) {
       container.innerHTML = '';
       const bq = createInstagramBlockquote(url);
@@ -113,7 +116,9 @@ async function displayImage(container, url) {
       return;
     }
 
+    // Cas URL classique (Drive ou autre)
     const { url: displayUrl } = await getDisplayableImageUrl(url, { client: globalClient, withPreview: true });
+      console.log ('displayUrl', displayUrl)
     if (displayUrl) {
       container.innerHTML = '';
       const imgEl = document.createElement('img');
@@ -123,12 +128,16 @@ async function displayImage(container, url) {
       imgEl.style.objectFit = 'cover';
       container.appendChild(imgEl);
 
+      // Lien cliquable
       const linkWrapper = document.createElement('a');
       linkWrapper.href = url;
       linkWrapper.target = '_blank';
       container.replaceChild(linkWrapper, imgEl);
       linkWrapper.appendChild(imgEl);
+    } else {
+        console.log ("wtf")
     }
+
   } catch (err) {
     console.error('[displayImage] Erreur affichage image :', err);
     container.innerHTML = '';
@@ -139,7 +148,7 @@ async function displayImage(container, url) {
 }
 
 // -----------------------------
-// Afficher toutes les photos
+// Afficher toutes les photos – version complète
 // -----------------------------
 export async function renderPhotos() {
   list.innerHTML = '';
@@ -151,6 +160,7 @@ export async function renderPhotos() {
     row.dataset.index = i;
     list.appendChild(row);
 
+    // Container pour image / Instagram
     const container = document.createElement('div');
     container.className = 'photo-container';
     container.style.width = '300px';
@@ -160,6 +170,7 @@ export async function renderPhotos() {
     container.style.marginRight = '6px';
     row.appendChild(container);
 
+    // URL input
     const urlInput = document.createElement('input');
     urlInput.type = 'text';
     urlInput.className = 'photo-url';
@@ -167,6 +178,7 @@ export async function renderPhotos() {
     urlInput.value = p.url || '';
     row.appendChild(urlInput);
 
+    // Caption input
     const captionInput = document.createElement('input');
     captionInput.type = 'text';
     captionInput.className = 'photo-caption';
@@ -174,19 +186,23 @@ export async function renderPhotos() {
     captionInput.value = p.caption || '';
     row.appendChild(captionInput);
 
+    // Remove button
     const removeBtn = document.createElement('button');
     removeBtn.className = 'photos-btn-danger remove-photo';
     removeBtn.textContent = '🗑️';
     row.appendChild(removeBtn);
 
+    // Upload button
     const uploadBtn = document.createElement('input');
     uploadBtn.type = 'file';
     uploadBtn.accept = 'image/*';
     uploadBtn.style.marginLeft = '6px';
     row.appendChild(uploadBtn);
 
+    // Affichage initial
     await displayImage(container, p.url);
 
+    // Événements
     removeBtn.addEventListener('click', () => {
       photos.splice(i, 1);
       renderPhotos();
@@ -207,7 +223,7 @@ export async function renderPhotos() {
 
       try {
         loadingOverlay?.classList.remove('hidden');
-        const data = await globalClient.uploadToDrive(file, "RESERVABLE", 300, true);
+        const data = await globalClient.uploadToDrive(file, "INVENTORY", 300, true);
         photos[i].url = data.drive_url;
         urlInput.value = data.drive_url;
         await displayImage(container, data.drive_url);

@@ -18,14 +18,11 @@ from werkzeug.utils import secure_filename
 #
 # Options possibles pour folder_type (valeurs de l'énum DriveFolderType) :
 #   - "BACKUP"             : dossier réservé aux backups de bases de données
-#   - "SHOOTING_LOCATION"  : dossier réservé aux images / documents liés aux lieux de tournage
-#   - "EQUIPMENT"          : dossier réservé aux images / documents liés à l’équipement
-#   - "COSTUMES"          : dossier réservé aux images / documents liés à la costumerie
+#   - "INVENTORY"  : dossier réservé aux images / documents liés aux lieux de tournage
 #
 # Exemple JSON POST :
 #   { "file_path": "/tmp/myfile.sql", "folder_type": "BACKUP" }
-#   { "file_path": "/tmp/photo.jpg", "folder_type": "SHOOTING_LOCATION" }
-#   { "file_path": "/tmp/equip.pdf", "folder_type": "EQUIPMENT" }
+#   { "file_path": "/tmp/photo.jpg", "folder_type": "INVENTORY" }
 #
 # Cette valeur sera ensuite convertie en DriveFolderType avec :
 #   folder_type = DriveFolderType[folder_type_str]
