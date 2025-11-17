@@ -1,7 +1,8 @@
 import {
     fetchReservables,
     updateReservable,
-    createReservable
+    createReservable,
+    deleteReservable
 } from '../libs/sql/index.js';
 
 import { formatServerError } from '../libs/helpers.js';
@@ -55,6 +56,7 @@ function renderStockTable(items) {
   });
 
   initEditableCells();
+  setupDeleteButtons();
 }
 
 // ===== Mappings pour affichage =====
@@ -275,6 +277,35 @@ function initSortableColumns() {
       rows.forEach(r => tbody.appendChild(r));
 
       asc = !asc; // On inverse pour le clic suivant
+    });
+  });
+}
+
+
+function setupDeleteButtons() {
+  const tbody = document.querySelector('#stock_table tbody');
+  if (!tbody) return;
+
+  tbody.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const itemId = Number(btn.dataset.id);
+      if (!itemId) return;
+
+      const confirmDelete = confirm('Voulez‑vous vraiment supprimer cet item ?');
+      if (!confirmDelete) return;
+
+      try {
+        await deleteReservable(client, itemId);
+        // Retirer la ligne du tableau
+        const row = btn.closest('tr');
+        if (row) row.remove();
+        // Retirer de currentItems
+        currentItems = currentItems.filter(item => item.id !== itemId);
+        console.log(`[inventory] Item ${itemId} supprimé`);
+      } catch (err) {
+        alert('Erreur lors de la suppression : ' + formatServerError(err));
+        console.error('[inventory] deleteReservable error', err);
+      }
     });
   });
 }

@@ -30,6 +30,8 @@ export { updateReservable } from './updateReservable.js';
 export { createReservable } from './createReservable.js';
 export { deleteBooking } from './deleteBooking.js';
 export { updateBooking } from './updateBooking.js';
+export { deleteReservable } from './deleteReservable.js';
+export { deleteReservableBatch } from './deleteReservableBatch.js';
 
 
 
