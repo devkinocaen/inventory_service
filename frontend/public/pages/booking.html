@@ -3,73 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <title>Réservations – Costumerie</title>
-  <link rel="stylesheet" href="bookings.css">
+  <link rel="stylesheet" href="../styles/pages/booking.css">
 </head>
-<body class="cstm-body">
+<body class="booking-body">
 
-  <div id="cstm-container">
+  <!-- ---- Sidebar Filtres ---- -->
+  <aside id="booking-filtersSidebar" class="booking-collapsed">
+    <h3>Filtres</h3>
 
-    <!-- Sidebar Filtres -->
-    <aside id="cstm-sidebar">
-      <h2>Filtres</h2>
+    <div class="filter-section">
+      <label for="lookup_booking"><strong>Recherche</strong></label>
+      <input id="lookup_booking" type="text" placeholder="Organisation, lot, items...">
+    </div>
 
-      <div class="booking-filter-group">
-        <label for="lookup_booking">Recherche</label>
-        <input id="lookup_booking" type="text" placeholder="Recherche (organisation, batch, items...)">
-      </div>
+    <div class="filter-section">
+      <label for="filter_org"><strong>Organisation</strong></label>
+      <select id="filter_org">
+        <option value="">Toutes</option>
+      </select>
+    </div>
 
-      <div class="booking-filter-group">
-        <label for="filter_org">Organisation</label>
-        <select id="filter_org">
-          <option value="">Toutes</option>
-        </select>
-      </div>
-
-      <div class="booking-filter-group">
+    <div class="filter-section">
+      <strong>Période</strong>
+      <div class="booking-date-row">
         <label for="filter_start">Début après</label>
         <input type="date" id="filter_start">
       </div>
-
-      <div class="booking-filter-group">
+      <div class="booking-date-row">
         <label for="filter_end">Fin avant</label>
         <input type="date" id="filter_end">
       </div>
-
-      <button id="btn_apply_filters" class="booking-btn">Appliquer</button>
-    </aside>
-
-    <!-- Contenu principal -->
-    <main id="cstm-main">
-
-      <!-- Header avec titre et bouton -->
-      <div class="header-bar">
-        <h1>Réservations</h1>
-        <button id="btn_new_booking" class="booking-btn edit">Nouvelle réservation</button>
+      <div class="booking-apply-filters">
+        <button id="btn_apply_filters" type="button">Appliquer</button>
       </div>
+    </div>
+  </aside>
 
-      <!-- Tableau des réservations -->
-      <div id="cstm-table-wrapper">
-        <table id="bookings_table">
-          <thead>
-            <tr>
-              <th class="sortable">Lot</th>
-              <th class="sortable">Organisation</th>
-              <th class="sortable">Début</th>
-              <th class="sortable">Fin</th>
-              <th class="sortable">Objets</th>
-              <th>Éditer</th>
-              <th>Supprimer</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Rempli dynamiquement -->
-          </tbody>
-        </table>
-      </div>
+  <!-- ---- Zone principale ---- -->
+  <main id="booking-main">
 
-    </main>
+    <div id="booking-table-wrapper">
+      <table id="bookings_table">
+        <thead>
+          <tr>
+            <th class="sortable">Lot</th>
+            <th class="sortable">Organisation</th>
+            <th class="sortable">Début</th>
+            <th class="sortable">Fin</th>
+            <th class="sortable">Objets</th>
+            <th>Éditer</th>
+            <th>Supprimer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rempli dynamiquement -->
+        </tbody>
+      </table>
+    </div>
+  </main>
 
-  </div>
+  <!-- ---- Bouton toggle ---- -->
+  <button id="booking-filtersToggle" class="booking-collapsed">🔍</button>
 
 </body>
 </html>

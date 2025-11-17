@@ -66,8 +66,9 @@ function renderBookingTable(bookings) {
       <td class="start" data-id="${b.booking_id}">${escapeHtml(startDate)}</td>
       <td class="end" data-id="${b.booking_id}">${escapeHtml(endDate)}</td>
       <td class="items" data-id="${b.booking_id}">${escapeHtml(itemsList)}</td>
-      <td><button class="btn-edit" data-id="${b.booking_id}">Éditer</button></td>
-      <td><button class="btn-delete" data-id="${b.booking_id}">Supprimer</button></td>
+      <td><button class="btn-edit booking-btn" data-id="${b.booking_id}">Éditer</button></td>
+      <td><button class="btn-delete booking-btn" data-id="${b.booking_id}">Supprimer</button></td>
+
     `;
 
     tbody.appendChild(tr);
@@ -328,6 +329,16 @@ export async function init() {
         });
       });
     }
+      
+      const sidebar = document.getElementById('booking-filtersSidebar');
+      const toggleBtn = document.getElementById('booking-filtersToggle');
+
+      if (sidebar && toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          sidebar.classList.toggle('booking-collapsed');
+        });
+      }
+
 
   } catch (err) {
     console.error('[bookings] Erreur initialisation :', formatServerError(err));

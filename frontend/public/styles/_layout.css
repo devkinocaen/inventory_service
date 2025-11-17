@@ -1,23 +1,17 @@
+/* ==== Bandeau ==== */
 .bandeau-container {
   width: 100%;
   margin-bottom: 20px;
 }
 
 .bandeau-img {
+  display: block;
   max-width: 100%;
   height: auto;
-  display: block;
   border-radius: 5px;
-
-  /* Centrage horizontal */
-  margin-left: auto;
-  margin-right: auto;
-  /* ou plus simple : margin: 0 auto; */
-  margin: 0 auto;
+  margin: 0 auto; /* centrage horizontal */
 }
 
-
-/* Version claire du bandeau gris */
 .bandeau-gris {
   background-color: var(--color-gray-light);
   text-align: center;
@@ -26,326 +20,110 @@
   border-radius: 5px;
 }
 
+/* ==== Conteneurs généraux ==== */
 .parent-container {
   display: flex;
   justify-content: center;
 }
 
-/* Mise en page ligne / colonne */
-.row {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.half-width {
-  flex: 1 1 50%;
-  min-width: 150px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Flex général */
+.row,
 .flex-row {
   display: flex;
-  gap: 20px;        /* espace entre les éléments */
-  flex-wrap: wrap;   /* ou nowrap si tu veux tout sur une ligne */
-  align-items: flex-start;  /* vertical : top, center, bottom, stretch */
-  
-  justify-content: flex-start; /* alignement horizontal par défaut */
-  /* Autres valeurs possibles :
-     center      → centre les éléments
-     flex-end    → aligner à droite
-     space-between → espace égal entre éléments, premier à gauche, dernier à droite
-     space-around  → espace égal autour de chaque élément
-     space-evenly  → espace égal entre tous les éléments, y compris aux extrémités
-  */
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
-
+.half-width,
 .flex-item {
-  flex: 1;
-  min-width: 150px;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .half-width, .flex-item { flex: 1 1 100%; }
-  .center-column { width: 40px; }
-}
-
-@media (max-width: 720px) {
-  .form-grid,
-  .inline-selects,
-  .add-participant,
-  .row {
-    flex-direction: column;
-  }
-}
-
-/* Assurer que chaque colonne (flex-item) s'empile verticalement */
-.flex-item {
-  flex: 1;
+  flex: 1 1 50%;
   min-width: 150px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* Colonne centrale fixe pour les flèches */
+/* Colonne centrale pour flèches */
 .center-column {
   width: 60px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 10px;
+  justify-content: flex-start; /* aligné en haut */
   align-items: center;
+  gap: 10px;
+  padding-top: 58px; /* ajuster selon hauteur thead */
 }
 
-/* Tables dans les sections : permettre scroll horizontal si trop large */
+/* ==== Sections avec tableaux ==== */
 .flex-item section {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
+  overflow-x: auto; /* scroll horizontal si trop large */
 }
 
 .flex-item section table {
-  display: block;
-  overflow-x: auto;
   width: 100%;
+  min-width: 600px; /* largeur minimale si nécessaire */
+  border-collapse: collapse;
+  table-layout: auto; /* ou fixed si colonnes uniformes */
 }
-/* Conteneur principal des colonnes avec tableaux + flèches */
+
+/* Conteneur principal pour colonnes + tableaux */
 main.flex-row.tables-container {
   display: flex;
   gap: 20px;
-  align-items: flex-start; /* aligner sur le haut */
+  align-items: flex-start;
 }
 
-/* Chaque colonne contenant un tableau + contenu */
 .table-column {
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
 }
 
-/* Colonne centrale flèches */
-.center-column {
-  width: 60px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start; /* aligné en haut */
-  padding-top: 58px; /* hauteur approximative du thead, ajuster si besoin */
-  gap: 10px;
-  align-items: center;
-}
-
-
-/* Forcer même hauteur thead pour un alignement parfait */
+/* ==== En-têtes de table ==== */
 table thead tr {
-  height: 58px; /* Ajuster pour correspondre à ton design */
+  height: 58px;
   vertical-align: middle;
 }
 
-/* Alignement vertical texte dans headers compacts */
 .compact-rotated-header > div {
-  line-height: 58px; /* même que hauteur thead */
+  line-height: 58px;
 }
 
+/* ==== Grid layout ==== */
 .grid-layout {
   display: grid;
-  grid-template-columns: 1fr 80px 1fr; /* 3 colonnes avec colonne centrale à 80px */
-  grid-template-rows: auto 3fr;        /* ligne 1 auto, ligne 2 3fr */
-  gap: 10px;                            /* espace entre cases */
-  height: 100vh;                        /* ou la hauteur souhaitée */
+  grid-template-columns: 1fr 80px 1fr;
+  grid-template-rows: auto 3fr;
+  gap: 10px;
+  height: 100vh;
   box-sizing: border-box;
   align-items: start;
 }
 
-/* Juste pour visualiser les cases */
-.cell {
-  /*border: 1px solid var(--color-border);*/
-  padding: 10px;
-  /*background: var(--color-gray-light);*/
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* ==== Responsive ==== */
+@media (max-width: 720px) {
+  .form-grid,
+  .inline-selects,
+  .add-participant,
+  .row,
+  .flex-row {
+    flex-direction: column;
+  }
 }
 
-/* ---- A1 : Filtres ---- */
-.cell-a1 {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
+@media (max-width: 480px) {
+  .half-width,
+  .flex-item {
+    flex: 1 1 100%;
+  }
 
-.cell-a1 h3 {
-  font-size: 1.1rem;
-  text-align: center;
-  margin: 0 0 0.8rem;
-  padding: 0.4rem 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.cell-a1-subgrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* 2 colonnes pour le groupe complet */
-  column-gap: 2rem; /* ajustable */
-  row-gap: 1rem;
-}
-
-.cell-a1-subgrid > div {
-  display: flex;
-  flex-direction: column; /* label au-dessus du champ */
-  gap: 0.3rem;
-}
-
-
-.cell-a1-subgrid label {
-  justify-self: end;
-  white-space: nowrap;
-}
-
-.cell-a1-subgrid select {
-  width: 100%;
-  justify-self: start;
-}
-
-.cell-a1-checkbox {
-  display: flex;
-  align-items: center;
-  margin-top: 1rem;
-}
-
-.cell-a1-checkbox input[type="checkbox"] {
-  margin-right: 0.4rem;
-}
-
-.filters-fieldset {
-  border: 1px solid #ccc;
-  padding: 1rem;
-  margin: 0;
-}
-
-.filters-fieldset legend {
-  font-size: 1rem;
-  font-weight: bold;
-  padding: 0 0.5rem;
-}
-
-/* ---- A2 : Liste des films ---- */
-.cell-a2 {
-  display: flex;
-  text-align: left;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-.cell-a2 > div {
-  display: flex;           /* ligne horizontale */
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  width: 100%;             /* occupe toute la largeur */
-  justify-content: flex-end; /* pousse label+input à droite */
-  align-items: center;     /* centre verticalement */
-}
-
-.cell-a2 > div label,
-.cell-a2 > div input[type="time"] {
-  margin: 0;               /* supprime margin-left:auto */
-}
-
-
-/* ---- B2 : Boutons flèches ---- */
-.cell-b2 {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;  /* centré horizontalement */
-  height: 100%;
-  padding: 0;           /* on gère les marges via .arrows */
-  box-sizing: border-box;
-}
-
-/* ---- C1 : Nom événement + Bloc de projection ---- */
-.cell-a3 {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  justify-content: center;
-  align-items: flex-start;
-  height: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  grid-column: 3 / 4; /* colonne droite */
-  grid-row: 1 / 2;    /* première ligne */
-}
-
-.cell-a3 > div {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-#event-name {
-  font-size: 1.5rem;
-  font-weight: bold;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.cell-c1 {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;     /* permet de centrer verticalement le contenu du bloc select */
-  align-items: flex-start;     /* aligné à gauche */
-  padding: 10px;
-  box-sizing: border-box;
-  height: 100%;
-  position: relative;
-}
-
-/* Nom de l’événement en haut */
-#event-name-container {
-  position: absolute;
-  top: 0;
-  left: 10px;                  /* même padding que .cell-c1 */
-}
-
-/* Bloc de projection centré verticalement */
-#event-block {
-  margin: auto 0;              /* pousse le bloc au centre vertical */
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-#event-block label {
-  text-align: right;
-}
-
-
-/* ---- C2 : Films sélectionnés détaillés ---- */
-.cell-c2 {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  justify-content: flex-start;
-  align-items: flex-start;
-  height: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  grid-column: 3 / 4; /* colonne droite */
-  grid-row: 2 / 3;    /* deuxième ligne */
-}
-
-.cell-c2 > div {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  .center-column {
+    width: 40px;
+  }
 }
