@@ -22,7 +22,7 @@ input {
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 5px;
-  max-height: 500px;
+  max-height: 60vh; /* ou 70vh, 90vh selon ton goût */
 }
 
 table {
