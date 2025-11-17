@@ -35,6 +35,7 @@ const genderMap = {
 
 // ---- DOM Elements ----
 let filtersSidebar, filtersToggle, cartToggle, orgToggle, container;
+let lookupInput;
 
 /**
  * Toggle filtre sélectionné
@@ -54,7 +55,7 @@ function renderFilterChips(categories, subcategories, styles) {
   const categoryChips = document.getElementById('cstm-categoryChips');
   const subcatChips = document.getElementById('cstm-subcatChips');
   const styleChips = document.getElementById('cstm-styleChips');
-    const genderChips = document.getElementById('cstm-genderChips'); // nouvelle div dans ton HTML
+  const genderChips = document.getElementById('cstm-genderChips'); // nouvelle div dans ton HTML
 
   if (!categoryChips || !subcatChips || !styleChips || !genderChips) return;
 
@@ -65,7 +66,7 @@ function renderFilterChips(categories, subcategories, styles) {
     chip.onclick = () => {
       toggleFilter(type, name);
       renderFilterChips(categories, subcategories, styles);
-      renderItems();
+      fetchItemsAndRender();
     };
     return chip;
   };
@@ -84,30 +85,20 @@ function renderFilterChips(categories, subcategories, styles) {
   styleChips.innerHTML = '';
   styles.forEach(s => styleChips.appendChild(makeChip(s.name, 'style')));
     
-    // Genre (constantes fixes)
-    const genders = ['Homme', 'Femme', 'Unisexe'];
-    genderChips.innerHTML = '';
-    genders.forEach(g => genderChips.appendChild(makeChip(g, 'gender')));
+  // Genre (constantes fixes)
+  const genders = ['Homme', 'Femme', 'Unisexe'];
+  genderChips.innerHTML = '';
+  genders.forEach(g => genderChips.appendChild(makeChip(g, 'gender')));
 }
 
 /**
- * Récupère et affiche les items filtrés selon la sidebar
+ * Fetch les items depuis la base SQL selon les filtres sidebar
  */
-async function renderItems() {
-  if (!container) return;
-  container.innerHTML = '';
-
-  // On utilise les valeurs globales, pas celles du DOM
-  let filterStartDate = currentFilterStart
-    ? currentFilterStart.toISOString()
-    : null;
-
-  let filterEndDate = currentFilterEnd
-    ? currentFilterEnd.toISOString()
-    : null;
+async function fetchItems() {
+  let filterStartDate = currentFilterStart ? currentFilterStart.toISOString() : null;
+  let filterEndDate = currentFilterEnd ? currentFilterEnd.toISOString() : null;
 
   const now = new Date();
-
   if (filterStartDate && new Date(filterStartDate).getTime() < now.getTime()) filterStartDate = null;
   if (filterEndDate && new Date(filterEndDate).getTime() < now.getTime()) filterEndDate = null;
   if (filterStartDate && filterEndDate && new Date(filterStartDate) >= new Date(filterEndDate)) {
@@ -117,31 +108,24 @@ async function renderItems() {
   }
 
   const filters = {
-    // Maintenant on passe des tableaux pour catégories et sous-catégories
     p_category_ids: activeFilters.category.length
       ? currentCategories
           .filter(c => activeFilters.category.includes(c.name))
           .map(c => c.id)
       : null,
-
     p_subcategory_ids: activeFilters.subcategory.length
       ? currentSubcategories
           .filter(sc => activeFilters.subcategory.includes(sc.name))
           .map(sc => sc.id)
       : null,
-
-    // Styles restent un tableau
     p_style_ids: activeFilters.style.length
       ? currentStyles
           .filter(s => activeFilters.style.includes(s.name))
           .map(s => s.id)
       : null,
-      
-    // Conversion Homme/Femme/Unisexe -> male/female/unisex
     p_gender: activeFilters.gender.length
-    ? activeFilters.gender.map(g => genderMap[g])
-    : null,
-
+      ? activeFilters.gender.map(g => genderMap[g])
+      : null,
     p_start_date: filterStartDate,
     p_end_date: filterEndDate
   };
@@ -150,91 +134,87 @@ async function renderItems() {
     currentItems = await fetchReservables(client, filters);
   } catch (err) {
     console.error('[Collection] Erreur fetchReservables :', err);
-    return;
   }
+}
 
-    for (const item of currentItems) {
-        const div = document.createElement('div');
-        div.className = 'cstm-costume-card' + (selectedItems.includes(item.id) ? ' selected' : '');
+/**
+ * Render les items dans le DOM
+ * @param {Array} itemsToRender tableau d'items (peut être filtré localement pour lookup)
+ */
+function renderItems(itemsToRender = currentItems) {
+  if (!container) return;
+  container.innerHTML = '';
 
-        const img = document.createElement('img');
-        // photo par défaut
-        img.src = item.photos?.[0]?.url || 'data:image/svg+xml;charset=UTF-8,' +
-            encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
-                <rect width="200" height="200" fill="#ddd"/>
-                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="16">No Image</text>
-            </svg>`);
+  const lookupValue = lookupInput?.value?.trim().toLowerCase();
 
-        if (item.photos && item.photos.length > 1) {
-            let currentIndex = 0;
-            img.src = item.photos[currentIndex].url;
-            let intervalId = null;
+  const filteredItems = lookupValue
+    ? itemsToRender.filter(i => i.name.toLowerCase().includes(lookupValue))
+    : itemsToRender;
 
-            img.addEventListener('mouseenter', () => {
-                // démarrer le défilement
-                intervalId = setInterval(() => {
-                    currentIndex = (currentIndex + 1) % item.photos.length;
-                    img.src = item.photos[currentIndex].url;
-                }, 1500);
-            });
+  for (const item of filteredItems) {
+    const div = document.createElement('div');
+    div.className = 'cstm-costume-card' + (selectedItems.includes(item.id) ? ' selected' : '');
 
-            img.addEventListener('mouseleave', () => {
-                // arrêter le défilement et revenir à la première photo
-                clearInterval(intervalId);
-                intervalId = null;
-                currentIndex = 0;
-                img.src = item.photos[currentIndex].url;
-            });
-        }
+    const img = document.createElement('img');
+    img.src = item.photos?.[0]?.url || 'data:image/svg+xml;charset=UTF-8,' +
+        encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+            <rect width="200" height="200" fill="#ddd"/>
+            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="16">No Image</text>
+        </svg>`);
 
+    if (item.photos && item.photos.length > 1) {
+      let currentIndex = 0;
+      img.src = item.photos[currentIndex].url;
+      let intervalId = null;
 
-        div.appendChild(img);
+      img.addEventListener('mouseenter', () => {
+        intervalId = setInterval(() => {
+          currentIndex = (currentIndex + 1) % item.photos.length;
+          img.src = item.photos[currentIndex].url;
+        }, 1500);
+      });
 
-        const name = document.createElement('div');
-        name.className = 'cstm-costume-name';
-        name.innerHTML = `<strong>${item.name}</strong><br>
-                          Taille: ${item.size_label || '-'}<br>
-                          Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}`;
-        div.appendChild(name);
-
-        div.addEventListener('click', () => {
-            if (selectedItems.includes(item.id)) {
-                selectedItems = selectedItems.filter(i => i !== item.id);
-                div.classList.remove('selected');
-            } else {
-                selectedItems.push(item.id);
-                div.classList.add('selected');
-            }
-            renderCart();
-        });
-
-        container.appendChild(div);
+      img.addEventListener('mouseleave', () => {
+        clearInterval(intervalId);
+        intervalId = null;
+        currentIndex = 0;
+        img.src = item.photos[currentIndex].url;
+      });
     }
 
+    div.appendChild(img);
+
+    const name = document.createElement('div');
+    name.className = 'cstm-costume-name';
+    name.innerHTML = `<strong>${item.name}</strong><br>
+                      Taille: ${item.size_label || '-'}<br>
+                      Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}`;
+    div.appendChild(name);
+
+    div.addEventListener('click', () => {
+      if (selectedItems.includes(item.id)) {
+        selectedItems = selectedItems.filter(i => i !== item.id);
+        div.classList.remove('selected');
+      } else {
+        selectedItems.push(item.id);
+        div.classList.add('selected');
+      }
+    });
+
+    container.appendChild(div);
+  }
 }
 
-
 /**
- * Render le panier en bas
+ * Combine fetch + render selon les filtres sidebar
  */
-function renderCart() {
-  const cartContainer = document.getElementById('cstm-cartBottom');
-  if (!cartContainer) return;
-
-  cartContainer.innerHTML = '<h4>Panier</h4>';
-  selectedItems.forEach(id => {
-    const item = currentItems.find(i => i.id === id);
-    if (!item) return;
-
-    const div = document.createElement('div');
-    div.className = 'cart-item';
-    div.innerHTML = `<strong>${item.name}</strong> | Taille: ${item.size_label || '-'} | Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}`;
-    cartContainer.appendChild(div);
-  });
+async function fetchItemsAndRender() {
+  await fetchItems();
+  renderItems();
 }
 
 /**
- * Charge les données depuis la base SQL
+ * Charge les données depuis la base SQL au démarrage
  */
 async function loadData() {
   try {
@@ -252,7 +232,6 @@ async function loadData() {
 
     renderFilterChips(categories, subcategories, styles);
     renderItems();
-    renderCart();
   } catch (err) {
     console.error('[Collection] Erreur :', formatServerError(err.message || err));
   }
@@ -269,6 +248,7 @@ export async function init() {
   cartToggle = document.getElementById('cstm-cartToggle');
   orgToggle = document.getElementById('cstm-orgToggle');
   container = document.getElementById('cstm-main');
+  lookupInput = document.getElementById('cstm-lookupInput');
 
   if (!document.getElementById('cstm-cartBottom')) {
     const bottomCart = document.createElement('div');
@@ -286,7 +266,7 @@ export async function init() {
     const itemsForModal = selectedItems.map(id => {
       const item = currentItems.find(i => i.id === id);
       return item ? {
-        id: item.id,              // indispensable
+        id: item.id,
         name: item.name,
         category_name: item.category_name,
         photos: item.photos
@@ -297,7 +277,6 @@ export async function init() {
       start: currentFilterStart,
       end: currentFilterEnd
     });
-
   });
 
   orgToggle.addEventListener('click', async () => {
@@ -320,10 +299,12 @@ export async function init() {
     currentFilterStart = start ? new Date(start) : null;
     currentFilterEnd   = end   ? new Date(end)   : null;
 
-    renderItems();
+    fetchItemsAndRender();
   });
 
-
+  lookupInput?.addEventListener('input', () => {
+    renderItems(); // applique uniquement la recherche locale
+  });
 
   await loadData();
 }

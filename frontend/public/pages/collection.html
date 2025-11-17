@@ -60,16 +60,20 @@
 
   <!-- ---- Sidebar Panier ---- -->
   <div id="cstm-cartSidebar" class="cstm-collapsed"></div>
-
-  <!-- ---- Zone principale ---- -->
-  <div id="cstm-main">
-    <!-- Mini bar horizontale centrée avec filtres et panier -->
-    <div id="cstm-topControls">
-      <div id="cstm-filtersInline" class="cstm-inlineControls"></div>
-      <div id="cstm-cartInline" class="cstm-inlineControls"></div>
-    </div>
+  <!-- Lookup input -->
+  <div id="cstm-lookupContainer" style="margin: 1em 0;">
+    <label for="cstm-lookupInput"><strong>Recherche article :</strong></label>
+    <input type="text" id="cstm-lookupInput" placeholder="Tapez pour filtrer…">
   </div>
-
+  <!-- ---- Zone principale ---- -->
+  <div id="cstm-main">  </div>
+  
+  <!-- Mini bar horizontale centrée avec filtres et panier -->
+  <div id="cstm-topControls">
+    <div id="cstm-filtersInline" class="cstm-inlineControls"></div>
+   <!-- <div id="cstm-cartInline" class="cstm-inlineControls"></div> -->
+  </div>
+  
   <!-- ---- Boutons flottants ---- -->
   <button id="cstm-filtersToggle" class="cstm-collapsed">🔍</button>
   <button id="cstm-orgToggle" class="cstm-collapsed">👥</button> 
