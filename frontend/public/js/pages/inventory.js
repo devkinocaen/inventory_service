@@ -1,5 +1,6 @@
 import {
     fetchReservables,
+    fetchReservableById,
     updateReservable,
     createReservable,
     deleteReservable
@@ -7,6 +8,7 @@ import {
 
 import { formatServerError } from '../libs/helpers.js';
 import { initClient } from '../libs/client.js';
+import { openPhotoModal } from '../modals/photo_modal.js'; // chemin vers ton JS modal
 
 const client = await initClient();
 let currentItems = [];
@@ -47,7 +49,7 @@ function renderStockTable(items) {
       <td class="editable-select" data-field="category" data-id="${item.id}">${item.category_name || ''}</td>
       <td class="editable-select" data-field="subcategory" data-id="${item.id}">${item.subcategory_name || ''}</td>
       <td data-field="styles" data-id="${item.id}">${stylesList}</td>
-      <td><button class="btn-photos" data-id="${item.id}">Voir</button></td>
+      <td><button class="btn-photos" data-id="${item.id}">Modifier (${item.photos?.length || 0})</button></td>
       <td><button class="btn-edit" data-id="${item.id}">Editer</button></td>
       <td><button class="btn-delete" data-id="${item.id}">Supprimer</button></td>
     `;
@@ -57,6 +59,7 @@ function renderStockTable(items) {
 
   initEditableCells();
   setupDeleteButtons();
+  setupPhotoButtons(); 
 }
 
 // ===== Mappings pour affichage =====
@@ -317,4 +320,31 @@ function setupDeleteButtons() {
     });
   });
 
+}
+
+
+function setupPhotoButtons() {
+  const tbody = document.querySelector('#stock_table tbody');
+  if (!tbody) return;
+
+  tbody.querySelectorAll('.btn-photos').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const itemId = Number(btn.dataset.id);
+      if (!itemId) return;
+
+      // Récupérer le nom pour l'affichage du titre
+      const item = currentItems.find(i => i.id === itemId);
+      const itemName = item ? item.name : '(nom inconnu)';
+
+      try {
+        await openPhotoModal(client, itemId, itemName, (updatedPhotos) => {
+          // Callback facultatif après sauvegarde
+          console.log('Photos mises à jour pour l’item', itemId, updatedPhotos);
+        });
+      } catch (err) {
+        alert('Erreur ouverture modal photos : ' + err.message);
+        console.error(err);
+      }
+    });
+  });
 }

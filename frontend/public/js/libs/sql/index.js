@@ -32,6 +32,8 @@ export { deleteBooking } from './deleteBooking.js';
 export { updateBooking } from './updateBooking.js';
 export { deleteReservable } from './deleteReservable.js';
 export { deleteReservableBatch } from './deleteReservableBatch.js';
+export { fetchReservableById } from './fetchReservableById.js';
+
 
 
 

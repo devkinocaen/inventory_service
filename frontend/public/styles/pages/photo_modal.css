@@ -1,0 +1,102 @@
+/* 🔹 Fond modal */
+.photo-modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  display: none;
+  align-items: center; justify-content: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.photo-modal.show {
+  display: flex;
+  opacity: 1;
+}
+
+/* 🔹 Contenu modal */
+.photo-modal-content {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 1200px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.photo-modal.show .photo-modal-content {
+  transform: scale(1);
+}
+
+/* 🔹 Titre */
+.photo-modal-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+/* 🔹 Liste des photos */
+.photo-list .photo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.photo-list .photo-row img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 6px;
+  background-color: #f3f3f3;
+}
+
+.photo-list .photo-row input {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* 🔹 Boutons */
+.photo-btn-add,
+.photo-btn-save,
+.photo-btn-close,
+.photos-btn-danger {
+  cursor: pointer;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+
+.photo-btn-save {
+  background-color: #2ecc71;
+  color: white;
+}
+.photo-btn-save:hover { background-color: #27ae60; }
+
+.photo-btn-add {
+  background-color: #3498db;
+  color: white;
+}
+.photo-btn-add:hover { background-color: #2980b9; }
+
+.photo-btn-close {
+  background-color: #ccc;
+}
+.photo-btn-close:hover { background-color: #bbb; }
+
+.photos-btn-danger {
+  background-color: #e74c3c;
+  color: white;
+}
+.photos-btn-danger:hover { background-color: #c0392b; }
+
+/* 🔹 Actions en bas du modal */
+.photo
