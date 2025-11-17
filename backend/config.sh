@@ -21,4 +21,5 @@ fi
 
 
 export ALWAYS_DATA_API_REST_URL=https://inventory-service.alwaysdata.net
-export RENDER_API_REST_URL=https://gunicorn-hh3p.onrender.com
+#export RENDER_API_REST_URL=https://gunicorn-hh3p.onrender.com
+export RENDER_API_REST_URL=
