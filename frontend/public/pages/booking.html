@@ -1,116 +1,66 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Réservation</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <title>Réservations – Costumerie</title>
+  <link rel="stylesheet" href="bookings.css">
 </head>
-<body>
+<body class="cstm-body">
 
-  <!-- 1e Section : Choix du projet -->
-  <section class="page-reservation-section-projet">
-    <label for="projet" class="form-label">Projet :</label>
-    <select id="projet" name="projet" class="form-input">
-      <option value="">-- Choisir un projet --</option>
-    </select>
-  </section>
+  <div id="cstm-container">
 
-  <!-- 2e Section : items déjà empruntés -->
-  <section class="page-reservation-section-emprunt">
-    <h2>Items déjà empruntés</h2>
-    <table id="liste-emprunts" class="styled-table">
-      <thead>
-        <tr>
-         <th class="sortable">Items</th>
-          <th class="sortable">Début</th>
-          <th class="sortable">Fin</th>
-          <th class="sortable">Statut</th>
-          <th>Sélection</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td colspan="7">Aucune réservation chargée.</td></tr>
-      </tbody>
-    </table>
+    <!-- Sidebar Filtres -->
+    <aside id="cstm-sidebar">
+      <h2>Filtres</h2>
 
-    <!-- Boutons d'action -->
-    <div class="page-reservation-section-boutons">
-      <button id="btn_dereserver" type="button">Déréserver</button>
-      <button id="btn_sortir" type="button">Sortir du stock</button>
-      <button id="btn_rentrer" type="button">Rentrer dans le stock</button>
-    </div>
-  </section>
+      <label for="lookup_booking">Recherche</label>
+      <input id="lookup_booking" type="text" placeholder="Recherche (organisation, batch, items...)">
 
-  <!-- 3e Section : Cadre contenant les filtres + dates + items -->
-  <section class="page-reservation-section-cadre">
-    <h2>Réserver des items</h2>
+      <label for="filter_org">Organisation</label>
+      <select id="filter_org">
+        <option value="">Toutes</option>
+      </select>
 
-    <!-- Créneau temporel -->
-    <div class="page-reservation-section-creneau">
-      <div class="flex-row">
-        <div class="flex-item">
-          <label for="debut" class="form-label">Début :</label>
-          <input type="datetime-local" id="debut" name="debut" class="form-input" />
-        </div>
-        <div class="flex-item">
-          <label for="fin" class="form-label">Fin :</label>
-          <input type="datetime-local" id="fin" name="fin" class="form-input" />
-        </div>
+      <label for="filter_start">Début après</label>
+      <input type="date" id="filter_start">
+
+      <label for="filter_end">Fin avant</label>
+      <input type="date" id="filter_end">
+
+      <button id="btn_apply_filters">Appliquer</button>
+    </aside>
+
+
+    <!-- Contenu principal -->
+    <main id="cstm-main">
+
+      <div class="header-bar">
+        <h1>Réservations</h1>
+        <button id="btn_new_booking" class="btn-primary">Nouvelle réservation</button>
       </div>
-    </div>
 
-    <!-- Filtres -->
-    <div class="page-reservation-section-filtres">
-      <div class="flex-row">
-        <div class="flex-item">
-          <label for="filter_type" class="form-label">Type</label>
-          <select id="filter_type" name="filter_type" class="form-input">
-            <option value="">Tous</option>
-          </select>
-        </div>
-        <div class="flex-item">
-            <label for="show_unavailable_reservables">Montrer les items indisponibles</label>
-            <input type="checkbox" id="show_unavailable_reservables" />
-          </div>
-
-        </div>
-      </div>
-    </div>
-    
-    <!-- Bouton réserver -->
-    <div class="page-reservation-section-bouton">
-        <button id="btn_reserver" type="button">Réserver cet item</button>
-    </div>
-    
-    <div>
-      <label for="lookup_reservable_name" class="form-label-left">Rechercher :</label>
-      <input type="text" id="lookup_reservable_name" name="lookup_reservable_name" class="form-input" required />
-    </div>
-
-    <!-- Tableau des items avec scroll -->
-    <div class="page-reservation-section-tableau reservation-table">
-      <div class="reservation-container">
-        <table id="liste-items" class="styled-table reservation">
+      <div id="cstm-table-wrapper">
+        <table id="bookings_table">
           <thead>
             <tr>
-              <th class="sortable">Nom</th>
-              <th class="sortable">Type</th>
-              <th class="sortable">Statut</th>
-              <th>Description</th>
-              <th>Notes</th>
-              <th>Photos</th>
-              <th>Réserver</th>
+              <th class="sortable">Lot</th>
+              <th class="sortable">Organisation</th>
+              <th class="sortable">Début</th>
+              <th class="sortable">Fin</th>
+              <th class="sortable">Objets</th>
+              <th>Éditer</th>
+              <th>Supprimer</th>
             </tr>
           </thead>
           <tbody>
-            <!-- lignes dynamiques ici -->
+            <!-- Rempli dynamiquement ! -->
           </tbody>
         </table>
       </div>
-    </div>
 
-  </section>
+    </main>
+
+  </div>
 
 </body>
 </html>

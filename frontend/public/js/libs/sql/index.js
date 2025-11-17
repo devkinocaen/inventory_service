@@ -28,6 +28,8 @@ export { deleteSubcategory } from './deleteSubcategory.js';
 export { fetchSubcategoriesByCategory } from './fetchSubcategoriesByCategory.js';
 export { updateReservable } from './updateReservable.js';
 export { createReservable } from './createReservable.js';
+export { deleteBooking } from './deleteBooking.js';
+export { updateBooking } from './updateBooking.js';
 
 
 
