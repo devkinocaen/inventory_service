@@ -13,32 +13,41 @@
     <aside id="cstm-sidebar">
       <h2>Filtres</h2>
 
-      <label for="lookup_booking">Recherche</label>
-      <input id="lookup_booking" type="text" placeholder="Recherche (organisation, batch, items...)">
+      <div class="booking-filter-group">
+        <label for="lookup_booking">Recherche</label>
+        <input id="lookup_booking" type="text" placeholder="Recherche (organisation, batch, items...)">
+      </div>
 
-      <label for="filter_org">Organisation</label>
-      <select id="filter_org">
-        <option value="">Toutes</option>
-      </select>
+      <div class="booking-filter-group">
+        <label for="filter_org">Organisation</label>
+        <select id="filter_org">
+          <option value="">Toutes</option>
+        </select>
+      </div>
 
-      <label for="filter_start">Début après</label>
-      <input type="date" id="filter_start">
+      <div class="booking-filter-group">
+        <label for="filter_start">Début après</label>
+        <input type="date" id="filter_start">
+      </div>
 
-      <label for="filter_end">Fin avant</label>
-      <input type="date" id="filter_end">
+      <div class="booking-filter-group">
+        <label for="filter_end">Fin avant</label>
+        <input type="date" id="filter_end">
+      </div>
 
-      <button id="btn_apply_filters">Appliquer</button>
+      <button id="btn_apply_filters" class="booking-btn">Appliquer</button>
     </aside>
-
 
     <!-- Contenu principal -->
     <main id="cstm-main">
 
+      <!-- Header avec titre et bouton -->
       <div class="header-bar">
         <h1>Réservations</h1>
-        <button id="btn_new_booking" class="btn-primary">Nouvelle réservation</button>
+        <button id="btn_new_booking" class="booking-btn edit">Nouvelle réservation</button>
       </div>
 
+      <!-- Tableau des réservations -->
       <div id="cstm-table-wrapper">
         <table id="bookings_table">
           <thead>
@@ -53,7 +62,7 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Rempli dynamiquement ! -->
+            <!-- Rempli dynamiquement -->
           </tbody>
         </table>
       </div>

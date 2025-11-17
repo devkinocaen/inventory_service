@@ -7,7 +7,7 @@ SECURITY DEFINER
 AS $$
 DECLARE
     new_batch inventory.reservable_batch%ROWTYPE;
-    id INT;
+    v_id INT;  -- variable locale renommée
 BEGIN
     -- 1) Créer le batch
     INSERT INTO inventory.reservable_batch (description)
@@ -16,17 +16,17 @@ BEGIN
 
     -- 2) Valider chaque item et l’ajouter au batch
     IF p_reservable_ids IS NOT NULL THEN
-        FOREACH id IN ARRAY p_reservable_ids LOOP
-            
+        FOREACH v_id IN ARRAY p_reservable_ids LOOP
+
             -- vérification existence
-            PERFORM 1 FROM inventory.reservable WHERE reservable.id = id;
+            PERFORM 1 FROM inventory.reservable r WHERE r.id = v_id;
             IF NOT FOUND THEN
-                RAISE EXCEPTION 'Reservable % n’existe pas', id;
+                RAISE EXCEPTION 'Reservable % n’existe pas', v_id;
             END IF;
 
             -- insertion dans le lien batch <-> item
             INSERT INTO inventory.reservable_batch_link (batch_id, reservable_id)
-            VALUES (new_batch.id, id);
+            VALUES (new_batch.id, v_id);
 
         END LOOP;
     END IF;

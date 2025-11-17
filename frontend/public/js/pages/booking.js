@@ -246,6 +246,7 @@ async function refreshTable(filters = {}) {
   try {
     const bookings = await fetchBookings(client, filters);
     // bookings mapping already done in RPC wrapper (fetchBookings)
+      console.log ('bookings', bookings)
     renderBookingTable(bookings);
   } catch (err) {
     console.error('[bookings] Erreur fetchBookings:', formatServerError(err));

@@ -1,19 +1,34 @@
-// js/api/fetchBookings.js
-export async function fetchBookings(client, params = {}) {
-  const rpcParams = {
-    p_start: params.p_start ?? null,
-    p_end: params.p_end ?? null,
-    p_organization_id: params.p_organization_id ?? null,
-    p_category_id: params.p_category_id ?? null,
-    p_subcategory_id: params.p_subcategory_id ?? null
-  };
+import { single } from '../helpers.js';
 
-  const { data, error } = await client.rpc('list_bookings', rpcParams);
+/**
+ * Récupère les réservations selon les filtres optionnels
+ * @param {object} client - instance du client Neon/PostgreSQL
+ * @param {object} params - filtres optionnels : { p_start, p_end, p_organization_id, p_category_id, p_subcategory_id }
+ * @returns {Promise<Array>} - tableau d'objets booking
+ */
+export async function fetchBookings(client, params = {}) {
+  const {
+    p_start = null,
+    p_end = null,
+    p_organization_id = null,
+    p_category_id = null,
+    p_subcategory_id = null
+  } = params;
+
+  const { data, error } = await client.rpc('list_bookings', {
+    p_start,
+    p_end,
+    p_organization_id,
+    p_category_id,
+    p_subcategory_id
+  });
+
   if (error) {
     console.error('[fetchBookings] Erreur serveur :', error);
     return [];
   }
 
+  // Retour : transformer JSONB reservables en tableau JS si nécessaire
   return (data || []).map(row => ({
     booking_id: row.booking_id,
     reservable_batch_id: row.reservable_batch_id,

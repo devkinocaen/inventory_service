@@ -1,10 +1,6 @@
--- list_bookings.sql
--- Lister toutes les réservations entre p_start et p_end.
--- Fournit : booking_id, reservable_batch_id, batch_description,
--- renter info, booking_reference_id, start_date, end_date, reservables (JSONB array)
 CREATE OR REPLACE FUNCTION inventory.list_bookings(
-  p_start TIMESTAMP,
-  p_end   TIMESTAMP,
+  p_start TIMESTAMP DEFAULT NULL,
+  p_end   TIMESTAMP DEFAULT NULL,
   p_organization_id INT DEFAULT NULL,
   p_category_id INT DEFAULT NULL,
   p_subcategory_id INT DEFAULT NULL
@@ -31,7 +27,6 @@ AS $$
     b.booking_reference_id,
     b.start_date,
     b.end_date,
-    -- liste des objets du lot en JSONB : [{id,name,category,subcategory,photos}, ...]
     (
       SELECT jsonb_agg(
         jsonb_build_object(
@@ -53,10 +48,9 @@ AS $$
   FROM inventory.reservable_booking b
   JOIN inventory.reservable_batch rb ON rb.id = b.reservable_batch_id
   LEFT JOIN inventory.organization o ON o.id = b.renter_organization_id
-  WHERE b.start_date < p_end
-    AND b.end_date > p_start
+  WHERE (p_start IS NULL OR b.end_date > p_start)
+    AND (p_end IS NULL OR b.start_date < p_end)
     AND (p_organization_id IS NULL OR b.renter_organization_id = p_organization_id)
-    -- Optionnel : filtrage par catégorie/subcategory si fourni (via contenu du lot)
     AND (
       p_category_id IS NULL OR EXISTS (
         SELECT 1 FROM inventory.reservable r
