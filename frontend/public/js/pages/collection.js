@@ -381,7 +381,12 @@ async function renderItemPhoto(item, container) {
   await showPhoto(item.photos[currentIndex]);
 
   if (item.photos.length > 1) {
-    container.addEventListener('mouseenter', async () => {
+    // Supprime d'abord les anciens listeners pour éviter l'empilement
+    container.onmouseenter = null;
+    container.onmouseleave = null;
+
+    container.addEventListener('mouseenter', () => {
+      if (intervalId) clearInterval(intervalId);
       intervalId = setInterval(async () => {
         currentIndex = (currentIndex + 1) % item.photos.length;
         await showPhoto(item.photos[currentIndex]);
@@ -389,8 +394,10 @@ async function renderItemPhoto(item, container) {
     });
 
     container.addEventListener('mouseleave', async () => {
-      clearInterval(intervalId);
-      intervalId = null;
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
       currentIndex = 0;
       await showPhoto(item.photos[currentIndex]);
     });
