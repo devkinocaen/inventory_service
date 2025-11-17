@@ -54,14 +54,15 @@ async function infiniteLoop() {
 
 // Réveille un ou plusieurs services en parallèle
 export async function wakeUpServices(urls = [], delayBy = 1000, maxWait = 60000) {
-  if (!urls.length) return null;
+  // Filtrer les URLs vides ou nulles
+  const validUrls = urls.filter(url => url && url.trim() !== "");
+  if (!validUrls.length) return null;
 
   showWakeUpAlertDelayed(delayBy);
   const start = Date.now();
   let resolved = false; // flag pour ignorer les autres réponses
 
-  // Ping chaque URL avec AbortController
-  const pingPromises = urls.map(url =>
+  const pingPromises = validUrls.map(url =>
     new Promise(resolve => {
       const controller = new AbortController();
 
@@ -76,7 +77,6 @@ export async function wakeUpServices(urls = [], delayBy = 1000, maxWait = 60000)
             return resolve(url);
           }
         } catch (err) {
-          // ignore fetch errors
           console.warn(`⚠️ Échec ping: ${url} (${err.message})`);
         }
 
@@ -87,7 +87,6 @@ export async function wakeUpServices(urls = [], delayBy = 1000, maxWait = 60000)
     })
   );
 
-  // Promise.race renvoie dès qu'une URL répond
   const awakeUrl = await Promise.race(pingPromises);
 
   hideWakeUpAlert();
@@ -99,6 +98,7 @@ export async function wakeUpServices(urls = [], delayBy = 1000, maxWait = 60000)
 
   return awakeUrl;
 }
+
 
 
 
