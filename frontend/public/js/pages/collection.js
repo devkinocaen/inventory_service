@@ -153,40 +153,64 @@ async function renderItems() {
     return;
   }
 
-  for (const item of currentItems) {
-    const div = document.createElement('div');
-    div.className = 'cstm-costume-card' + (selectedItems.includes(item.id) ? ' selected' : '');
+    for (const item of currentItems) {
+        const div = document.createElement('div');
+        div.className = 'cstm-costume-card' + (selectedItems.includes(item.id) ? ' selected' : '');
 
-    const img = document.createElement('img');
-    img.src = item.photos?.[0]?.url || 'data:image/svg+xml;charset=UTF-8,' +
-      encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
-        <rect width="200" height="200" fill="#ddd"/>
-        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="16">No Image</text>
-      </svg>`);
-    div.appendChild(img);
+        const img = document.createElement('img');
+        // photo par défaut
+        img.src = item.photos?.[0]?.url || 'data:image/svg+xml;charset=UTF-8,' +
+            encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+                <rect width="200" height="200" fill="#ddd"/>
+                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="16">No Image</text>
+            </svg>`);
 
-    const name = document.createElement('div');
-    name.className = 'cstm-costume-name';
-    name.innerHTML = `<strong>${item.name}</strong><br>
-                      Taille: ${item.size_label || '-'}<br>
-                      Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}`;
-    div.appendChild(name);
+        if (item.photos && item.photos.length > 1) {
+            let currentIndex = 0;
+            img.src = item.photos[currentIndex].url;
+            let intervalId = null;
 
-    div.addEventListener('click', () => {
-      if (selectedItems.includes(item.id)) {
-        selectedItems = selectedItems.filter(i => i !== item.id);
-        div.classList.remove('selected'); // update visuel
-      } else {
-        selectedItems.push(item.id);
-        div.classList.add('selected'); // update visuel
-      }
+            img.addEventListener('mouseenter', () => {
+                // démarrer le défilement
+                intervalId = setInterval(() => {
+                    currentIndex = (currentIndex + 1) % item.photos.length;
+                    img.src = item.photos[currentIndex].url;
+                }, 1500);
+            });
 
-      renderCart(); // uniquement mettre à jour le panier
-    });
+            img.addEventListener('mouseleave', () => {
+                // arrêter le défilement et revenir à la première photo
+                clearInterval(intervalId);
+                intervalId = null;
+                currentIndex = 0;
+                img.src = item.photos[currentIndex].url;
+            });
+        }
 
 
-    container.appendChild(div);
-  }
+        div.appendChild(img);
+
+        const name = document.createElement('div');
+        name.className = 'cstm-costume-name';
+        name.innerHTML = `<strong>${item.name}</strong><br>
+                          Taille: ${item.size_label || '-'}<br>
+                          Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}`;
+        div.appendChild(name);
+
+        div.addEventListener('click', () => {
+            if (selectedItems.includes(item.id)) {
+                selectedItems = selectedItems.filter(i => i !== item.id);
+                div.classList.remove('selected');
+            } else {
+                selectedItems.push(item.id);
+                div.classList.add('selected');
+            }
+            renderCart();
+        });
+
+        container.appendChild(div);
+    }
+
 }
 
 
