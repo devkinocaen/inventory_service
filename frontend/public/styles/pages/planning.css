@@ -113,3 +113,13 @@
   z-index: 100;
   pointer-events: none;
 }
+/* 🔹 Ligne des jours (centré) */
+#reservable-planning-table thead tr.header-days th.header-day {
+  text-align: center;
+}
+
+/* 🔹 Ligne des heures (aligné à gauche) */
+#reservable-planning-table thead tr.header-hours th.header-hour {
+  text-align: left;
+  padding-left: 0.5rem; /* petit décalage du texte pour lisibilité */
+}

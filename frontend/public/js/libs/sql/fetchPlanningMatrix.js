@@ -31,25 +31,21 @@ export async function fetchPlanningMatrix(client, params = {}) {
     return [];
   }
 
-  // Mapping respectant exactement la structure reçue par le SQL
+  console.log('data', data);
+
+  // Mapping respectant la nouvelle structure : slots ne contiennent plus de bookings
   return (data || []).map(batch => ({
     reservable_batch_id: batch.reservable_batch_id,
     batch_description: batch.batch_description || '',
+    organization_id: batch.organization_id,
+    organization_name: batch.organization_name,
+    referent_first_name: batch.referent_first_name,
+    referent_last_name: batch.referent_last_name,
+    referent_mobile: batch.referent_mobile,
+    reservables: batch.reservables || [],
     slots: (batch.slots || []).map(slot => ({
-      start: slot.start,
-      end: slot.end,
-      reservables: slot.reservables || [],
-      bookings: (slot.bookings || []).map(bk => ({
-        id: bk.id,
-        start_date: bk.start_date,
-        end_date: bk.end_date,
-        organization_id: bk.organization_id,
-        organization_name: bk.organization_name,
-        referent_first_name: bk.referent_first_name,
-        referent_last_name: bk.referent_last_name,
-        referent_phone: bk.referent_phone
-      })),
-      is_reserved: Array.isArray(slot.bookings) && slot.bookings.length > 0
+      start: new Date(slot.start),
+      end: new Date(slot.end)
     }))
   }));
 }

@@ -6,74 +6,78 @@ CREATE OR REPLACE FUNCTION inventory.get_planning_matrix(
 RETURNS TABLE (
     reservable_batch_id INT,
     batch_description TEXT,
+    organization_id INT,
+    organization_name TEXT,
+    referent_first_name TEXT,
+    referent_last_name TEXT,
+    referent_mobile TEXT,
+    reservables JSONB,
     slots JSONB
 )
 LANGUAGE sql STABLE
 AS $$
 WITH batches AS (
-    SELECT id, description
-    FROM inventory.reservable_batch
+    SELECT b.id, b.description,
+           org.id AS organization_id, org.name AS organization_name,
+           p.first_name AS referent_first_name,
+           p.last_name AS referent_last_name,
+           p.phone AS referent_mobile
+    FROM inventory.reservable_batch b
+    JOIN inventory.reservable_booking bk ON bk.reservable_batch_id = b.id
+    JOIN inventory.organization org ON org.id = bk.renter_organization_id
+    LEFT JOIN inventory.person p ON p.id = org.referent_id
+    WHERE bk.start_date < p_end AND bk.end_date > p_start
+    GROUP BY b.id, org.id, org.name, p.first_name, p.last_name, p.phone
 ),
 batch_reservables AS (
-    SELECT
-        rbl.batch_id,
-        jsonb_agg(
-            jsonb_build_object(
-                'id', r.id,
-                'name', r.name,
-                'gender', r.gender,
-                'type', r.inventory_type
-            ) ORDER BY r.id
-        ) AS reservables
+    SELECT rbl.batch_id,
+           jsonb_agg(
+               jsonb_build_object(
+                   'id', r.id,
+                   'name', r.name,
+                   'inventory_type', r.inventory_type,
+                   'status', r.status,
+                   'quality', r.quality,
+                   'owner_id', r.owner_id,
+                   'manager_id', r.manager_id,
+                   'storage_location_id', r.storage_location_id,
+                   'category_id', r.category_id,
+                   'subcategory_id', r.subcategory_id,
+                   'size', r.size,
+                   'gender', r.gender,
+                   'privacy', r.privacy,
+                   'price_per_day', r.price_per_day,
+                   'description', r.description,
+                   'photos', r.photos
+               ) ORDER BY r.id
+           ) AS reservables
     FROM inventory.reservable_batch_link rbl
     JOIN inventory.reservable r ON r.id = rbl.reservable_id
     GROUP BY rbl.batch_id
 ),
-slot_series AS (
-    SELECT generate_series(p_start, p_end - (p_granularity::interval), p_granularity::interval) AS slot_start
-),
 batch_slots AS (
-    SELECT
-        b.id AS batch_id,
-        jsonb_agg(
-            jsonb_build_object(
-                'start', s.slot_start,
-                'end', s.slot_start + (p_granularity::interval),
-                'reservables', br.reservables,
-                'bookings', (
-                    SELECT jsonb_agg(
-                        jsonb_build_object(
-                            'id', bk.id,
-                            'start_date', bk.start_date,
-                            'end_date', bk.end_date,
-                            'organization_id', bk.renter_organization_id,
-                            'organization_name', org.name,
-                            'referent_first_name', p.first_name,
-                            'referent_last_name', p.last_name,
-                            'referent_mobile', p.phone
-                        )
-                    )
-                    FROM inventory.reservable_booking bk
-                    LEFT JOIN inventory.organization org
-                        ON org.id = bk.renter_organization_id
-                    LEFT JOIN inventory.person p
-                        ON p.id = org.referent_id
-                    WHERE bk.reservable_batch_id = b.id
-                      AND bk.start_date < (s.slot_start + (p_granularity::interval))
-                      AND bk.end_date > s.slot_start
-                )
-            ) ORDER BY s.slot_start
-        ) AS slots
+    SELECT b.id AS batch_id,
+           jsonb_agg(
+               jsonb_build_object(
+                   'start', GREATEST(bk.start_date, p_start),
+                   'end', LEAST(bk.end_date, p_end)
+               ) ORDER BY bk.start_date
+           ) AS slots
     FROM batches b
-    JOIN batch_reservables br ON br.batch_id = b.id
-    CROSS JOIN slot_series s
+    JOIN inventory.reservable_booking bk ON bk.reservable_batch_id = b.id
     GROUP BY b.id
 )
-SELECT
-    b.id AS reservable_batch_id,
-    b.description AS batch_description,
-    bs.slots
+SELECT b.id AS reservable_batch_id,
+       b.description AS batch_description,
+       b.organization_id,
+       b.organization_name,
+       b.referent_first_name,
+       b.referent_last_name,
+       b.referent_mobile,
+       br.reservables,
+       bs.slots
 FROM batches b
+JOIN batch_reservables br ON br.batch_id = b.id
 JOIN batch_slots bs ON bs.batch_id = b.id
 ORDER BY b.id;
 $$;
