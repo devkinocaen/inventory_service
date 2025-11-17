@@ -338,9 +338,16 @@ function setupPhotoButtons() {
 
       try {
         await openPhotoModal(client, itemId, itemName, (updatedPhotos) => {
-          // Callback facultatif après sauvegarde
-          console.log('Photos mises à jour pour l’item', itemId, updatedPhotos);
+          // Callback après sauvegarde : mettre à jour le texte du bouton
+          const count = updatedPhotos.length;
+          btn.textContent = `Voir (${count})`;
+          console.log(`Photos mises à jour pour l’item ${itemId}`, updatedPhotos);
         });
+
+        // Mettre à jour immédiatement le compteur si photos déjà existantes
+        const existingCount = item?.photos?.length || 0;
+        btn.textContent = `Voir (${existingCount})`;
+
       } catch (err) {
         alert('Erreur ouverture modal photos : ' + err.message);
         console.error(err);
