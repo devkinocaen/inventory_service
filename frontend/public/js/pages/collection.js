@@ -187,7 +187,7 @@ function renderItems(itemsToRender = currentItems) {
     const name = document.createElement('div');
     name.className = 'cstm-costume-name';
     name.innerHTML = `<strong>${item.name}</strong><br>
-                      Taille: ${item.size_label || '-'}<br>
+                      Taille: ${item.size || '-'}<br>
                       Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}`;
     div.appendChild(name);
 

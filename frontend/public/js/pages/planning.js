@@ -1,4 +1,3 @@
-// js/pages/planning.js
 import { initClient } from '../libs/client.js';
 import { fetchReservables, fetchPlanningMatrix } from '../libs/sql/index.js';
 
@@ -38,98 +37,101 @@ export async function init() {
     endDate = new Date(inputEnd.value || addDays(startDate, 7));
     granularity = Number(selectGranularity.value);
 
-    // 1️⃣ Reservables
+    // 1️⃣ Fetch depuis la base
     reservables = await fetchReservables(client);
-
-    // 2️⃣ Planning Matrix
     planningMatrix = await fetchPlanningMatrix(client, {
       p_start: startDate.toISOString(),
       p_end: endDate.toISOString(),
-      p_granularity: Number(granularity)
+      p_granularity: granularity
     });
 
     renderTable();
   }
 
-  // ---------- Rendu ----------
-  function renderTable() {
-    tbody.innerHTML = '';
-    thead.innerHTML = '';
+// ---------- Rendu ----------
+function renderTable() {
+  tbody.innerHTML = '';
+  thead.innerHTML = '';
 
-    const headerRow = document.createElement('tr');
-    const th0 = document.createElement('th');
-    th0.textContent = 'Réservable';
-    headerRow.appendChild(th0);
+  // ----- Header -----
+  const headerRow = document.createElement('tr');
+  const th0 = document.createElement('th');
+  th0.textContent = 'Réservable';
+  headerRow.appendChild(th0);
 
-    const totalSlots = Math.ceil((endDate - startDate) / (granularity * 60 * 1000));
+  const totalSlots = Math.ceil((endDate - startDate) / (granularity * 60 * 1000));
+  for (let i = 0; i < totalSlots; i++) {
+    const th = document.createElement('th');
+    const slotTime = new Date(startDate.getTime() + i * granularity * 60 * 1000);
+    th.textContent = slotTime.toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    headerRow.appendChild(th);
+  }
+  thead.appendChild(headerRow);
 
-    for (let i = 0; i < totalSlots; i++) {
-      const th = document.createElement('th');
-      const slotTime = new Date(startDate.getTime() + i * granularity * 60 * 1000);
-      th.textContent = slotTime.toLocaleString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-      headerRow.appendChild(th);
-    }
-    thead.appendChild(headerRow);
-
-    const bookingIndex = new Map();
-    planningMatrix.forEach(batch => {
-      batch.slots?.forEach(s => {
-        s.reservable_ids?.forEach(id => {
-          if (!bookingIndex.has(id)) bookingIndex.set(id, []);
-          bookingIndex.get(id).push(s);
-        });
+  // ----- Booking index -----
+  const bookingIndex = new Map();
+  planningMatrix.forEach(batch => {
+    batch.slots?.forEach(s => {
+      s.reservables?.forEach(r => {
+        if (!bookingIndex.has(r.id)) bookingIndex.set(r.id, []);
+        bookingIndex.get(r.id).push(s);
       });
     });
+  });
 
-    const search = inputSearch.value.toLowerCase();
+  const search = inputSearch.value.trim().toLowerCase();
 
-    reservables.forEach(res => {
-      const name = (res.name || '').toLowerCase();
-      if (search && !name.includes(search)) return;
+  // ----- Rows -----
+  reservables.forEach(res => {
+    const name = (res.name || '').toLowerCase();
+    if (search && !name.includes(search)) return; // filtrage local
 
-      const tr = document.createElement('tr');
-      const tdName = document.createElement('td');
-      tdName.classList.add('reservable-name');
-      tdName.textContent = res.name || `#${res.id}`;
-      tr.appendChild(tdName);
+    const tr = document.createElement('tr');
+    const tdName = document.createElement('td');
+    tdName.classList.add('reservable-name');
+    tdName.textContent = res.name || `#${res.id}`;
+    tr.appendChild(tdName);
 
-      const bookings = bookingIndex.get(res.id) || [];
+    const bookings = bookingIndex.get(res.id) || [];
+    for (let i = 0; i < totalSlots; i++) {
+      const td = document.createElement('td');
+      td.classList.add('empty-slot');
 
-      for (let i = 0; i < totalSlots; i++) {
-        const td = document.createElement('td');
-        td.classList.add('empty-slot');
+      const slotStart = new Date(startDate.getTime() + i * granularity * 60 * 1000);
+      const slotEnd = new Date(slotStart.getTime() + granularity * 60 * 1000);
 
-        const slotStart = new Date(startDate.getTime() + i * granularity * 60 * 1000);
-        const slotEnd = new Date(slotStart.getTime() + granularity * 60 * 1000);
-
-        for (const b of bookings) {
-          const sS = new Date(b.start_slot);
-          const sE = new Date(b.end_slot);
-          if (slotStart < sE && slotEnd > sS) {
-            td.classList.remove('empty-slot');
-            td.classList.add('booking-slot');
-            td.textContent = b.renter_name;
-            break;
-          }
+      for (const b of bookings) {
+        const sS = new Date(b.start);
+        const sE = new Date(b.end);
+        if (slotStart < sE && slotEnd > sS) {
+          td.classList.remove('empty-slot');
+          td.classList.add('booking-slot');
+          td.textContent = b.organization_name; // affichage correct
+          break;
         }
-
-        tr.appendChild(td);
       }
 
-      tbody.appendChild(tr);
-    });
-  }
+      tr.appendChild(td);
+    }
+
+    tbody.appendChild(tr);
+  });
+}
 
   // ---------- Listeners ----------
   inputStart.addEventListener('change', loadPlanning);
   inputEnd.addEventListener('change', loadPlanning);
-  inputSearch.addEventListener('input', loadPlanning);
   selectGranularity.addEventListener('change', loadPlanning);
+
+  // Recherche locale, sans fetch
+  inputSearch.addEventListener('input', () => {
+    renderTable();
+  });
 
   // ---------- Initialisation ----------
   inputStart.value = formatDateTimeLocal(new Date());

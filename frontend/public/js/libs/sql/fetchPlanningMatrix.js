@@ -1,5 +1,3 @@
-// js/api/fetchPlanningMatrix.js
-
 // ---------- Utilitaire ----------
 function minutesToPostgresInterval(minutes) {
   if (typeof minutes !== 'number' || isNaN(minutes) || minutes <= 0) {
@@ -9,15 +7,12 @@ function minutesToPostgresInterval(minutes) {
 
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-
-  // format HH:MM:SS, toujours 2 chiffres pour HH et MM
   const pad = n => n.toString().padStart(2, '0');
   return `${pad(hours)}:${pad(mins)}:00`;
 }
 
 // ---------- Fonction principale ----------
 export async function fetchPlanningMatrix(client, params = {}) {
-  // Granularité obligatoire en minutes
   const granMinutes = Number(params.p_granularity);
   const granularity = minutesToPostgresInterval(granMinutes);
 
@@ -36,10 +31,16 @@ export async function fetchPlanningMatrix(client, params = {}) {
     return [];
   }
 
-  // Mapping propre des résultats
-  return (data || []).map(r => ({
-    reservable_batch_id: r.reservable_batch_id,
-    batch_description: r.batch_description,
-    slots: r.slots || []
+  // Mapping respectant exactement la structure reçue par le SQL
+  return (data || []).map(batch => ({
+    reservable_batch_id: batch.reservable_batch_id,
+    batch_description: batch.batch_description || '',
+    slots: (batch.slots || []).map(slot => ({
+      start: slot.start,
+      end: slot.end,
+      reservables: slot.reservables || [],
+      bookings: slot.bookings || [],
+      is_reserved: Array.isArray(slot.bookings) && slot.bookings.length > 0
+    }))
   }));
 }
