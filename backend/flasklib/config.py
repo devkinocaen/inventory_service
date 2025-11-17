@@ -33,8 +33,8 @@ DBPORT = int(os.environ.get("DB_PORT", 5432))
 ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:5000",
-    "https://inventory-service.vercel.app/",
-    "https://inventory-service-bice.vercel.app/"
+    "https://inventory-service.vercel.app",
+    "https://inventory-service-bice.vercel.app"
 ]
 
 
