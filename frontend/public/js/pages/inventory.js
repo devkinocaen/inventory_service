@@ -50,8 +50,8 @@ function renderStockTable(items) {
       <td class="editable-select" data-field="category" data-id="${item.id}">${item.category_name || ''}</td>
       <td class="editable-select" data-field="subcategory" data-id="${item.id}">${item.subcategory_name || ''}</td>
       <td data-field="styles" data-id="${item.id}">${stylesList}</td>
-      <td><button class="btn-photos" data-id="${item.id}">Modifier (${item.photos?.length || 0})</button></td>
       <td><button class="btn-edit" data-id="${item.id}">Editer</button></td>
+      <td><button class="btn-photos" data-id="${item.id}">Modifier (${item.photos?.length || 0})</button></td>
       <td><button class="btn-delete" data-id="${item.id}">Supprimer</button></td>
     `;
         
@@ -112,7 +112,7 @@ function setupLookupFilter() {
 // ========== Initialisation ==========
 export async function init() {
   try {
-    const items = await fetchReservables(client);
+      const items = await fetchReservables(client,  {p_privacy_min: 'hidden'});
     renderStockTable(items);
     initSortableColumns();
     setupLookupFilter();

@@ -4,7 +4,9 @@ import {
     updateReservable,
     fetchCategories,
     fetchSubcategoriesByCategory,
-    fetchStyles
+    fetchStyles,
+    fetchOrganizations,
+    fetchStorageLocations
 } from '../libs/sql/index.js';
 import { populateSelect } from '../libs/ui/populateSelect.js';
 import { formatServerError } from '../libs/helpers.js';
@@ -15,6 +17,8 @@ let currentReservable = null;
 let allStyles = [];
 let categories = [];
 let subCategories = {}; // { categoryId: [subcat,...] }
+let organizations = [];
+let storageLocations = [];
 
 // -----------------------------
 // Initialisation modal
@@ -23,6 +27,8 @@ export async function initReservableModal() {
     await loadReservableModal();
     await loadCategorySelects();
     await loadStyles();
+    await loadOrganizationsSelects();
+    await loadStorageSelect();
 }
 
 // -----------------------------
@@ -125,6 +131,41 @@ function addStyleChip(style) {
 }
 
 // -----------------------------
+// Organisations (owner & manager)
+// -----------------------------
+async function loadOrganizationsSelects() {
+    organizations = await fetchOrganizations(client);
+    const ownerSelect = dialog.querySelector('#rsb-res-owner');
+    const managerSelect = dialog.querySelector('#rsb-res-manager');
+
+    populateSelect(ownerSelect, organizations, 'id', 'name', 'Sélectionnez un propriétaire');
+    populateSelect(managerSelect, organizations, 'id', 'name', 'Sélectionnez un gestionnaire');
+
+    if (currentReservable) {
+        ownerSelect.value = currentReservable.owner_id || '';
+        managerSelect.value = currentReservable.manager_id || '';
+    }
+}
+
+// -----------------------------
+// Storage locations
+// -----------------------------
+async function loadStorageSelect() {
+    storageLocations = await fetchStorageLocations(client);
+    console.log ('storageLocations', storageLocations)
+    const storageSelect = dialog.querySelector('#rsb-res-storage');
+
+    populateSelect(storageSelect, storageLocations, 'id', 'name', 'Sélectionnez un stockage');
+console.log ('currentReservable', currentReservable)
+    if (currentReservable) {
+        storageSelect.value = currentReservable.storage_location_id || '';
+    }
+    console.log("storageSelect", storageSelect)
+    console.log("storageSelect", storageSelect.value)
+    console.log("currentReservable.storage_location_id", currentReservable.storage_location_id)
+}
+
+// -----------------------------
 // Ouvrir / fermer modal
 // -----------------------------
 export async function openReservableModal(reservableId) {
@@ -148,7 +189,7 @@ export async function openReservableModal(reservableId) {
             '#rsb-res-subcategory': currentReservable.subcategory_id,
             '#rsb-res-owner': currentReservable.owner_id,
             '#rsb-res-manager': currentReservable.manager_id,
-            '#rsb-res-storage': currentReservable.storage_id
+            '#rsb-res-storage': currentReservable.storage_location_id
         };
 
         Object.entries(fields).forEach(([sel, val]) => {

@@ -17,12 +17,12 @@ export async function fetchReservables(client, filters = {}) {
       : null,
     p_start_date: filters.p_start_date ?? null,
     p_end_date: filters.p_end_date ?? null,
-    p_is_in_stock: filters.p_is_in_stock ?? null
+    p_is_in_stock: filters.p_is_in_stock ?? null,
 
+    // 🔹 Nouveau filtre privacy_min (ENUM: 'hidden' | 'private' | 'public')
+    p_privacy_min: filters.p_privacy_min ?? null
   };
-
-  console.log('fetchReservables params', params);
-
+console.log ('params fetchReservables:',  params)
   const { data, error } = await client.rpc('get_reservables', params);
 
   if (error) {
@@ -48,7 +48,7 @@ export async function fetchReservables(client, filters = {}) {
     status: item.status,
     size: item.size,
     quality: item.quality,
-    p_is_in_stock: item.is_in_stock,
+    is_in_stock: item.is_in_stock,
     storage_location_id: item.storage_location_id,
     storage_location_name: item.storage_location_name,
     owner_id: item.owner_id,

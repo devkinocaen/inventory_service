@@ -128,7 +128,8 @@ async function fetchItems() {
       ? activeFilters.gender.map(g => genderMap[g])
       : null,
     p_start_date: filterStartDate,
-    p_end_date: filterEndDate
+    p_end_date: filterEndDate,
+    p_privacy_min: 'private'
   };
 
   try {
@@ -200,7 +201,7 @@ async function fetchItemsAndRender() {
 async function loadData() {
   try {
     const [items, categories, subcategories, styles] = await Promise.all([
-      fetchReservables(client),
+    fetchReservables(client, {p_privacy_min: 'private'}),
       fetchCategories(client),
       fetchSubcategories(client),
       fetchStyles(client)

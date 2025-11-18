@@ -92,14 +92,28 @@
   cursor: pointer;
   border-radius: 4px;
 }
+
+/* Bouton Save */
 #rsb-res-save {
   background: #2b7cff;
   color: white;
   border: none;
 }
+
+/* Bouton Cancel modernisé */
 #rsb-res-cancel {
-  border: 1px solid #aaa;
-  background: #eee;
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #333;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+#rsb-res-cancel:hover {
+  background: #f2f2f2;
+  border-color: #bbb;
+}
+#rsb-res-cancel:active {
+  background: #e6e6e6;
+  border-color: #aaa;
 }
 
 /* --- FULL WIDTH --- */
@@ -120,6 +134,4 @@
 #rsb-modal-reservable select:focus,
 #rsb-modal-reservable textarea:focus {
   border-color: #bbb !important; /* accent légèrement plus foncé au focus */
-}
-
 }

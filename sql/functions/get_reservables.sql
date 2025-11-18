@@ -6,7 +6,8 @@ CREATE OR REPLACE FUNCTION inventory.get_reservables(
     p_style_ids INT[] DEFAULT NULL,
     p_start_date TIMESTAMP DEFAULT NULL,
     p_end_date TIMESTAMP DEFAULT NULL,
-    p_is_in_stock BOOLEAN DEFAULT NULL
+    p_is_in_stock BOOLEAN DEFAULT NULL,
+    p_privacy_min inventory.privacy_type DEFAULT NULL
 )
 RETURNS TABLE (
     id INT,
@@ -80,10 +81,13 @@ BEGIN
         AND (p_category_ids IS NULL OR r.category_id = ANY(p_category_ids))
         AND (p_subcategory_ids IS NULL OR r.subcategory_id = ANY(p_subcategory_ids))
         AND (p_gender IS NULL OR r.gender = ANY(p_gender))
+        -- 🔥 Filtre privacy basé sur les noms
         AND (
-            p_is_in_stock IS NULL
-            OR p_is_in_stock = r.is_in_stock
-            )
+            p_privacy_min IS NULL
+            OR array_position(ARRAY['hidden','private','public']::text[], r.privacy::text)
+               >= array_position(ARRAY['hidden','private','public']::text[], p_privacy_min::text)
+        )
+        AND (p_is_in_stock IS NULL OR p_is_in_stock = r.is_in_stock)
         AND (
             p_style_ids IS NULL
             OR EXISTS (

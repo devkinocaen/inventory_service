@@ -3,11 +3,17 @@ RETURNS TABLE (
     id INT,
     name TEXT,
     address TEXT
-) AS $$
+)
+AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, address
-    FROM inventory.storage_location
-    ORDER BY name;
+    SELECT
+        sl.id,
+        sl.name::TEXT,
+        sl.address::TEXT
+    FROM inventory.storage_location sl
+    ORDER BY sl.name;
 END;
-$$ LANGUAGE plpgsql STABLE;
+$$ LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER;
