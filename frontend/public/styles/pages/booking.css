@@ -2,9 +2,9 @@
 .booking-body {
   margin: 0;
   font-family: sans-serif;
-  display: flex;
-  height: 100vh;
-  overflow: hidden;
+ /* display: flex;     */      /* flex pour sidebar + main */
+  min-height: 100vh;       /* full viewport */
+  /*overflow: hidden;     */   /* scroll contrôlé par main */
   background: #f5f5f5;
 }
 
@@ -15,16 +15,16 @@
   border-right: 1px solid #ccc;
   padding: 1rem;
   box-sizing: border-box;
-  position: fixed;   /* fixe pour ne pas pousser le main */
+  position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   z-index: 999;
-  overflow-y: auto;
+  overflow-y: auto;          /* scroll interne */
   transition: transform 0.3s ease;
-  display: flex;          /* active flexbox */
-  flex-direction: column; /* colonne verticale */
-  justify-content: center; /* centre verticalement */
+  display: flex;
+  flex-direction: column;    /* colonne verticale */
+  justify-content: flex-start; /* top-aligned */
 }
 
 #booking-filtersSidebar.booking-collapsed {
@@ -86,15 +86,15 @@
 /* ======== Main Content ======== */
 #booking-main {
   flex: 1;
+  margin-left: 250px;      /* décalage pour sidebar */
   padding: 1rem;
-  overflow: auto;
-  margin-left: 0;
+ /* overflow: auto;     */     /* scroll si tableau long */
+  /*position: relative;*/      /* référence pour modals */
   transition: margin-left 0.3s ease;
 }
 
-/* Décalage main quand sidebar ouverte */
-#booking-filtersSidebar:not(.booking-collapsed) ~ #booking-main {
-  margin-left: 250px; /* largeur de la sidebar */
+#booking-filtersSidebar.booking-collapsed ~ #booking-main {
+  margin-left: 0;          /* sidebar cachée */
 }
 
 /* Table wrapper for horizontal scroll */
@@ -136,7 +136,7 @@
   background: #4a90e2;
   color: #fff;
   border: none;
-  border-radius: 0 6px 6px 0; /* arrondi côté droit */
+  border-radius: 0 6px 6px 0;
   width: 2.5rem;
   height: 2.5rem;
   cursor: pointer;
@@ -151,7 +151,7 @@
   background: #357abd;
 }
 
-/* Boutons Edit / Delete génériques */
+/* ======== Boutons ======== */
 .booking-btn {
   padding: 0.4rem 0.8rem;
   border: none;
@@ -161,7 +161,6 @@
   transition: background 0.2s, color 0.2s;
 }
 
-/* Styles spécifiques */
 .booking-btn.btn-edit {
   background-color: #4caf50;
   color: #fff;
@@ -180,40 +179,43 @@
   background-color: #d32f2f;
 }
 
-/* 🔹 Style général des boutons Check Stock */
+/* Style général des boutons Check Stock */
 .btn-check-stock {
-  padding: 0.4em 0.8em;       /* espace interne */
-  font-size: 0.9rem;          /* taille de texte */
+  padding: 0.4em 0.8em;
+  font-size: 0.9rem;
   font-weight: 500;
-  color: #fff;                /* texte blanc */
-  background-color: #007bff;  /* bleu primaire */
+  color: #fff;
+  background-color: #007bff;
   border: none;
-  border-radius: 0.35rem;     /* coins arrondis */
+  border-radius: 0.35rem;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.1s;
 }
 
-/* 🔹 Hover */
 .btn-check-stock:hover {
-  background-color: #0056b3;  /* bleu plus foncé */
+  background-color: #0056b3;
   transform: translateY(-1px);
 }
 
-/* 🔹 Active / clic */
 .btn-check-stock:active {
   background-color: #004080;
   transform: translateY(0);
 }
 
-/* 🔹 Focus accessible */
 .btn-check-stock:focus {
   outline: 2px solid #80bdff;
   outline-offset: 2px;
 }
 
-/* 🔹 Désactivé */
 .btn-check-stock:disabled {
   background-color: #c0c0c0;
   cursor: not-allowed;
   color: #666;
+}
+
+dialog.modal {
+  position: fixed !important;
+  inset: 0 !important;
+  margin: auto !important;
+  z-index: 5000 !important;
 }
