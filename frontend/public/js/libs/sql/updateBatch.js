@@ -2,7 +2,7 @@
 export async function updateBatch(client, batch) {
     if (!batch?.id) return null;
     try {
-        const { data, error } = await client.rpc('inventory.update_batch', {
+        const { data, error } = await client.rpc('update_batch', {
             p_batch_id: batch.id,
             p_description: batch.description,
             p_reservable_ids: batch.reservables?.map(r => r.id) || null
