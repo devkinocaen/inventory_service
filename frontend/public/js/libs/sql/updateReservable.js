@@ -19,7 +19,8 @@ export async function updateReservable(client, {
   description = null,
   photos = null,
   status = null,
-  quality = null
+  quality = null,
+  is_in_stock =  null
 }) {
   const { data, error } = await client.rpc('update_reservable', {
     p_id: id,
@@ -37,7 +38,8 @@ export async function updateReservable(client, {
     p_description: description,
     p_photos: photos,
     p_status: status,
-    p_quality: quality
+    p_quality: quality,
+    p_is_in_stock: is_in_stock
   });
 
   if (error) {

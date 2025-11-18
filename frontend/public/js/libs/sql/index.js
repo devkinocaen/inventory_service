@@ -33,6 +33,8 @@ export { updateBooking } from './updateBooking.js';
 export { deleteReservable } from './deleteReservable.js';
 export { deleteReservableBatch } from './deleteReservableBatch.js';
 export { fetchReservableById } from './fetchReservableById.js';
+export { isBatchInStock } from './isBatchInStock.js';
+export { setBatchInStock } from './setBatchInStock.js';
 
 
 

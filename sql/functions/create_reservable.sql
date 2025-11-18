@@ -1,3 +1,5 @@
+-- Ajouter d'abord cette colonne dans la table (si ce n'est pas déjà fait)
+
 CREATE OR REPLACE FUNCTION inventory.create_reservable(
     p_name TEXT,
     p_inventory_type inventory.reservable_type,
@@ -9,11 +11,12 @@ CREATE OR REPLACE FUNCTION inventory.create_reservable(
     p_size TEXT DEFAULT '',
     p_gender inventory.reservable_gender DEFAULT 'unisex',
     p_privacy inventory.privacy_type DEFAULT 'private',
-    p_price_per_day double precision DEFAULT 0,
+    p_price_per_day DOUBLE PRECISION DEFAULT 0,
     p_description TEXT DEFAULT '',
     p_photos JSONB DEFAULT '[]'::jsonb,
-    p_rstatus inventory.reservable_status DEFAULT 'disponible',
-    p_qstatus inventory.reservable_quality DEFAULT 'bon état'
+    p_status inventory.reservable_status DEFAULT 'disponible',
+    p_quality inventory.reservable_quality DEFAULT 'bon état',
+    p_is_in_stock BOOLEAN DEFAULT TRUE
 )
 RETURNS INT
 LANGUAGE plpgsql
@@ -35,8 +38,9 @@ BEGIN
         price_per_day,
         description,
         photos,
-        rstatus,
-        qstatus
+        status,
+        quality,
+        is_in_stock
     ) VALUES (
         p_name,
         p_inventory_type,
@@ -51,8 +55,9 @@ BEGIN
         p_price_per_day,
         p_description,
         p_photos,
-        p_rstatus,
-        p_qstatus
+        p_status,
+        p_quality,
+        p_is_in_stock
     )
     RETURNING id INTO v_id;
 

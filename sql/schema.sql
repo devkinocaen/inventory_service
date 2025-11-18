@@ -132,7 +132,8 @@ CREATE TABLE inventory.reservable (
     privacy inventory.privacy_type DEFAULT 'private',
     price_per_day double precision DEFAULT 0,
     description TEXT DEFAULT '',
-    photos JSONB DEFAULT '[]'::jsonb
+    photos JSONB DEFAULT '[]'::jsonb,
+    is_in_stock BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 -- ===========================
