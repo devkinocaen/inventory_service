@@ -16,7 +16,9 @@ export async function fetchReservables(client, filters = {}) {
       ? filters.p_style_ids
       : null,
     p_start_date: filters.p_start_date ?? null,
-    p_end_date: filters.p_end_date ?? null
+    p_end_date: filters.p_end_date ?? null,
+    p_is_in_stock: filters.p_is_in_stock ?? null
+
   };
 
   console.log('fetchReservables params', params);
@@ -46,6 +48,7 @@ export async function fetchReservables(client, filters = {}) {
     status: item.status,
     size: item.size,
     quality: item.quality,
+    p_is_in_stock: item.is_in_stock,
     storage_location_id: item.storage_location_id,
     storage_location_name: item.storage_location_name,
     owner_id: item.owner_id,

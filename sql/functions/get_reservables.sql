@@ -5,7 +5,8 @@ CREATE OR REPLACE FUNCTION inventory.get_reservables(
     p_gender inventory.reservable_gender[] DEFAULT NULL,
     p_style_ids INT[] DEFAULT NULL,
     p_start_date TIMESTAMP DEFAULT NULL,
-    p_end_date TIMESTAMP DEFAULT NULL
+    p_end_date TIMESTAMP DEFAULT NULL,
+    p_is_in_stock BOOLEAN DEFAULT NULL
 )
 RETURNS TABLE (
     id INT,
@@ -24,6 +25,7 @@ RETURNS TABLE (
     subcategory_name TEXT,
     status TEXT,
     quality TEXT,
+    is_in_stock BOOLEAN,
     storage_location_id INT,
     storage_location_name TEXT,
     owner_id INT,
@@ -55,6 +57,7 @@ BEGIN
         sc.name::text AS subcategory_name,
         r.status::text AS status,
         r.quality::text AS quality,
+        r.is_in_stock,
         r.storage_location_id,
         sl.name::text AS storage_location_name,
         r.owner_id,
@@ -77,6 +80,10 @@ BEGIN
         AND (p_category_ids IS NULL OR r.category_id = ANY(p_category_ids))
         AND (p_subcategory_ids IS NULL OR r.subcategory_id = ANY(p_subcategory_ids))
         AND (p_gender IS NULL OR r.gender = ANY(p_gender))
+        AND (
+            p_is_in_stock IS NULL
+            OR p_is_in_stock = r.is_in_stock
+            )
         AND (
             p_style_ids IS NULL
             OR EXISTS (

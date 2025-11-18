@@ -38,6 +38,7 @@ batch_reservables AS (
                    'inventory_type', r.inventory_type,
                    'status', r.status,
                    'quality', r.quality,
+                   'is_in_stock', r.is_in_stock,
                    'owner_id', r.owner_id,
                    'manager_id', r.manager_id,
                    'storage_location_id', r.storage_location_id,

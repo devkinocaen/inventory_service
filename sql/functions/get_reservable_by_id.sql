@@ -18,6 +18,7 @@ RETURNS TABLE (
     photos JSONB,
     status inventory.reservable_status,
     quality inventory.reservable_quality,
+    is_in_stock BOOLEAN,
     style_ids INT[],
     style_names TEXT[]
 )
@@ -42,6 +43,7 @@ AS $$
         r.photos,
         r.status,
         r.quality,
+        r.is_in_stock,
         ARRAY_AGG(rs.style_id) FILTER (WHERE rs.style_id IS NOT NULL) AS style_ids,
         ARRAY_AGG(st.name) FILTER (WHERE st.name IS NOT NULL) AS style_names
     FROM inventory.reservable r

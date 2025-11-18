@@ -17,8 +17,9 @@ export async function createReservable(client, {
   price_per_day = 0,
   description = '',
   photos = '[]',
-  rstatus = 'disponible',
-  qstatus = 'bon état'
+  status = 'disponible',
+  quality = 'bon état',
+  is_in_stock = true
 }) {
   const { data, error } = await client.rpc('create_reservable', {
     p_name: name,
@@ -34,8 +35,9 @@ export async function createReservable(client, {
     p_price_per_day: price_per_day,
     p_description: description,
     p_photos: photos,
-    p_rstatus: rstatus,
-    p_qstatus: qstatus
+    p_status: status,
+    p_quality: quality,
+    p_is_in_stock: is_in_stock
   });
 
   if (error) {

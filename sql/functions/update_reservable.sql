@@ -14,7 +14,8 @@ CREATE OR REPLACE FUNCTION inventory.update_reservable(
     p_description TEXT DEFAULT NULL,
     p_photos JSONB DEFAULT NULL,
     p_status inventory.reservable_status DEFAULT NULL,
-    p_quality inventory.reservable_quality DEFAULT NULL
+    p_quality inventory.reservable_quality DEFAULT NULL,
+    p_is_in_stock BOOLEAN DEFAULT NULL
 )
 RETURNS VOID
 LANGUAGE plpgsql
@@ -36,7 +37,8 @@ BEGIN
         description = COALESCE(p_description, description),
         photos = COALESCE(p_photos, photos),
         status = COALESCE(p_status, status),
-        quality = COALESCE(p_quality, quality)
+        quality = COALESCE(p_quality, quality),
+        is_in_stock = COALESCE(p_is_in_stock, is_in_stock)
     WHERE id = p_id;
 END;
 $$;

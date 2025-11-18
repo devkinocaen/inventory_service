@@ -3,7 +3,8 @@ import {
   fetchBookings,
   createBooking,
   updateBooking,
-  deleteBooking
+  deleteBooking,
+  isBatchInStock
 } from '../libs/sql/index.js';
 
 import { formatServerError, formatDateTime } from '../libs/helpers.js';
@@ -66,12 +67,38 @@ function renderBookingTable(bookings) {
       <td class="start" data-id="${b.booking_id}">${escapeHtml(startDate)}</td>
       <td class="end" data-id="${b.booking_id}">${escapeHtml(endDate)}</td>
       <td class="items" data-id="${b.booking_id}">${escapeHtml(itemsList)}</td>
+      <td><button class="btn-check-stock" data-batch-id="${b.reservable_batch_id}">Check-in / Check-out</button></td>
       <td><button class="btn-edit booking-btn" data-id="${b.booking_id}">Éditer</button></td>
       <td><button class="btn-delete booking-btn" data-id="${b.booking_id}">Supprimer</button></td>
-
     `;
 
     tbody.appendChild(tr);
+
+    // --- Initialisation bouton Check-in / Check-out ---
+    const btnCheck = tr.querySelector('.btn-check-stock');
+    if (btnCheck) {
+      (async () => {
+        try {
+          const stockStatus = await isBatchInStock(b.reservable_batch_id);
+          if (stockStatus === true) {
+            btnCheck.textContent = 'Sortir';
+          } else if (stockStatus === false) {
+            btnCheck.textContent = 'Rentrer';
+          } else {
+            btnCheck.textContent = 'Indéterminé';
+            btnCheck.disabled = true; // action impossible
+          }
+        } catch (err) {
+          console.error('Erreur récupération stock batch:', err);
+          btnCheck.textContent = 'Erreur';
+          btnCheck.disabled = true;
+        }
+      })();
+
+      // Listener du bouton
+      btnCheck.removeEventListener('click', onCheckStockClick);
+      btnCheck.addEventListener('click', onCheckStockClick);
+    }
   });
 
   // Après rendu : init events and utilities
@@ -79,6 +106,7 @@ function renderBookingTable(bookings) {
   initSortableColumns('#bookings_table');
   setupBookingLookupFilter();
 }
+
 
 // basic html-escape to avoid injection in inserted html
 function escapeHtml(str) {
@@ -133,6 +161,12 @@ function initBookingRowButtons() {
     btn.removeEventListener('click', onDeleteClick);
     btn.addEventListener('click', onDeleteClick);
   });
+    
+    // Check-in / Check-out
+    tbody.querySelectorAll('.btn-check-stock').forEach(btn => {
+      btn.removeEventListener('click', onCheckStockClick);
+      btn.addEventListener('click', onCheckStockClick);
+    });
 }
 
 async function onEditClick(e) {
@@ -342,5 +376,40 @@ export async function init() {
 
   } catch (err) {
     console.error('[bookings] Erreur initialisation :', formatServerError(err));
+  }
+}
+
+
+async function onCheckStockClick(e) {
+  const batchId = Number(e.currentTarget.dataset.batchId);
+  if (!batchId) return;
+
+  try {
+    // Appel wrapper RPC pour savoir si batch est en stock
+    const stockStatus = await isBatchInStock(batchId); // wrapper vers SQL
+
+    if (stockStatus === true) {
+      if (confirm("Tous les objets sont en stock. Voulez-vous les sortir ?")) {
+        await client.rpc('update_reservables_in_batch', { p_batch_id: batchId, p_in_stock: false });
+        alert('Batch sorti du stock.');
+        btnCheck.textContent = 'Rentrer';
+      }
+    } else if (stockStatus === false) {
+      if (confirm("Tous les objets sont sortis. Voulez-vous les rentrer ?")) {
+        await client.rpc('update_reservables_in_batch', { p_batch_id: batchId, p_in_stock: true });
+        alert('Batch rentré dans le stock.');
+        btnCheck.textContent = 'Sortir';
+      }
+    }
+    } else {
+      // Cas mixte
+      alert('Le batch contient des objets mixtes ou indisponibles. Action impossible.');
+    }
+
+    // Rafraîchir le tableau après action
+    await refreshTable();
+  } catch (err) {
+    console.error('Erreur check-in/check-out:', err);
+    alert('Erreur lors du check-in / check-out. Consultez la console.');
   }
 }
