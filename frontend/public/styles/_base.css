@@ -42,3 +42,18 @@ label {
   width: max-content;
   max-width: 250px;
 }
+
+/* Encadrement léger pour tous les champs */
+input, textarea, select {
+  border: 1px solid #ccc;       /* liseré gris clair */
+  border-radius: 4px;           /* coins légèrement arrondis */
+  padding: 6px 8px;             /* un peu de respiration à l’intérieur */
+  outline: none;                /* supprime l’encadrement bleu par défaut au focus */
+  transition: border-color 0.2s;
+}
+
+/* Optionnel : accentuer la bordure au focus */
+input:focus, textarea:focus, select:focus {
+  border-color: #999;           /* gris un peu plus foncé au focus */
+  box-shadow: 0 0 2px rgba(0,0,0,0.1);
+}

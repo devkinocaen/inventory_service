@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Modal Réservable</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<div id="rsb-modal-reservable" class="rsb-modal">
+  <div class="rsb-modal-content">
+    <h2>Éditer un objet</h2>
+
+    <form id="rsb-form-reservable">
+
+      <div class="rsb-grid-2">
+
+        <!-- Nom -->
+        <label class="rsb-label">
+          Nom :
+          <input type="text" id="rsb-res-name" class="rsb-input" />
+        </label>
+
+        <!-- Statut -->
+        <label class="rsb-label">
+          Statut :
+          <select id="rsb-res-status" class="rsb-select">
+            <option value="disponible">Disponible</option>
+            <option value="indisponible">Indisponible</option>
+            <option value="en réparation">En réparation</option>
+            <option value="perdu">Perdu</option>
+            <option value="hors service">Hors service</option>
+          </select>
+        </label>
+
+        <!-- Qualité -->
+        <label class="rsb-label">
+          Qualité :
+          <select id="rsb-res-quality" class="rsb-select">
+            <option value="neuf">Neuf</option>
+            <option value="bon état">Bon état</option>
+            <option value="abîmé">Abîmé</option>
+            <option value="très abîmé">Très abîmé</option>
+            <option value="inutilisable">Inutilisable</option>
+          </select>
+        </label>
+
+        <!-- Taille -->
+        <label class="rsb-label">
+          Taille :
+          <input type="text" id="rsb-res-size" class="rsb-input" />
+        </label>
+
+        <!-- Genre -->
+        <label class="rsb-label">
+          Genre :
+          <div class="rsb-radio-group">
+            <div class="rsb-radio-item"><input type="radio" name="rsb-res-gender" value="unisex" checked> <span>Unisexe</span></div>
+            <div class="rsb-radio-item"><input type="radio" name="rsb-res-gender" value="male"> <span>Homme</span></div>
+            <div class="rsb-radio-item"><input type="radio" name="rsb-res-gender" value="female"> <span>Femme</span></div>
+          </div>
+        </label>
+
+        <!-- Confidentialité -->
+        <label class="rsb-label">
+          Confidentialité :
+          <div class="rsb-radio-group">
+            <div class="rsb-radio-item"><input type="radio" name="rsb-res-privacy" value="public" checked> <span>Public</span></div>
+            <div class="rsb-radio-item"><input type="radio" name="rsb-res-privacy" value="private"> <span>Privé</span></div>
+            <div class="rsb-radio-item"><input type="radio" name="rsb-res-privacy" value="hidden"> <span>Caché</span></div>
+          </div>
+        </label>
+
+        <!-- Catégorie -->
+        <label class="rsb-label">
+          Catégorie :
+          <select id="rsb-res-category" class="rsb-select"></select>
+        </label>
+
+        <!-- Sous-catégorie -->
+        <label class="rsb-label">
+          Sous-catégorie :
+          <select id="rsb-res-subcategory" class="rsb-select"></select>
+        </label>
+
+        <!-- Propriétaire -->
+        <label class="rsb-label">
+          Propriétaire :
+          <select id="rsb-res-owner" class="rsb-select"></select>
+        </label>
+
+        <!-- Gestionnaire -->
+        <label class="rsb-label">
+          Gestionnaire :
+          <select id="rsb-res-manager" class="rsb-select"></select>
+        </label>
+
+        <!-- Lieu stockage -->
+        <label class="rsb-label">
+          Lieu de stockage :
+          <select id="rsb-res-storage" class="rsb-select"></select>
+        </label>
+
+        <!-- Prix -->
+        <label class="rsb-label">
+          Prix / jour :
+          <input type="number" id="rsb-res-price" class="rsb-input" min="0" step="0.5" />
+        </label>
+        
+        <!-- Styles (chips + ajout via select) -->
+        <label class="rsb-label rsb-full-width">Styles :</label>
+        <div id="rsb-chips-style" class="rsb-chips-container rsb-full-width"></div>
+        <div class="rsb-add-chip rsb-full-width">
+          <select id="rsb-res-add-style">
+            <option value="">Ajouter un style</option>
+            <!-- Les options seront remplies dynamiquement avec allStyles -->
+          </select>
+        </div>
+
+
+      </div> <!-- grid -->
+
+      <!-- Description -->
+      <label class="rsb-full-width" style="margin-top:16px;">
+        Description :
+        <textarea id="rsb-res-description" class="rsb-textarea"></textarea>
+      </label>
+
+      <!-- Actions -->
+      <div class="rsb-modal-actions">
+        <button type="button" id="rsb-res-cancel">Annuler</button>
+        <button type="submit" id="rsb-res-save">Enregistrer</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+function rsbAddChip(type) {
+  const input = document.getElementById(`rsb-input-${type}`);
+  const container = document.getElementById(`rsb-chips-${type}`);
+  const value = input.value.trim();
+  if (!value) return;
+  const chip = document.createElement("div");
+  chip.className = "rsb-chip";
+  chip.innerHTML = `${value} <button onclick="this.parentElement.remove()">✕</button>`;
+  container.appendChild(chip);
+  input.value = "";
+}
+</script>
+
+</body>
+</html>

@@ -9,6 +9,7 @@ import {
 import { formatServerError } from '../libs/helpers.js';
 import { initClient } from '../libs/client.js';
 import { openPhotoModal } from '../modals/photo_modal.js'; // chemin vers ton JS modal
+import { openReservableModal } from '../modals/reservable_modal.js'; // chemin vers ton JS modal
 
 const client = await initClient();
 let currentItems = [];
@@ -26,19 +27,19 @@ function displayGender(value) {
 
 // ========== Rendu du tableau ==========
 function renderStockTable(items) {
-  const tbody = document.querySelector('#stock_table tbody');
-  if (!tbody) return;
-
-  tbody.innerHTML = '';
-  currentItems = items;
-
-  items.forEach(item => {
-    const tr = document.createElement('tr');
-
-    // Styles : tableau N:N -> liste de noms séparés par virgule
-    const stylesList = item.style_names?.join(', ') || '';
-
-    tr.innerHTML = `
+    const tbody = document.querySelector('#stock_table tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    currentItems = items;
+    
+    items.forEach(item => {
+        const tr = document.createElement('tr');
+        
+        // Styles : tableau N:N -> liste de noms séparés par virgule
+        const stylesList = item.style_names?.join(', ') || '';
+        
+        tr.innerHTML = `
       <td class="editable" data-field="name" data-id="${item.id}">${item.name || ''}</td>
       <td class="editable" data-field="size" data-id="${item.id}">${item.size || ''}</td>
       <td class="editable" data-field="description" data-id="${item.id}">${item.description || ''}</td>
@@ -53,13 +54,14 @@ function renderStockTable(items) {
       <td><button class="btn-edit" data-id="${item.id}">Editer</button></td>
       <td><button class="btn-delete" data-id="${item.id}">Supprimer</button></td>
     `;
-
-    tbody.appendChild(tr);
-  });
-
-  initEditableCells();
-  setupDeleteButtons();
-  setupPhotoButtons(); 
+        
+        tbody.appendChild(tr);
+    });
+    
+    initEditableCells();
+    setupDeleteButtons();
+    setupPhotoButtons();
+    setupEditButtons();
 }
 
 // ===== Mappings pour affichage =====
@@ -351,6 +353,26 @@ function setupPhotoButtons() {
       } catch (err) {
         alert('Erreur ouverture modal photos : ' + err.message);
         console.error(err);
+      }
+    });
+  });
+}
+
+function setupEditButtons() {
+  const tbody = document.querySelector('#stock_table tbody');
+  if (!tbody) return;
+
+  tbody.querySelectorAll('.btn-edit').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const itemId = Number(btn.dataset.id);
+      if (!itemId) return;
+
+      try {
+        // Ouvre le modal avec l'ID du reservable
+        await openReservableModal(itemId);
+      } catch (err) {
+        console.error('[inventory] openReservableModal error', err);
+        alert('Erreur lors de l’ouverture du modal d’édition : ' + err.message);
       }
     });
   });

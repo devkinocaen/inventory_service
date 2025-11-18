@@ -1,0 +1,125 @@
+/* --- MODAL --- */
+.rsb-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.rsb-modal-content {
+  background: white;
+  padding: 24px;
+  width: 650px;
+  border-radius: 8px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* --- GRID 2 COLS --- */
+.rsb-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+}
+
+/* --- LABELS & INPUTS --- */
+.rsb-label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+}
+.rsb-input, .rsb-select, .rsb-textarea {
+  margin-top: 4px;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+.rsb-textarea { min-height: 70px; }
+
+/* --- RADIO GROUPS HORIZONTALES --- */
+.rsb-radio-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+.rsb-radio-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* --- CHIPS --- */
+.rsb-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.rsb-chip {
+  padding: 4px 10px;
+  background: #eee;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+.rsb-chip button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+.rsb-add-chip {
+  margin-top: 4px;
+  display: flex;
+  gap: 6px;
+}
+
+/* --- ACTIONS --- */
+.rsb-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+.rsb-modal-actions button {
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+#rsb-res-save {
+  background: #2b7cff;
+  color: white;
+  border: none;
+}
+#rsb-res-cancel {
+  border: 1px solid #aaa;
+  background: #eee;
+}
+
+/* --- FULL WIDTH --- */
+.rsb-full-width { grid-column: 1 / -1; }
+
+/* --- BORDURES LÉGÈRES POUR TOUS LES CHAMPS DU MODAL --- */
+#rsb-modal-reservable input,
+#rsb-modal-reservable select,
+#rsb-modal-reservable textarea {
+  border: 1px solid #ddd !important; /* liseré gris clair forcé */
+  outline: none;
+  border-radius: 4px;
+  padding: 6px;
+  transition: border-color 0.2s;
+}
+
+#rsb-modal-reservable input:focus,
+#rsb-modal-reservable select:focus,
+#rsb-modal-reservable textarea:focus {
+  border-color: #bbb !important; /* accent légèrement plus foncé au focus */
+}
+
+}
