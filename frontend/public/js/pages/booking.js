@@ -270,7 +270,7 @@ async function onCheckStockClick(e) {
   if (!batchId) return;
 
   try {
-    const stockStatus = await isBatchInStock(batchId);
+    const stockStatus = await isBatchInStock(client, batchId);
 
     if (stockStatus === true) {
       if (confirm("Tous les objets sont en stock. Voulez-vous les sortir ?")) {
