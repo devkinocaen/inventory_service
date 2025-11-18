@@ -4,7 +4,11 @@ DECLARE
   batch_list CONSTANT JSONB := '[
     {"description":"Lot Robes & Tenues"},
     {"description":"Lot Chapeaux & Coiffes"},
-    {"description":"Lot Accessoires"}
+    {"description":"Lot Accessoires"},
+    {"description":"Lot Vestes & Manteaux"},
+    {"description":"Lot Pantalons & Jupes"},
+    {"description":"Lot Chaussures"},
+    {"description":"Lot Bijoux & Montres"}
   ]';
   r INT;
   chosen_ids INT[];
@@ -40,9 +44,16 @@ BEGIN
 
     IF chosen_ids IS NOT NULL THEN
       FOREACH r IN ARRAY chosen_ids LOOP
+        -- lier le reservable au batch
         INSERT INTO inventory.reservable_batch_link (batch_id, reservable_id)
         VALUES (v_batch_id, r)
         ON CONFLICT DO NOTHING;
+
+        -- forcer status et is_in_stock
+        UPDATE inventory.reservable
+        SET status = v_status,
+            is_in_stock = TRUE
+        WHERE id = r;
       END LOOP;
     END IF;
   END LOOP;

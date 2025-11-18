@@ -179,3 +179,41 @@
 .booking-btn.btn-delete:hover {
   background-color: #d32f2f;
 }
+
+/* 🔹 Style général des boutons Check Stock */
+.btn-check-stock {
+  padding: 0.4em 0.8em;       /* espace interne */
+  font-size: 0.9rem;          /* taille de texte */
+  font-weight: 500;
+  color: #fff;                /* texte blanc */
+  background-color: #007bff;  /* bleu primaire */
+  border: none;
+  border-radius: 0.35rem;     /* coins arrondis */
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+/* 🔹 Hover */
+.btn-check-stock:hover {
+  background-color: #0056b3;  /* bleu plus foncé */
+  transform: translateY(-1px);
+}
+
+/* 🔹 Active / clic */
+.btn-check-stock:active {
+  background-color: #004080;
+  transform: translateY(0);
+}
+
+/* 🔹 Focus accessible */
+.btn-check-stock:focus {
+  outline: 2px solid #80bdff;
+  outline-offset: 2px;
+}
+
+/* 🔹 Désactivé */
+.btn-check-stock:disabled {
+  background-color: #c0c0c0;
+  cursor: not-allowed;
+  color: #666;
+}

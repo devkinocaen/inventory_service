@@ -87,7 +87,7 @@ function renderBookingTable(bookings) {
     if (btnCheck) {
       (async () => {
         try {
-          const stockStatus = await isBatchInStock(b.reservable_batch_id);
+          const stockStatus = await isBatchInStock(client, b.reservable_batch_id);
           if (stockStatus === true) {
             btnCheck.textContent = 'Sortir';
           } else if (stockStatus === false) {

@@ -6,12 +6,8 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     rec RECORD;
-
     all_available BOOLEAN := TRUE;
     all_out BOOLEAN := TRUE;
-
-    -- résultat final
-    result BOOLEAN;
 BEGIN
     -- Vérifier que le batch existe
     PERFORM 1 FROM inventory.reservable_batch WHERE id = p_batch_id;
@@ -21,21 +17,16 @@ BEGIN
 
     -- Boucler sur tous les réservables du batch
     FOR rec IN
-        SELECT r.id, r.is_in_stock
+        SELECT r.id, r.is_in_stock, r.status
         FROM inventory.reservable_batch_link bl
         JOIN inventory.reservable r ON r.id = bl.reservable_id
         WHERE bl.batch_id = p_batch_id
     LOOP
-        -- 1) Vérifier la disponibilité logicielle via ta fonction
-        IF NOT inventory.is_available(rec.id, NOW(), NOW() + interval '1 second') THEN
-            all_available := FALSE;
-        END IF;
-
-        -- 2) Vérifier l'état physique (is_in_stock)
-        IF rec.is_in_stock THEN
-            all_out := FALSE;
+        -- Vérifier la disponibilité : status doit être 'disponible' et is_in_stock true
+        IF rec.status = 'disponible' AND rec.is_in_stock THEN
+            all_out := FALSE;       -- au moins un est dispo
         ELSE
-            all_available := FALSE;
+            all_available := FALSE; -- au moins un n'est pas dispo
         END IF;
     END LOOP;
 
