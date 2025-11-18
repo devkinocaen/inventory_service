@@ -4,7 +4,8 @@ import {
   createBooking,
   updateBooking,
   deleteBooking,
-  isBatchInStock
+  isBatchInStock,
+  setBatchInStock
 } from '../libs/sql/index.js';
 
 import { formatServerError, formatDateTime } from '../libs/helpers.js';
@@ -13,7 +14,7 @@ import { initClient } from '../libs/client.js';
 // -----------------------------
 // Client & état
 // -----------------------------
-const client = await initClient();
+let client; // initialisé dans init()
 let currentBookings = []; // liste locale des bookings affichés
 
 // -----------------------------
@@ -27,11 +28,20 @@ function safeText(v) {
 function formatDateForCell(d) {
   if (!d) return '';
   try {
-    // si c'est déjà une string ISO, on la convertit proprement
     return formatDateTime ? formatDateTime(d) : new Date(d).toLocaleString();
   } catch (e) {
     return String(d);
   }
+}
+
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 // -----------------------------
@@ -47,7 +57,6 @@ function renderBookingTable(bookings) {
   bookings.forEach(b => {
     const tr = document.createElement('tr');
 
-    // Nom du lot avec fallback "Lot #ID"
     const lotName = b.batch_description && b.batch_description.trim()
       ? b.batch_description
       : `Lot #${b.reservable_batch_id ?? b.booking_id ?? 'N/A'}`;
@@ -56,7 +65,6 @@ function renderBookingTable(bookings) {
     const startDate = formatDateForCell(b.start_date);
     const endDate = formatDateForCell(b.end_date);
 
-    // Liste des noms d'objets réservés
     const itemsList = (Array.isArray(b.reservables) && b.reservables.length)
       ? b.reservables.map(r => r.name || r.label || '').filter(Boolean).join(', ')
       : '';
@@ -86,7 +94,7 @@ function renderBookingTable(bookings) {
             btnCheck.textContent = 'Rentrer';
           } else {
             btnCheck.textContent = 'Indéterminé';
-            btnCheck.disabled = true; // action impossible
+            btnCheck.disabled = true;
           }
         } catch (err) {
           console.error('Erreur récupération stock batch:', err);
@@ -95,32 +103,18 @@ function renderBookingTable(bookings) {
         }
       })();
 
-      // Listener du bouton
       btnCheck.removeEventListener('click', onCheckStockClick);
       btnCheck.addEventListener('click', onCheckStockClick);
     }
   });
 
-  // Après rendu : init events and utilities
   initBookingRowButtons();
   initSortableColumns('#bookings_table');
   setupBookingLookupFilter();
 }
 
-
-// basic html-escape to avoid injection in inserted html
-function escapeHtml(str) {
-  if (str == null) return '';
-  return String(str)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
 // -----------------------------
-// Filtrage (lookup) : recherche sur lot, organisation, items
+// Filtrage (lookup)
 // -----------------------------
 function setupBookingLookupFilter() {
   const input = document.getElementById('lookup_booking');
@@ -136,39 +130,37 @@ function setupBookingLookupFilter() {
       const lot = row.cells[0]?.textContent?.toLowerCase() || '';
       const org = row.cells[1]?.textContent?.toLowerCase() || '';
       const items = row.cells[4]?.textContent?.toLowerCase() || '';
-
-      const match = !q || lot.includes(q) || org.includes(q) || items.includes(q);
-      row.style.display = match ? '' : 'none';
+      row.style.display = !q || lot.includes(q) || org.includes(q) || items.includes(q) ? '' : 'none';
     });
   });
 }
 
 // -----------------------------
-// Boutons ligne : Edit / Delete
+// Boutons ligne
 // -----------------------------
 function initBookingRowButtons() {
   const tbody = document.querySelector('#bookings_table tbody');
   if (!tbody) return;
 
-  // Edit -> open a small inline editor modal (minimal) or fallback to prompt
   tbody.querySelectorAll('.btn-edit').forEach(btn => {
-    btn.removeEventListener('click', onEditClick); // safe removal if re-init
+    btn.removeEventListener('click', onEditClick);
     btn.addEventListener('click', onEditClick);
   });
 
-  // Delete with confirmation
   tbody.querySelectorAll('.btn-delete').forEach(btn => {
     btn.removeEventListener('click', onDeleteClick);
     btn.addEventListener('click', onDeleteClick);
   });
-    
-    // Check-in / Check-out
-    tbody.querySelectorAll('.btn-check-stock').forEach(btn => {
-      btn.removeEventListener('click', onCheckStockClick);
-      btn.addEventListener('click', onCheckStockClick);
-    });
+
+  tbody.querySelectorAll('.btn-check-stock').forEach(btn => {
+    btn.removeEventListener('click', onCheckStockClick);
+    btn.addEventListener('click', onCheckStockClick);
+  });
 }
 
+// -----------------------------
+// Edit / Delete
+// -----------------------------
 async function onEditClick(e) {
   const bookingId = Number(e.currentTarget.dataset.id);
   if (!bookingId) return console.warn('booking id missing for edit');
@@ -176,13 +168,11 @@ async function onEditClick(e) {
   const booking = currentBookings.find(b => Number(b.booking_id) === bookingId);
   if (!booking) return alert('Réservation introuvable');
 
-  // Minimal inline edit: change start/end dates via prompt (you can replace by modal)
   const oldStart = booking.start_date ? String(booking.start_date) : '';
   const oldEnd = booking.end_date ? String(booking.end_date) : '';
 
   const newStart = prompt('Nouvelle date de début (ISO ou vide pour conserver) :', oldStart);
-  if (newStart === null) return; // cancel
-
+  if (newStart === null) return;
   const newEnd = prompt('Nouvelle date de fin (ISO ou vide pour conserver) :', oldEnd);
   if (newEnd === null) return;
 
@@ -192,15 +182,12 @@ async function onEditClick(e) {
 
   try {
     if (typeof updateBooking !== 'function') {
-      console.warn('updateBooking RPC non disponible, tentative de mise à jour locale seulement');
-      // apply locally
       if (payload.start_date) booking.start_date = payload.start_date;
       if (payload.end_date) booking.end_date = payload.end_date;
       renderBookingTable(currentBookings);
       return;
     }
     await updateBooking(client, payload);
-    // refresh local copy
     if (payload.start_date) booking.start_date = payload.start_date;
     if (payload.end_date) booking.end_date = payload.end_date;
     renderBookingTable(currentBookings);
@@ -213,12 +200,10 @@ async function onEditClick(e) {
 async function onDeleteClick(e) {
   const bookingId = Number(e.currentTarget.dataset.id);
   if (!bookingId) return;
-
   if (!confirm(`Supprimer la réservation #${bookingId} ? Cette action est irréversible.`)) return;
 
   try {
     if (typeof deleteBooking !== 'function') {
-      console.warn('deleteBooking RPC non disponible, suppression locale seulement');
       currentBookings = currentBookings.filter(b => Number(b.booking_id) !== bookingId);
       renderBookingTable(currentBookings);
       return;
@@ -233,12 +218,11 @@ async function onDeleteClick(e) {
 }
 
 // -----------------------------
-// Sortable columns (reusable)
+// Sortable columns
 // -----------------------------
 function initSortableColumns(selector = '#bookings_table') {
   const table = document.querySelector(selector);
   if (!table) return;
-
   const headers = table.querySelectorAll('th.sortable');
   const tbody = table.querySelector('tbody');
   if (!tbody) return;
@@ -246,58 +230,82 @@ function initSortableColumns(selector = '#bookings_table') {
   headers.forEach((th, index) => {
     let asc = true;
     th.style.cursor = 'pointer';
-
     th.addEventListener('click', () => {
       const rows = Array.from(tbody.querySelectorAll('tr'));
-
       rows.sort((a, b) => {
         const aText = a.children[index]?.textContent?.trim()?.toLowerCase() || '';
         const bText = b.children[index]?.textContent?.trim()?.toLowerCase() || '';
-
-        // try numeric comparison
         const aNum = parseFloat(aText.replace(',', '.'));
         const bNum = parseFloat(bText.replace(',', '.'));
         const bothNum = !isNaN(aNum) && !isNaN(bNum);
-
-        if (bothNum) {
-          return asc ? aNum - bNum : bNum - aNum;
-        }
+        if (bothNum) return asc ? aNum - bNum : bNum - aNum;
         return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
       });
-
-      // reattach rows
       tbody.innerHTML = '';
       rows.forEach(r => tbody.appendChild(r));
-
       asc = !asc;
     });
   });
 }
 
 // -----------------------------
-// Refresh / fetch / init
+// Refresh / fetch
 // -----------------------------
 async function refreshTable(filters = {}) {
   try {
     const bookings = await fetchBookings(client, filters);
-    // bookings mapping already done in RPC wrapper (fetchBookings)
-      console.log ('bookings', bookings)
+    console.log('bookings', bookings);
     renderBookingTable(bookings);
   } catch (err) {
     console.error('[bookings] Erreur fetchBookings:', formatServerError(err));
   }
 }
 
+// -----------------------------
+// Check-in / Check-out
+// -----------------------------
+async function onCheckStockClick(e) {
+  const batchId = Number(e.currentTarget.dataset.batchId);
+  const btn = e.currentTarget;
+  if (!batchId) return;
+
+  try {
+    const stockStatus = await isBatchInStock(batchId);
+
+    if (stockStatus === true) {
+      if (confirm("Tous les objets sont en stock. Voulez-vous les sortir ?")) {
+        await setBatchInStock(client, batchId, false);
+        alert('Batch sorti du stock.');
+        btn.textContent = 'Rentrer';
+      }
+    } else if (stockStatus === false) {
+      if (confirm("Tous les objets sont sortis. Voulez-vous les rentrer ?")) {
+        await setBatchInStock(client, batchId, true);
+        alert('Batch rentré dans le stock.');
+        btn.textContent = 'Sortir';
+      }
+    } else {
+      alert('Le batch contient des objets mixtes ou indisponibles. Action impossible.');
+    }
+
+    await refreshTable();
+  } catch (err) {
+    console.error('Erreur check-in/check-out:', err);
+    alert('Erreur lors du check-in / check-out. Consultez la console.');
+  }
+}
+
+// -----------------------------
+// Init
+// -----------------------------
 export async function init() {
   try {
-    // Initial fetch
+    client = await initClient();
     await refreshTable();
 
-    // Hook up controls if present (new booking button, filters)
     const btnNew = document.getElementById('btn_new_booking');
     if (btnNew) {
       btnNew.addEventListener('click', async () => {
-        // Minimal creation flow via prompt (replace by modal as needed)
         const batchDesc = prompt('Nom du lot (laisser vide pour Lot #N) :', '');
         const renter = prompt('Organisation locataire (nom ou id) :', '');
         const start = prompt('Date de début (ISO) :', '');
@@ -313,7 +321,6 @@ export async function init() {
 
         try {
           if (typeof createBooking !== 'function') {
-            console.warn('createBooking RPC non disponible, ajout local seulement (mock id)');
             const mock = {
               booking_id: Date.now(),
               reservable_batch_id: null,
@@ -329,7 +336,7 @@ export async function init() {
             renderBookingTable(currentBookings);
             return;
           }
-          const res = await createBooking(client, {
+          await createBooking(client, {
             p_reservable_batch_id: payload.p_reservable_ids || [],
             p_renter_organization_id: null,
             p_booking_person_id: null,
@@ -338,7 +345,6 @@ export async function init() {
             p_end_date: payload.p_end_date || null,
             p_booking_reference_id: null
           });
-          // after creation, refresh table
           await refreshTable();
         } catch (err) {
           alert('Erreur création réservation : ' + formatServerError(err));
@@ -347,7 +353,6 @@ export async function init() {
       });
     }
 
-    // If there's a "filter apply" button, hook it to refresh with params
     const btnApply = document.getElementById('btn_apply_filters');
     if (btnApply) {
       btnApply.addEventListener('click', async () => {
@@ -355,61 +360,17 @@ export async function init() {
         const end = document.getElementById('filter_end')?.value || null;
         const orgIdRaw = document.getElementById('filter_org')?.value || null;
         const orgId = orgIdRaw ? Number(orgIdRaw) : null;
-
-        await refreshTable({
-          p_start: start,
-          p_end: end,
-          p_organization_id: orgId
-        });
+        await refreshTable({ p_start: start, p_end: end, p_organization_id: orgId });
       });
     }
-      
-      const sidebar = document.getElementById('booking-filtersSidebar');
-      const toggleBtn = document.getElementById('booking-filtersToggle');
 
-      if (sidebar && toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-          sidebar.classList.toggle('booking-collapsed');
-        });
-      }
-
+    const sidebar = document.getElementById('booking-filtersSidebar');
+    const toggleBtn = document.getElementById('booking-filtersToggle');
+    if (sidebar && toggleBtn) {
+      toggleBtn.addEventListener('click', () => sidebar.classList.toggle('booking-collapsed'));
+    }
 
   } catch (err) {
     console.error('[bookings] Erreur initialisation :', formatServerError(err));
-  }
-}
-
-
-async function onCheckStockClick(e) {
-  const batchId = Number(e.currentTarget.dataset.batchId);
-  if (!batchId) return;
-
-  try {
-    // Appel wrapper RPC pour savoir si batch est en stock
-    const stockStatus = await isBatchInStock(batchId); // wrapper vers SQL
-
-    if (stockStatus === true) {
-      if (confirm("Tous les objets sont en stock. Voulez-vous les sortir ?")) {
-        await client.rpc('update_reservables_in_batch', { p_batch_id: batchId, p_in_stock: false });
-        alert('Batch sorti du stock.');
-        btnCheck.textContent = 'Rentrer';
-      }
-    } else if (stockStatus === false) {
-      if (confirm("Tous les objets sont sortis. Voulez-vous les rentrer ?")) {
-        await client.rpc('update_reservables_in_batch', { p_batch_id: batchId, p_in_stock: true });
-        alert('Batch rentré dans le stock.');
-        btnCheck.textContent = 'Sortir';
-      }
-    }
-    } else {
-      // Cas mixte
-      alert('Le batch contient des objets mixtes ou indisponibles. Action impossible.');
-    }
-
-    // Rafraîchir le tableau après action
-    await refreshTable();
-  } catch (err) {
-    console.error('Erreur check-in/check-out:', err);
-    alert('Erreur lors du check-in / check-out. Consultez la console.');
   }
 }
