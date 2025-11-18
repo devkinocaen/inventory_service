@@ -2,7 +2,7 @@
 export async function fetchBatchById(client, id) {
     if (!id) return null;
     try {
-        const { data, error } = await client.rpc('inventory.get_batch_by_id', { p_batch_id: id });
+        const { data, error } = await client.rpc('get_batch_by_id', { p_batch_id: id });
         if (error) throw error;
         // si aucun reservable, data est vide ou 1 ligne avec reservable_id null
         if (!data || data.length === 0) return null;
