@@ -342,7 +342,7 @@ async function displayImage(container, url) {
       container.appendChild(imgEl);
 
       const linkWrapper = document.createElement('a');
-      linkWrapper.href = url;
+    //  linkWrapper.href = url;
       linkWrapper.target = '_blank';
       container.replaceChild(linkWrapper, imgEl);
       linkWrapper.appendChild(imgEl);
