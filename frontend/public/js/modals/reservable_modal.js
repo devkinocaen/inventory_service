@@ -6,26 +6,23 @@ import {
     fetchSubcategoriesByCategory,
     fetchStyles
 } from '../libs/sql/index.js';
-
 import { populateSelect } from '../libs/ui/populateSelect.js';
 import { formatServerError } from '../libs/helpers.js';
 
 let client;
-let modal, dialog;
-let cancelBtn, saveBtn;
+let modal, dialog, cancelBtn, saveBtn;
 let currentReservable = null;
-
 let allStyles = [];
 let categories = [];
 let subCategories = {}; // { categoryId: [subcat,...] }
 
 // -----------------------------
-// Initialisation client et modal
+// Initialisation modal
 // -----------------------------
 export async function initReservableModal() {
     await loadReservableModal();
     await loadCategorySelects();
-    await loadStyles(); // Charger tous les styles
+    await loadStyles();
 }
 
 // -----------------------------
@@ -35,9 +32,8 @@ export async function loadReservableModal() {
     if (!document.getElementById('rsb-modal-reservable')) {
         const response = await fetch(`${window.ENV.BASE_PATH}/pages/reservable_modal.html`);
         if (!response.ok) throw new Error('Impossible de charger le modal reservable');
-        const html = await response.text();
         const div = document.createElement('div');
-        div.innerHTML = html;
+        div.innerHTML = await response.text();
         document.body.appendChild(div);
     }
 
@@ -53,7 +49,7 @@ export async function loadReservableModal() {
 }
 
 // -----------------------------
-// Charger catégories et sous-catégories
+// Catégories & sous-catégories
 // -----------------------------
 async function loadCategorySelects() {
     categories = await fetchCategories(client);
@@ -63,19 +59,17 @@ async function loadCategorySelects() {
     populateSelect(categorySelect, categories, 'id', 'name', 'Sélectionnez une catégorie');
 
     categorySelect.addEventListener('change', async () => {
-        const selectedCatId = Number(categorySelect.value) || null;
-        await loadSubCategories(selectedCatId);
-        populateSelect(subCategorySelect, subCategories[selectedCatId] || [], 'id', 'name', 'Sélectionnez une sous-catégorie');
+        const selectedId = Number(categorySelect.value) || null;
+        await loadSubCategories(selectedId);
+        populateSelect(subCategorySelect, subCategories[selectedId] || [], 'id', 'name', 'Sélectionnez une sous-catégorie');
         subCategorySelect.value = '';
     });
 
-    if (currentReservable && currentReservable.category_id) {
+    if (currentReservable?.category_id) {
         categorySelect.value = currentReservable.category_id;
         await loadSubCategories(currentReservable.category_id);
         populateSelect(subCategorySelect, subCategories[currentReservable.category_id] || [], 'id', 'name', 'Sélectionnez une sous-catégorie');
-        if (currentReservable.subcategory_id) {
-            subCategorySelect.value = currentReservable.subcategory_id;
-        }
+        subCategorySelect.value = currentReservable.subcategory_id || '';
     }
 }
 
@@ -85,65 +79,53 @@ async function loadSubCategories(categoryId) {
 }
 
 // -----------------------------
-// Charger styles
+// Styles
 // -----------------------------
 async function loadStyles() {
     allStyles = await fetchStyles(client);
-
-    // 🔹 Remplir le select "Ajouter un style"
     const styleSelect = dialog.querySelector('#rsb-res-add-style');
     populateSelect(styleSelect, allStyles, 'id', 'name', 'Ajouter un style');
 
-    // 🔹 Listener pour ajouter un style en chip
     styleSelect.addEventListener('change', () => {
         const selectedId = Number(styleSelect.value);
         if (!selectedId) return;
         const selectedStyle = allStyles.find(s => s.id === selectedId);
-        if (!selectedStyle) return;
-
-        addStyleChip(selectedStyle);
-        styleSelect.value = ''; // reset select
+        if (selectedStyle) addStyleChip(selectedStyle);
+        styleSelect.value = '';
     });
 
-    // 🔹 Rendre les chips déjà présents pour currentReservable
     renderStyleChips();
 }
 
 function renderStyleChips() {
-    const chipsContainer = dialog.querySelector('#rsb-chips-style');
-    chipsContainer.innerHTML = '';
+    const container = dialog.querySelector('#rsb-chips-style');
+    container.innerHTML = '';
 
     if (!currentReservable?.style_ids?.length) return;
-
     currentReservable.style_ids.forEach(id => {
-        const s = allStyles.find(st => st.id === id);
-        if (s) addStyleChip(s);
+        const style = allStyles.find(s => s.id === id);
+        if (style) addStyleChip(style);
     });
 }
 
 function addStyleChip(style) {
-    const chipsContainer = dialog.querySelector('#rsb-chips-style');
-
-    // Éviter doublons
-    if (Array.from(chipsContainer.children).some(c => c.dataset.id == style.id)) return;
+    const container = dialog.querySelector('#rsb-chips-style');
+    if (Array.from(container.children).some(c => c.dataset.id == style.id)) return;
 
     const chip = document.createElement('div');
     chip.className = 'rsb-chip';
     chip.dataset.id = style.id;
     chip.innerHTML = `${style.name} <button type="button">✕</button>`;
-
-    // Supprimer chip au clic sur le bouton
     chip.querySelector('button').addEventListener('click', e => {
         e.stopPropagation();
         chip.remove();
     });
 
-    chipsContainer.appendChild(chip);
+    container.appendChild(chip);
 }
 
-
 // -----------------------------
-// Ouvrir / Fermer modal
+// Ouvrir / fermer modal
 // -----------------------------
 export async function openReservableModal(reservableId) {
     client = await initClient();
@@ -155,26 +137,27 @@ export async function openReservableModal(reservableId) {
     const getEl = id => dialog.querySelector(id);
 
     if (currentReservable) {
-        console.log ('currentReservable', currentReservable)
-        getEl('#rsb-res-name').value = currentReservable.name || '';
-        getEl('#rsb-res-size').value = currentReservable.size || '';
-        getEl('#rsb-res-price').value = currentReservable.price_per_day != null ? currentReservable.price_per_day : '';
-        getEl('#rsb-res-description').value = currentReservable.description || '';
+        const fields = {
+            '#rsb-res-name': currentReservable.name,
+            '#rsb-res-size': currentReservable.size,
+            '#rsb-res-price': currentReservable.price_per_day,
+            '#rsb-res-description': currentReservable.description,
+            '#rsb-res-status': currentReservable.status || 'disponible',
+            '#rsb-res-quality': currentReservable.quality || 'neuf',
+            '#rsb-res-category': currentReservable.category_id,
+            '#rsb-res-subcategory': currentReservable.subcategory_id,
+            '#rsb-res-owner': currentReservable.owner_id,
+            '#rsb-res-manager': currentReservable.manager_id,
+            '#rsb-res-storage': currentReservable.storage_id
+        };
 
-        getEl('#rsb-res-status').value = currentReservable.status || 'disponible';
-        getEl('#rsb-res-quality').value = currentReservable.quality || 'neuf';
-        getEl('#rsb-res-category').value = currentReservable.category_id || '';
-        getEl('#rsb-res-subcategory').value = currentReservable.subcategory_id || '';
-        getEl('#rsb-res-owner').value = currentReservable.owner_id || '';
-        getEl('#rsb-res-manager').value = currentReservable.manager_id || '';
-        getEl('#rsb-res-storage').value = currentReservable.storage_id || '';
+        Object.entries(fields).forEach(([sel, val]) => {
+            const el = getEl(sel);
+            if (el) el.value = val ?? '';
+        });
 
-        const genderRadio = dialog.querySelectorAll('input[name="rsb-res-gender"]');
-        genderRadio.forEach(r => r.checked = r.value === currentReservable.gender);
-
-        const privacyRadio = dialog.querySelectorAll('input[name="rsb-res-privacy"]');
-        privacyRadio.forEach(r => r.checked = r.value === currentReservable.privacy);
-
+        dialog.querySelectorAll('input[name="rsb-res-gender"]').forEach(r => r.checked = r.value === currentReservable.gender);
+        dialog.querySelectorAll('input[name="rsb-res-privacy"]').forEach(r => r.checked = r.value === currentReservable.privacy);
         renderStyleChips();
     } else {
         dialog.querySelectorAll('input, select, textarea').forEach(el => {
@@ -199,7 +182,7 @@ export function closeReservableModal() {
 }
 
 // -----------------------------
-// Sauvegarder reservable
+// Sauvegarder
 // -----------------------------
 async function saveReservable(e) {
     e.preventDefault();
@@ -210,11 +193,9 @@ async function saveReservable(e) {
         return;
     }
 
-    const genderRadio = dialog.querySelector('input[name="rsb-res-gender"]:checked');
-    const privacyRadio = dialog.querySelector('input[name="rsb-res-privacy"]:checked');
-
-    const styles = Array.from(dialog.querySelectorAll('#rsb-chips-style .rsb-chip.selected'))
-                        .map(c => c.textContent.trim());
+    const gender = dialog.querySelector('input[name="rsb-res-gender"]:checked')?.value;
+    const privacy = dialog.querySelector('input[name="rsb-res-privacy"]:checked')?.value;
+    const styles = Array.from(dialog.querySelectorAll('#rsb-chips-style .rsb-chip.selected')).map(c => c.textContent.trim());
 
     const updateData = {
         id: currentReservable?.id || null,
@@ -230,8 +211,8 @@ async function saveReservable(e) {
         owner_id: getEl('#rsb-res-owner').value || null,
         manager_id: getEl('#rsb-res-manager').value || null,
         storage_id: getEl('#rsb-res-storage').value || null,
-        gender: genderRadio ? genderRadio.value : null,
-        privacy: privacyRadio ? privacyRadio.value : null,
+        gender,
+        privacy,
         styles
     };
 

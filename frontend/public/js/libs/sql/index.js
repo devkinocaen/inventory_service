@@ -35,11 +35,11 @@ export { deleteReservableBatch } from './deleteReservableBatch.js';
 export { fetchReservableById } from './fetchReservableById.js';
 export { isBatchInStock } from './isBatchInStock.js';
 export { setBatchInStock } from './setBatchInStock.js';
-export { getOrganizationById } from './getOrganizationById.js';
-export { getPersonById } from './getPersonById.js';
-export { getOrganizations } from './getOrganizations.js';
-export { getStorageLocations } from './getStorageLocations.js';
-export { getStorageLocationById } from './getStorageLocationById.js';
+export { fetchOrganizationById } from './fetchOrganizationById.js';
+export { fetchPersonById } from './fetchPersonById.js';
+export { fetchStorageLocations } from './fetchStorageLocations.js';
+export { fetchStorageLocationById } from './fetchStorageLocationById.js';
+export { fetchOrganizations } from './fetchOrganizations.js';
 
 
 

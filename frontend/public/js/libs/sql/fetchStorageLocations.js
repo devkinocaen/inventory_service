@@ -1,5 +1,5 @@
 // récupère toutes les storage locations
-export async function getStorageLocations(client) {
+export async function fetchStorageLocations(client) {
     try {
         const { data, error } = await client.rpc('inventory.get_storage_locations');
         if (error) throw error;
