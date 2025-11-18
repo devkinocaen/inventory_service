@@ -12,7 +12,7 @@ import { initClient } from '../libs/client.js';
 // -----------------------------
 // Client & état
 // -----------------------------
-const client = await initClient();
+let client = null;
 let currentBookings = []; // liste locale des bookings affichés
 
 // -----------------------------
@@ -256,6 +256,8 @@ async function refreshTable(filters = {}) {
 
 export async function init() {
   try {
+    client = await initClient();
+
     // Initial fetch
     await refreshTable();
 
