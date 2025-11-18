@@ -10,6 +10,7 @@ import {
 
 import { formatServerError, formatDateTime } from '../libs/helpers.js';
 import { initClient } from '../libs/client.js';
+import { openBatchModal } from '../modals/batch_modal.js';
 
 // -----------------------------
 // Client & état
@@ -69,17 +70,45 @@ function renderBookingTable(bookings) {
       ? b.reservables.map(r => r.name || r.label || '').filter(Boolean).join(', ')
       : '';
 
-    tr.innerHTML = `
-      <td class="lot" data-id="${b.reservable_batch_id}">${escapeHtml(lotName)}</td>
-      <td class="org" data-id="${b.renter_organization_id ?? ''}">${escapeHtml(orgName)}</td>
-      <td class="start" data-id="${b.booking_id}">${escapeHtml(startDate)}</td>
-      <td class="end" data-id="${b.booking_id}">${escapeHtml(endDate)}</td>
-      <td class="items" data-id="${b.booking_id}">${escapeHtml(itemsList)}</td>
-      <td><button class="btn-check-stock" data-batch-id="${b.reservable_batch_id}">Check-in / Check-out</button></td>
-      <td><button class="btn-edit booking-btn" data-id="${b.booking_id}">Éditer</button></td>
-      <td><button class="btn-delete booking-btn" data-id="${b.booking_id}">Supprimer</button></td>
-    `;
+      tr.innerHTML = `
+        <td class="lot" data-id="${b.reservable_batch_id}">${escapeHtml(lotName)}</td>
+        <td class="org" data-id="${b.renter_organization_id ?? ''}">${escapeHtml(orgName)}</td>
+        <td class="start" data-id="${b.booking_id}">
+          <input type="datetime-local" value="${b.start_date ? b.start_date.substring(0,16) : ''}" />
+        </td>
+        <td class="end" data-id="${b.booking_id}">
+          <input type="datetime-local" value="${b.end_date ? b.end_date.substring(0,16) : ''}" />
+        </td>
+        <td class="items" data-id="${b.booking_id}">${escapeHtml(itemsList)}</td>
+        <td><button class="btn-check-stock" data-batch-id="${b.reservable_batch_id}">Check-in / Check-out</button></td>
+        <td><button class="btn-edit booking-btn" data-id="${b.booking_id}">Éditer</button></td>
+        <td><button class="btn-delete booking-btn" data-id="${b.booking_id}">Supprimer</button></td>
+      `;
 
+      // ← Ici, après avoir créé le tr et mis le innerHTML
+       tr.querySelector('.start input')?.addEventListener('change', async (e) => {
+         const newVal = e.target.value;
+         try {
+           await updateBooking(client, { id: b.booking_id, start_date: newVal });
+           b.start_date = newVal;
+         } catch (err) {
+           alert('Erreur mise à jour date de début : ' + formatServerError(err));
+           e.target.value = b.start_date ? b.start_date.substring(0,16) : '';
+         }
+       });
+
+       tr.querySelector('.end input')?.addEventListener('change', async (e) => {
+         const newVal = e.target.value;
+         try {
+           await updateBooking(client, { id: b.booking_id, end_date: newVal });
+           b.end_date = newVal;
+         } catch (err) {
+           alert('Erreur mise à jour date de fin : ' + formatServerError(err));
+           e.target.value = b.end_date ? b.end_date.substring(0,16) : '';
+         }
+       });
+
+      
     tbody.appendChild(tr);
 
     // --- Initialisation bouton Check-in / Check-out ---
@@ -165,37 +194,14 @@ async function onEditClick(e) {
   const bookingId = Number(e.currentTarget.dataset.id);
   if (!bookingId) return console.warn('booking id missing for edit');
 
-  const booking = currentBookings.find(b => Number(b.booking_id) === bookingId);
-  if (!booking) return alert('Réservation introuvable');
-
-  const oldStart = booking.start_date ? String(booking.start_date) : '';
-  const oldEnd = booking.end_date ? String(booking.end_date) : '';
-
-  const newStart = prompt('Nouvelle date de début (ISO ou vide pour conserver) :', oldStart);
-  if (newStart === null) return;
-  const newEnd = prompt('Nouvelle date de fin (ISO ou vide pour conserver) :', oldEnd);
-  if (newEnd === null) return;
-
-  const payload = { id: bookingId };
-  if (newStart && newStart.trim()) payload.start_date = newStart.trim();
-  if (newEnd && newEnd.trim()) payload.end_date = newEnd.trim();
-
   try {
-    if (typeof updateBooking !== 'function') {
-      if (payload.start_date) booking.start_date = payload.start_date;
-      if (payload.end_date) booking.end_date = payload.end_date;
-      renderBookingTable(currentBookings);
-      return;
-    }
-    await updateBooking(client, payload);
-    if (payload.start_date) booking.start_date = payload.start_date;
-    if (payload.end_date) booking.end_date = payload.end_date;
-    renderBookingTable(currentBookings);
+    await openBatchModal(bookingId);
   } catch (err) {
-    alert('Erreur lors de la mise à jour : ' + formatServerError(err));
-    console.error(err);
+    console.error('Erreur ouverture modal batch :', err);
+    alert('Impossible d’ouvrir la modal batch.');
   }
 }
+
 
 async function onDeleteClick(e) {
   const bookingId = Number(e.currentTarget.dataset.id);

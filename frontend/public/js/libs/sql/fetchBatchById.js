@@ -1,6 +1,4 @@
 // récupère un batch par ID avec ses reservables
-import { singleOrList } from '../helpers.js';
-
 export async function fetchBatchById(client, id) {
     if (!id) return null;
     try {

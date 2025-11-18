@@ -58,18 +58,19 @@ export async function openBatchModal(bookingId) {
 
     // Récupérer le batch associé
     currentBatch = currentBooking.batch_id ? await fetchBatchById(client, currentBooking.batch_id) : null;
+    if (!currentBatch) {
+        currentBatch = { description: '', items: [] };
+    } else if (!currentBatch.items) {
+        currentBatch.items = [];
+    }
 
     await initBatchModal();
 
     // Remplir champs batch
-    if (currentBatch) {
-        dialog.querySelector('#batch-id').value = currentBatch.id;
-        dialog.querySelector('#batch-description').value = currentBatch.description || '';
-        dialog.querySelector('#batch-start-date').value = currentBatch.start_date ? currentBatch.start_date.substring(0,16) : '';
-        dialog.querySelector('#batch-end-date').value = currentBatch.end_date ? currentBatch.end_date.substring(0,16) : '';
-    } else {
-        dialog.querySelectorAll('input').forEach(el => el.value = '');
-    }
+    dialog.querySelector('#batch-id').value = currentBatch.id || '';
+    dialog.querySelector('#batch-description').value = currentBatch.description || '';
+    dialog.querySelector('#batch-start-date').value = currentBooking.start_date?.substring(0,16) || '';
+    dialog.querySelector('#batch-end-date').value = currentBooking.end_date?.substring(0,16) || '';
 
     // Remplir tableau des items
     renderBatchItems();
@@ -128,7 +129,12 @@ function addSelectedReservable() {
 
     if (!currentBatch.items) currentBatch.items = [];
     if (!currentBatch.items.some(i => i.id === selectedItem.id)) {
-        currentBatch.items.push({ ...selectedItem, status: 'réservé', checkin: null, checkout: null });
+        currentBatch.items.push({
+            ...selectedItem,
+            status: selectedItem.status || 'réservé',
+            checkin: null,
+            checkout: null
+        });
         renderBatchItems();
     }
 }
@@ -140,12 +146,15 @@ async function saveBatch(e) {
     e.preventDefault();
     if (!currentBatch) return;
 
-    currentBatch.description = dialog.querySelector('#batch-description').value.trim();
-    currentBatch.start_date = dialog.querySelector('#batch-start-date').value;
-    currentBatch.end_date = dialog.querySelector('#batch-end-date').value;
+    const description = dialog.querySelector('#batch-description').value.trim();
+    const reservableIds = (currentBatch.items || []).map(i => i.id);
 
     try {
-        const saved = await updateBatch(client, currentBatch);
+        const saved = await updateBatch(client, {
+            id: currentBatch.id,
+            description,
+            reservables: reservableIds
+        });
         console.log('Batch enregistré', saved);
         alert('✅ Batch enregistré avec succès.');
         closeBatchModal();
