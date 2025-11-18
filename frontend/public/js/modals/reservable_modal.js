@@ -155,6 +155,7 @@ export async function openReservableModal(reservableId) {
     const getEl = id => dialog.querySelector(id);
 
     if (currentReservable) {
+        console.log ('currentReservable', currentReservable)
         getEl('#rsb-res-name').value = currentReservable.name || '';
         getEl('#rsb-res-size').value = currentReservable.size || '';
         getEl('#rsb-res-price').value = currentReservable.price_per_day != null ? currentReservable.price_per_day : '';
