@@ -1,7 +1,2 @@
 [
-    {
-        "file": "$BASE_PATH/resources/help/manuel-utilisateur.pdf",
-        "title": "Aide générale",
-        "user": "admin,lab,mag,prod"
-    }
 ]
