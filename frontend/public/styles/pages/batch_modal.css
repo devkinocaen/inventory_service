@@ -200,3 +200,42 @@
   flex: 1; /* prend tout le reste de la ligne */
   min-width: 0; /* permet de réduire si la fenêtre est petite */
 }
+
+
+/* 🔹 Boutons d'action des items */
+.batch-item-action {
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    min-width: 80px;
+}
+
+/* Rentrer → vert */
+.batch-item-action.rentrer {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.batch-item-action.rentrer:hover {
+    background-color: #45a049;
+}
+
+/* Sortir → bleu */
+.batch-item-action.sortir {
+    background-color: #0077ff;
+    color: white;
+}
+
+.batch-item-action.sortir:hover {
+    background-color: #005fcc;
+}
+
+/* Indisponible → gris */
+.batch-item-action.indisponible {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+}

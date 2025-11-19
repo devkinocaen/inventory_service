@@ -3,7 +3,8 @@ import {
     fetchBookingById,
     fetchBatchById,
     fetchReservables,
-    updateBatch
+    updateBatch,
+    updateReservable
 } from '../libs/sql/index.js';
 import { populateSelect } from '../libs/ui/populateSelect.js';
 import { formatServerError } from '../libs/helpers.js';
@@ -13,7 +14,7 @@ let modal, dialog, cancelBtn, saveBtn, addBtn;
 let currentBatch = null;
 let currentBooking = null;
 let availableReservables = [];
-
+let currentModalCallback = null;
 /* -------------------------------------------------------
    Chargement du HTML du modal
 ------------------------------------------------------- */
@@ -110,25 +111,23 @@ function setupAvailableSearch() {
 /* -------------------------------------------------------
    Ouverture du modal
 ------------------------------------------------------- */
-export async function openBatchModal(bookingId) {
+export async function openBatchModal(bookingId, onClose) {
     if (!client) client = await initClient();
-    await initBatchModal();
+    currentModalCallback = onClose;
 
+    await initBatchModal();
+    
     // Récupérer le booking
     const bookingData = await fetchBookingById(client, bookingId);
     currentBooking=bookingData.booking
     if (!currentBooking) return alert('Booking introuvable');
 
     
-    console.log ('currentBooking', currentBooking)
     currentBatch = bookingData.batch?.id
     ? await fetchBatchById(client, bookingData.batch.id)
     : { description: '', reservables: [] };
 
 
-    console.log ('currentBatch', currentBatch)
-
-    
     if (!currentBatch.reservables) currentBatch.reservables = [];
 
     // Remplir le formulaire
@@ -158,48 +157,109 @@ export async function openBatchModal(bookingId) {
 export function closeBatchModal() {
     if (!modal) return;
 
-    // retirer l'animation
     dialog.classList.remove('show');
     modal.classList.remove('show');
 
-    // cacher après transition
     setTimeout(() => {
         modal.classList.add('hidden');
-    }, 250);
+        currentBatch = null;
+        currentBooking = null;
 
-    currentBatch = null;
-    currentBooking = null;
+        if (currentModalCallback) {
+            currentModalCallback(); // <-- appel du callback
+            currentModalCallback = null; // on le réinitialise
+        }
+    }, 250);
 }
 
 
 /* -------------------------------------------------------
    Rendu tableau des items
 ------------------------------------------------------- */
-function renderBatchItems() {
+function renderBatchItems(onClose) {
     const tbody = dialog.querySelector('#batch-tbody');
     tbody.innerHTML = '';
 
     if (!currentBatch.reservables.length) return;
 
     currentBatch.reservables.forEach(item => {
+ console.log ('item', item)
         const tr = document.createElement('tr');
 
-        tr.innerHTML = `
-            <td>${item.name}</td>
-            <td>${item.status || 'réservé'}</td>
-            <td>${item.checkin || '-'} → ${item.checkout || '-'}</td>
-            <td><button type="button" data-id="${item.id}">❌</button></td>
-        `;
+        // Nom + taille
+        const nameTd = document.createElement('td');
+        nameTd.textContent = item.name;
 
-        tr.querySelector('button').addEventListener('click', e => {
+        const sizeTd = document.createElement('td');
+        sizeTd.textContent = item.size || '-';
+
+        // Colonne action dynamique
+        const actionTd = document.createElement('td');
+        const actionBtn = document.createElement('button');
+        actionBtn.classList.add('batch-item-action');
+
+        // Déterminer l'état initial et la classe CSS
+        if (item.is_in_stock === false) {
+            actionBtn.textContent = 'Rentrer';
+            actionBtn.disabled = false;
+            actionBtn.classList.add('rentrer');
+        } else if (item.is_in_stock === true && item.status === 'disponible') {
+            actionBtn.textContent = 'Sortir';
+            actionBtn.disabled = false;
+            actionBtn.classList.add('sortir');
+        } else {
+            actionBtn.textContent = 'Indisponible';
+            actionBtn.disabled = true;
+            actionBtn.classList.add('indisponible');
+        }
+
+        // Listener pour basculer l'état
+        actionBtn.addEventListener('click', async () => {
+            if (actionBtn.disabled) return;
+
+            // Toggle is_in_stock
+            const isCurrentlyRentrer = actionBtn.textContent === 'Rentrer';
+            item.is_in_stock = isCurrentlyRentrer;
+
+            // Mettre à jour le texte et la classe CSS
+            if (item.is_in_stock) {
+                actionBtn.textContent = 'Sortir';
+                actionBtn.classList.remove('rentrer');
+                actionBtn.classList.add('sortir');
+            } else {
+                actionBtn.textContent = 'Rentrer';
+                actionBtn.classList.remove('sortir');
+                actionBtn.classList.add('rentrer');
+            }
+
+            // Ici tu peux appeler la fonction backend pour sauvegarder
+            await updateReservable(client, { id: item.id, is_in_stock: item.is_in_stock });
+        });
+
+        actionTd.appendChild(actionBtn);
+
+        // Colonne supprimer
+        const deleteTd = document.createElement('td');
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.textContent = '❌';
+        deleteBtn.addEventListener('click', e => {
             e.stopPropagation();
             currentBatch.reservables = currentBatch.reservables.filter(i => i.id !== item.id);
             renderBatchItems();
         });
+        deleteTd.appendChild(deleteBtn);
+
+        // Assemblage de la ligne
+        tr.appendChild(nameTd);
+        tr.appendChild(sizeTd);
+        tr.appendChild(actionTd);
+        tr.appendChild(deleteTd);
 
         tbody.appendChild(tr);
     });
 }
+
 
 /* -------------------------------------------------------
    Ajouter un item depuis le select
@@ -213,12 +273,7 @@ function addSelectedReservable() {
     if (!reservable) return;
 
     if (!currentBatch.reservables.some(i => i.id === id)) {
-        currentBatch.reservables.push({
-            ...reservable,
-            status: reservable.status || 'réservé',
-            checkin: null,
-            checkout: null
-        });
+        currentBatch.reservables.push(reservable);
         renderBatchItems();
     }
 }
@@ -241,7 +296,7 @@ async function saveBatch(e) {
         });
 
         console.log('Batch enregistré', saved);
-        alert('✅ Batch enregistré avec succès.');
+       // alert('✅ Batch enregistré avec succès.');
         closeBatchModal();
 
     } catch (err) {

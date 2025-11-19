@@ -7,6 +7,7 @@ RETURNS TABLE(
     batch_description TEXT,
     reservable_id INT,
     reservable_name TEXT,
+    reservable_size TEXT,
     reservable_status inventory.reservable_status,
     reservable_in_stock BOOLEAN
 ) AS $$
@@ -17,6 +18,7 @@ BEGIN
         b.description AS batch_description,
         r.id::INT AS reservable_id,
         r.name::TEXT AS reservable_name,
+        r.size::TEXT AS reservable_size,
         r.status::inventory.reservable_status AS reservable_status,
         r.is_in_stock::BOOLEAN AS reservable_in_stock
     FROM inventory.reservable_batch b

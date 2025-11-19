@@ -46,6 +46,6 @@ export async function updateReservable(client, {
     console.error('[updateReservable] Erreur serveur :', error);
     throw new Error(error.message || 'Erreur lors de la mise à jour du reservable');
   }
-
+console.log ('updateReservable', data)
   return single(data);
 }

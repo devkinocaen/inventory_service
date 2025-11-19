@@ -16,6 +16,7 @@ export async function fetchBatchById(client, id) {
                 .map(r => ({
                     id: r.reservable_id,
                     name: r.reservable_name,
+                    size: r.reservable_size,
                     status: r.reservable_status,
                     is_in_stock: r.reservable_in_stock
                 }))

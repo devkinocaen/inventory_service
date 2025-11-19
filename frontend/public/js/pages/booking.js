@@ -48,14 +48,14 @@ function escapeHtml(str) {
 // -----------------------------
 // Rendu du tableau des réservations
 // -----------------------------
-function renderBookingTable(bookings) {
+async function renderBookingTable(bookings) {
   const tbody = document.querySelector('#bookings_table tbody');
   if (!tbody) return;
 
   tbody.innerHTML = '';
   currentBookings = bookings || [];
 
-  bookings.forEach(b => {
+  for (const b of bookings) {
     const tr = document.createElement('tr');
 
     const lotName = b.batch_description && b.batch_description.trim()
@@ -70,77 +70,96 @@ function renderBookingTable(bookings) {
       ? b.reservables.map(r => r.name || r.label || '').filter(Boolean).join(', ')
       : '';
 
-      tr.innerHTML = `
-        <td class="lot" data-id="${b.reservable_batch_id}">${escapeHtml(lotName)}</td>
-        <td class="org" data-id="${b.renter_organization_id ?? ''}">${escapeHtml(orgName)}</td>
-        <td class="start" data-id="${b.booking_id}">
-          <input type="datetime-local" value="${b.start_date ? b.start_date.substring(0,16) : ''}" />
-        </td>
-        <td class="end" data-id="${b.booking_id}">
-          <input type="datetime-local" value="${b.end_date ? b.end_date.substring(0,16) : ''}" />
-        </td>
-        <td class="items" data-id="${b.booking_id}">${escapeHtml(itemsList)}</td>
-        <td><button class="btn-check-stock" data-batch-id="${b.reservable_batch_id}">Check-in / Check-out</button></td>
-        <td><button class="btn-edit booking-btn" data-id="${b.booking_id}">Éditer</button></td>
-        <td><button class="btn-delete booking-btn" data-id="${b.booking_id}">Supprimer</button></td>
-      `;
+    // --- Colonnes fixes ---
+    tr.innerHTML = `
+      <td class="lot" data-id="${b.reservable_batch_id}">${escapeHtml(lotName)}</td>
+      <td class="org" data-id="${b.renter_organization_id ?? ''}">${escapeHtml(orgName)}</td>
+      <td class="start" data-id="${b.booking_id}">
+        <input type="datetime-local" value="${b.start_date ? b.start_date.substring(0,16) : ''}" />
+      </td>
+      <td class="end" data-id="${b.booking_id}">
+        <input type="datetime-local" value="${b.end_date ? b.end_date.substring(0,16) : ''}" />
+      </td>
+      <td class="items" data-id="${b.booking_id}">${escapeHtml(itemsList)}</td>
+    `;
 
-      // ← Ici, après avoir créé le tr et mis le innerHTML
-       tr.querySelector('.start input')?.addEventListener('change', async (e) => {
-         const newVal = e.target.value;
-         try {
-           await updateBooking(client, { id: b.booking_id, start_date: newVal });
-           b.start_date = newVal;
-         } catch (err) {
-           alert('Erreur mise à jour date de début : ' + formatServerError(err));
-           e.target.value = b.start_date ? b.start_date.substring(0,16) : '';
-         }
-       });
+    // --- Bouton check-in / check-out ---
+    const tdBtn = document.createElement('td');
+    const btnCheck = document.createElement('button');
+    btnCheck.className = 'btn-check-stock';
+    btnCheck.dataset.batchId = b.reservable_batch_id;
 
-       tr.querySelector('.end input')?.addEventListener('change', async (e) => {
-         const newVal = e.target.value;
-         try {
-           await updateBooking(client, { id: b.booking_id, end_date: newVal });
-           b.end_date = newVal;
-         } catch (err) {
-           alert('Erreur mise à jour date de fin : ' + formatServerError(err));
-           e.target.value = b.end_date ? b.end_date.substring(0,16) : '';
-         }
-       });
-
-      
-    tbody.appendChild(tr);
-
-    // --- Initialisation bouton Check-in / Check-out ---
-    const btnCheck = tr.querySelector('.btn-check-stock');
-    if (btnCheck) {
-      (async () => {
-        try {
-          const stockStatus = await isBatchInStock(client, b.reservable_batch_id);
-          if (stockStatus === true) {
-            btnCheck.textContent = 'Sortir';
-          } else if (stockStatus === false) {
-            btnCheck.textContent = 'Rentrer';
-          } else {
-            btnCheck.textContent = 'Indéterminé';
-            btnCheck.disabled = true;
-          }
-        } catch (err) {
-          console.error('Erreur récupération stock batch:', err);
-          btnCheck.textContent = 'Erreur';
-          btnCheck.disabled = true;
-        }
-      })();
-
-      btnCheck.removeEventListener('click', onCheckStockClick);
-      btnCheck.addEventListener('click', onCheckStockClick);
+    try {
+      const stockStatus = await isBatchInStock(client, b.reservable_batch_id);
+      if (stockStatus === true) {
+        btnCheck.textContent = 'Sortir';
+        btnCheck.disabled = false;
+      } else if (stockStatus === false) {
+        btnCheck.textContent = 'Rentrer';
+        btnCheck.disabled = false;
+      } else {
+        btnCheck.textContent = 'Indéterminé';
+        btnCheck.disabled = true;
+      }
+    } catch (err) {
+      console.error('Erreur récupération stock batch:', err);
+      btnCheck.textContent = 'Erreur';
+      btnCheck.disabled = true;
     }
-  });
 
-  initBookingRowButtons();
+    btnCheck.addEventListener('click', onCheckStockClick);
+    tdBtn.appendChild(btnCheck);
+    tr.appendChild(tdBtn);
+
+    // --- Boutons edit/delete ---
+    const tdEdit = document.createElement('td');
+    const btnEdit = document.createElement('button');
+    btnEdit.className = 'btn-edit booking-btn';
+    btnEdit.dataset.id = b.booking_id;
+    btnEdit.textContent = 'Éditer';
+    btnEdit.addEventListener('click', onEditClick);
+    tdEdit.appendChild(btnEdit);
+    tr.appendChild(tdEdit);
+
+    const tdDelete = document.createElement('td');
+    const btnDelete = document.createElement('button');
+    btnDelete.className = 'btn-delete booking-btn';
+    btnDelete.dataset.id = b.booking_id;
+    btnDelete.textContent = 'Supprimer';
+    btnDelete.addEventListener('click', onDeleteClick);
+    tdDelete.appendChild(btnDelete);
+    tr.appendChild(tdDelete);
+
+    // --- Inputs start / end ---
+    tr.querySelector('.start input')?.addEventListener('change', async (e) => {
+      const newVal = e.target.value;
+      try {
+        await updateBooking(client, { id: b.booking_id, start_date: newVal });
+        b.start_date = newVal;
+      } catch (err) {
+        alert('Erreur mise à jour date de début : ' + formatServerError(err));
+        e.target.value = b.start_date ? b.start_date.substring(0,16) : '';
+      }
+    });
+
+    tr.querySelector('.end input')?.addEventListener('change', async (e) => {
+      const newVal = e.target.value;
+      try {
+        await updateBooking(client, { id: b.booking_id, end_date: newVal });
+        b.end_date = newVal;
+      } catch (err) {
+        alert('Erreur mise à jour date de fin : ' + formatServerError(err));
+        e.target.value = b.end_date ? b.end_date.substring(0,16) : '';
+      }
+    });
+
+    tbody.appendChild(tr);
+  }
+
   initSortableColumns('#bookings_table');
   setupBookingLookupFilter();
 }
+
 
 // -----------------------------
 // Filtrage (lookup)
@@ -195,7 +214,9 @@ async function onEditClick(e) {
   if (!bookingId) return console.warn('booking id missing for edit');
 
   try {
-    await openBatchModal(bookingId);
+    openBatchModal(bookingId, () => {
+        refreshTable();
+    });
   } catch (err) {
     console.error('Erreur ouverture modal batch :', err);
     alert('Impossible d’ouvrir la modal batch.');
@@ -260,7 +281,7 @@ function initSortableColumns(selector = '#bookings_table') {
 async function refreshTable(filters = {}) {
   try {
     const bookings = await fetchBookings(client, filters);
-    renderBookingTable(bookings);
+    await renderBookingTable(bookings); // ← await ajouté
   } catch (err) {
     console.error('[bookings] Erreur fetchBookings:', formatServerError(err));
   }
@@ -281,19 +302,22 @@ async function onCheckStockClick(e) {
       if (confirm("Tous les objets sont en stock. Voulez-vous les sortir ?")) {
         await setBatchInStock(client, batchId, false);
         alert('Batch sorti du stock.');
-        btn.textContent = 'Rentrer';
+          await updateCheckButtonLabel(btn, batchId);
+
       }
     } else if (stockStatus === false) {
       if (confirm("Tous les objets sont sortis. Voulez-vous les rentrer ?")) {
         await setBatchInStock(client, batchId, true);
         alert('Batch rentré dans le stock.');
-        btn.textContent = 'Sortir';
+          await updateCheckButtonLabel(btn, batchId);
       }
     } else {
       alert('Le batch contient des objets mixtes ou indisponibles. Action impossible.');
     }
 
-    await refreshTable();
+//    await refreshTable();
+      await refreshAllCheckButtons();
+
   } catch (err) {
     console.error('Erreur check-in/check-out:', err);
     alert('Erreur lors du check-in / check-out. Consultez la console.');
@@ -377,5 +401,55 @@ export async function init() {
 
   } catch (err) {
     console.error('[bookings] Erreur initialisation :', formatServerError(err));
+  }
+}
+
+
+async function updateCheckButtonLabel(btn, batchId) {
+  try {
+    const stockStatus = await isBatchInStock(client, batchId);
+
+    if (stockStatus === true) {
+      btn.textContent = 'Sortir';
+      btn.disabled = false;
+    } else if (stockStatus === false) {
+      btn.textContent = 'Rentrer';
+      btn.disabled = false;
+    } else {
+      btn.textContent = 'Indéterminé';
+      btn.disabled = true;
+    }
+  } catch (err) {
+    console.error('Erreur récupération stock batch:', err);
+    btn.textContent = 'Erreur';
+    btn.disabled = true;
+  }
+}
+
+
+// Met à jour uniquement tous les boutons Check-in/Check-out
+async function refreshAllCheckButtons() {
+  const buttons = document.querySelectorAll('.btn-check-stock');
+  for (const btn of buttons) {
+    const batchId = Number(btn.dataset.batchId);
+    if (!batchId) continue;
+
+    try {
+      const stockStatus = await isBatchInStock(client, batchId);
+      if (stockStatus === true) {
+        btn.textContent = 'Sortir';
+        btn.disabled = false;
+      } else if (stockStatus === false) {
+        btn.textContent = 'Rentrer';
+        btn.disabled = false;
+      } else {
+        btn.textContent = 'Indéterminé';
+        btn.disabled = true;
+      }
+    } catch (err) {
+      console.error('Erreur récupération stock batch:', err);
+      btn.textContent = 'Erreur';
+      btn.disabled = true;
+    }
   }
 }
