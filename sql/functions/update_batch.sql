@@ -11,11 +11,16 @@ RETURNS TABLE(
     description TEXT
 ) AS $$
 BEGIN
-    -- Met à jour la description du batch
-    UPDATE inventory.reservable_batch
+    -- Vérifie que le vecteur n'est pas vide si non NULL
+    IF p_reservable_ids IS NOT NULL AND array_length(p_reservable_ids, 1) = 0 THEN
+        RAISE EXCEPTION 'Un batch doit contenir au moins un reservable';
+    END IF;
+
+    -- Met à jour la description du batch et récupère dans les variables de sortie
+    UPDATE inventory.reservable_batch AS b
     SET description = p_description
-    WHERE id = p_batch_id
-    RETURNING id, description
+    WHERE b.id = p_batch_id
+    RETURNING b.id AS batch_id, b.description AS batch_description
     INTO id, description;
 
     -- Si des reservables sont fournis, on réinitialise les liens
