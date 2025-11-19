@@ -156,6 +156,10 @@ async function renderItems(itemsToRender = currentItems) {
     const div = document.createElement('div');
     div.className = 'cstm-costume-card' + (selectedItems.includes(item.id) ? ' selected' : '');
 
+    // Ajouter classe indisponible
+    const isUnavailable = item.status !== 'disponible';
+    if (isUnavailable) div.classList.add('unavailable');
+
     const photoContainer = document.createElement('div');
     photoContainer.className = 'cstm-costume-photo';
     photoContainer.style.width = '200px';
@@ -170,22 +174,27 @@ async function renderItems(itemsToRender = currentItems) {
     name.className = 'cstm-costume-name';
     name.innerHTML = `<strong>${item.name}</strong><br>
                       Taille: ${item.size || '-'}<br>
-                      Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}`;
+                      Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}
+                      ${isUnavailable ? `<br><small style="color:red;">${item.status}</small>` : ''}`;
     div.appendChild(name);
 
-    div.addEventListener('click', () => {
-      if (selectedItems.includes(item.id)) {
-        selectedItems = selectedItems.filter(i => i !== item.id);
-        div.classList.remove('selected');
-      } else {
-        selectedItems.push(item.id);
-        div.classList.add('selected');
-      }
-    });
+    // Click uniquement si disponible
+    if (!isUnavailable) {
+      div.addEventListener('click', () => {
+        if (selectedItems.includes(item.id)) {
+          selectedItems = selectedItems.filter(i => i !== item.id);
+          div.classList.remove('selected');
+        } else {
+          selectedItems.push(item.id);
+          div.classList.add('selected');
+        }
+      });
+    }
 
     container.appendChild(div);
   }
 }
+
 
 /**
  * Combine fetch + render

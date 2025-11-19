@@ -1,7 +1,7 @@
 import { initClient } from '../libs/client.js';
 import {
   fetchOrganizations,
-  createReservableBatch,
+  createBatch,
   upsertBookingReference,
   createBooking,
   isAvailable
@@ -185,6 +185,7 @@ export async function initBookingModal() {
 function updateBookingPersons() {
   const orgId = parseInt(orgSelect.value);
   const org = organizations.find(o => o.id === orgId);
+  console.log('org', org);
 
   if (!org) {
     console.warn('[Booking Modal] Organisation introuvable pour id:', orgId);
@@ -196,7 +197,30 @@ function updateBookingPersons() {
     return;
   }
 
-  populateSelect(bookingPersonSelect, org.persons || [], org.referent_id, {
+  // ---------------------
+  // 🔥 Construire la liste fusionnée
+  // ---------------------
+  const persons = [...(org.persons || [])];
+
+  // Ajouter le référent si pas présent
+  if (org.referent_id) {
+    const alreadyInList = persons.some(p => p.id === org.referent_id);
+
+    if (!alreadyInList) {
+      persons.push({
+        id: org.referent_id,
+        first_name: org.referent_first_name,
+        last_name: org.referent_last_name,
+        phone: org.referent_phone,
+        role: 'Référent'
+      });
+    }
+  }
+
+  // ---------------------
+  // 🔥 Populate avec la liste fusionnée
+  // ---------------------
+  populateSelect(bookingPersonSelect, persons, org.referent_id, {
     labelField: (p) => `${p.first_name} ${p.last_name}${p.role ? ` (${p.role})` : ''}`,
     placeholder: '-- Choisir la personne de retrait --',
     disablePlaceholder: true
@@ -229,7 +253,14 @@ async function handleBookingValidate() {
     }
 
     // Création du batch
-    const batchRes = await createReservableBatch(client, bookingItems.map(i => i.id));
+    const descriptionInput = document.getElementById('description');
+    const description = descriptionInput.value.trim();
+                       
+    const batchRes = await createBatch(client, {
+      description: document.getElementById('description').value.trim(),
+      reservableIds: bookingItems.map(i => i.id)
+    });
+    
     let batchId;
     if (Array.isArray(batchRes)) {
       if (!batchRes.length || !batchRes[0].id) {

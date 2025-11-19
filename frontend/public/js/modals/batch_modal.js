@@ -301,6 +301,6 @@ async function saveBatch(e) {
 
     } catch (err) {
         console.error('[updateBatch]', err);
-        alert(`❌ Impossible d’enregistrer :\n\n${formatServerError(err)}`);
+        alert(`❌ Impossible d’enregistrer :\n\n${formatServerError(err.message)}`);
     }
 }
