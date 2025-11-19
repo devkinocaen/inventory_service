@@ -46,17 +46,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 /* 🔹 Form row (ID, Description, Dates) */
 .batch-form-row {
   display: flex;
@@ -122,7 +111,7 @@
 /* 🔹 Ajouter des items */
 .batch-add-container {
   display: flex;
-  align-items: center;
+  flex-direction: column; /* juste la direction */
   gap: 0.5rem;
   margin-top: 1rem;
 }
@@ -161,8 +150,7 @@
 /* 🔹 Actions */
 .batch-modal-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
+  justify-content: space-between;
   margin-top: 1rem;
 }
 
