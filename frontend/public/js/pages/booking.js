@@ -244,36 +244,7 @@ async function onDeleteClick(e) {
   }
 }
 
-// -----------------------------
-// Sortable columns
-// -----------------------------
-function initSortableColumns(selector = '#bookings_table') {
-  const table = document.querySelector(selector);
-  if (!table) return;
-  const headers = table.querySelectorAll('th.sortable');
-  const tbody = table.querySelector('tbody');
-  if (!tbody) return;
 
-  headers.forEach((th, index) => {
-    let asc = true;
-    th.style.cursor = 'pointer';
-    th.addEventListener('click', () => {
-      const rows = Array.from(tbody.querySelectorAll('tr'));
-      rows.sort((a, b) => {
-        const aText = a.children[index]?.textContent?.trim()?.toLowerCase() || '';
-        const bText = b.children[index]?.textContent?.trim()?.toLowerCase() || '';
-        const aNum = parseFloat(aText.replace(',', '.'));
-        const bNum = parseFloat(bText.replace(',', '.'));
-        const bothNum = !isNaN(aNum) && !isNaN(bNum);
-        if (bothNum) return asc ? aNum - bNum : bNum - aNum;
-        return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
-      });
-      tbody.innerHTML = '';
-      rows.forEach(r => tbody.appendChild(r));
-      asc = !asc;
-    });
-  });
-}
 
 // -----------------------------
 // Refresh / fetch
@@ -331,56 +302,6 @@ export async function init() {
   try {
     client = await initClient();
     await refreshTable();
-
-    const btnNew = document.getElementById('btn_new_booking');
-    if (btnNew) {
-      btnNew.addEventListener('click', async () => {
-        const batchDesc = prompt('Nom du lot (laisser vide pour Lot #N) :', '');
-        const renter = prompt('Organisation locataire (nom ou id) :', '');
-        const start = prompt('Date de début (ISO) :', '');
-        const end = prompt('Date de fin (ISO) :', '');
-        const items = prompt('Liste d\'IDs d\'objets séparés par des virgules (ex: 1,2,3) :', '');
-
-        const payload = {};
-        if (batchDesc) payload.p_batch_description = batchDesc;
-        if (renter) payload.p_renter_organization = renter;
-        if (start) payload.p_start_date = start;
-        if (end) payload.p_end_date = end;
-        if (items) payload.p_reservable_ids = items.split(',').map(s => Number(s.trim())).filter(Boolean);
-
-        try {
-          if (typeof createBooking !== 'function') {
-            const mock = {
-              booking_id: Date.now(),
-              reservable_batch_id: null,
-              batch_description: payload.p_batch_description || '',
-              renter_organization_id: null,
-              renter_name: payload.p_renter_organization || '',
-              booking_reference_id: null,
-              start_date: payload.p_start_date || '',
-              end_date: payload.p_end_date || '',
-              reservables: []
-            };
-            currentBookings.unshift(mock);
-            renderBookingTable(currentBookings);
-            return;
-          }
-          await createBooking(client, {
-            p_reservable_batch_id: payload.p_reservable_ids || [],
-            p_renter_organization_id: null,
-            p_booking_person_id: null,
-            p_pickup_person_id: null,
-            p_start_date: payload.p_start_date || null,
-            p_end_date: payload.p_end_date || null,
-            p_booking_reference_id: null
-          });
-          await refreshTable();
-        } catch (err) {
-          alert('Erreur création réservation : ' + formatServerError(err));
-          console.error(err);
-        }
-      });
-    }
 
     const btnApply = document.getElementById('btn_apply_filters');
     if (btnApply) {
@@ -452,4 +373,72 @@ async function refreshAllCheckButtons() {
       btn.disabled = true;
     }
   }
+}
+
+
+
+function getCellValue(row, index) {
+  const cell = row.children[index];
+  if (!cell) return '';
+
+  // input datetime-local
+  const input = cell.querySelector('input[type="datetime-local"]');
+  if (input) return input.value || '';
+
+  // texte simple
+  return cell.textContent.trim();
+}
+
+function compareValues(aVal, bVal, asc = true) {
+  // Dates ISO
+  const aDate = new Date(aVal);
+  const bDate = new Date(bVal);
+  const aIsDate = !isNaN(aDate.getTime());
+  const bIsDate = !isNaN(bDate.getTime());
+  if (aIsDate && bIsDate) return asc ? aDate - bDate : bDate - aDate;
+
+  // Nombres
+  const aNum = parseFloat(aVal.replace(',', '.'));
+  const bNum = parseFloat(bVal.replace(',', '.'));
+  if (!isNaN(aNum) && !isNaN(bNum)) return asc ? aNum - bNum : bNum - aNum;
+
+  // Texte
+  return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+}
+
+
+
+function initSortableColumns(selector = '#bookings_table') {
+  const table = document.querySelector(selector);
+  if (!table) return;
+  const tbody = table.querySelector('tbody');
+  if (!tbody) return;
+
+  const headers = table.querySelectorAll('th.sortable');
+
+  headers.forEach((th, index) => {
+    if (th.dataset.sortableInit) return; // déjà attaché
+    th.dataset.sortableInit = true;
+    th.dataset.asc = 'true';
+    th.style.cursor = 'pointer';
+
+    th.addEventListener('click', () => {
+      const asc = th.dataset.asc === 'true';
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+
+      // Tri basé sur getCellValue
+      rows.sort((a, b) => compareValues(getCellValue(a, index), getCellValue(b, index), asc));
+
+      // Remet dans le DOM
+      tbody.innerHTML = '';
+      rows.forEach(r => tbody.appendChild(r));
+
+      // bascule asc/desc
+      th.dataset.asc = (!asc).toString();
+
+      // flèche visuelle
+      headers.forEach(h => h.classList.remove('asc', 'desc'));
+      th.classList.add(asc ? 'asc' : 'desc');
+    });
+  });
 }

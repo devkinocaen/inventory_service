@@ -219,3 +219,5 @@ dialog.modal {
   margin: auto !important;
   z-index: 5000 !important;
 }
+th.sortable.asc::after { content: " ▲"; }
+th.sortable.desc::after { content: " ▼"; }

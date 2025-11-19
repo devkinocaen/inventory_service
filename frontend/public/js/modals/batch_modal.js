@@ -183,7 +183,6 @@ function renderBatchItems(onClose) {
     if (!currentBatch.reservables.length) return;
 
     currentBatch.reservables.forEach(item => {
- console.log ('item', item)
         const tr = document.createElement('tr');
 
         // Nom + taille
@@ -275,6 +274,8 @@ function addSelectedReservable() {
     if (!currentBatch.reservables.some(i => i.id === id)) {
         currentBatch.reservables.push(reservable);
         renderBatchItems();
+        
+        console.log ('currentBatch apres addSelectedReservable', currentBatch)
     }
 }
 
@@ -286,13 +287,12 @@ async function saveBatch(e) {
     if (!currentBatch) return;
 
     const description = dialog.querySelector('#batch-description').value.trim();
-    const reservableIds = currentBatch.reservables.map(i => i.id);
 
     try {
         const saved = await updateBatch(client, {
             id: currentBatch.id,
             description,
-            reservables: reservableIds
+            reservables: currentBatch.reservables
         });
 
         console.log('Batch enregistré', saved);
