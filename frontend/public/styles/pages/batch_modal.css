@@ -116,6 +116,13 @@
   margin-top: 1rem;
 }
 
+.batch-add-title {
+  margin-top: 2rem; /* espace au-dessus de “Ajouter des items” */
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #333;
+}
+
 .batch-add-search {
   flex: 2;
   padding: 0.5rem 0.8rem;
@@ -181,4 +188,15 @@
 
 .batch-save-btn:hover {
   background: #005fcc;
+}
+
+/* Ligne ID + Description */
+#batch-id {
+  width: 10ch; /* largeur fixe pour environ 5 caractères */
+  flex: 0 0 auto; /* ne se réduit pas ni ne s’étire */
+}
+
+#batch-description {
+  flex: 1; /* prend tout le reste de la ligne */
+  min-width: 0; /* permet de réduire si la fenêtre est petite */
 }
