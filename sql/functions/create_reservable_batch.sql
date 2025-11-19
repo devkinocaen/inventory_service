@@ -1,5 +1,6 @@
 CREATE OR REPLACE FUNCTION inventory.create_reservable_batch(
-    p_reservable_ids INT[]
+    p_description TEXT DEFAULT NULL,
+    p_reservable_ids INT[] DEFAULT NULL
 )
 RETURNS inventory.reservable_batch
 LANGUAGE plpgsql
@@ -9,9 +10,9 @@ DECLARE
     new_batch inventory.reservable_batch%ROWTYPE;
     v_id INT;
 BEGIN
-    -- 1) Création du batch
+    -- 1) Création du batch avec description ('' si null)
     INSERT INTO inventory.reservable_batch (description)
-    VALUES ('')
+    VALUES (COALESCE(p_description, ''))
     RETURNING * INTO new_batch;
 
     -- 2) Vérification + ajout des items

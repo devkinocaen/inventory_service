@@ -17,7 +17,7 @@ export { upsertPerson } from './upsertPerson.js';
 export { deletePerson } from './deletePerson.js';
 export { deleteOrganization } from './deleteOrganization.js';
 export { isAvailable } from './isAvailable.js';
-export { createReservableBatch } from './createReservableBatch.js';
+export { createBatch } from './createBatch.js';
 export { upsertBookingReference } from './upsertBookingReference.js';
 export { upsertStyle } from './upsertStyle.js';
 export { deleteStyle } from './deleteStyle.js';
