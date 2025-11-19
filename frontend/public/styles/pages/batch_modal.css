@@ -1,0 +1,241 @@
+/* Overlay */
+.batch-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+  backdrop-filter: blur(4px);
+}
+
+.batch-modal-overlay.hidden {
+  display: none;
+}
+
+/* Dialogue */
+.batch-modal-dialog {
+  position: relative;
+  background: #fff;
+  border-radius: 18px;
+  width: 900px;
+  max-width: 95%;
+  max-height: 90%;
+  overflow-y: auto;
+  padding: 2rem;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.25);
+  transform: scale(0.9);
+  opacity: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  z-index: 5100;
+}
+
+.batch-modal-dialog.show {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.batch-modal-title {
+  margin-top: 0;
+  font-weight: 600;
+  text-align: center;
+  color: #333;
+}
+
+
+
+
+/* 🔹 Form row (ID, Description, Dates) */
+.batch-form-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.batch-form-row label {
+  min-width: 120px;
+  font-weight: 600;
+  color: #555;
+  text-align: right;
+}
+
+.batch-small-input,
+.batch-large-input,
+.batch-datetime {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1.5px solid #999;
+  background: #fafafa;
+  font-size: 1rem;
+  color: #333;
+  transition: all 0.2s;
+}
+
+.batch-small-input::placeholder,
+.batch-large-input::placeholder,
+.batch-datetime::placeholder {
+  color: #aaa;
+}
+
+.batch-small-input:focus,
+.batch-large-input:focus,
+.batch-datetime:focus {
+  border-color: #4a90e2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74,144,226,0.2);
+  background: #fff;
+}
+
+/* 🔹 Tableau items */
+.batch-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.batch-table th,
+.batch-table td {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+.batch-table th {
+  background: #f7f7f7;
+  font-weight: 600;
+}
+
+/* 🔹 Ajouter des items */
+.batch-add-container {
+  display: flex;
+  flex-direction: column; /* juste la direction */
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.batch-add-title {
+  margin-top: 2rem; /* espace au-dessus de “Ajouter des items” */
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.batch-add-search {
+  flex: 2;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #999;
+}
+
+.batch-add-select {
+  flex: 3;
+  border-radius: 8px;
+  border: 1.5px solid #999;
+  background: #fafafa;
+  height: 120px;
+}
+
+.batch-add-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border-radius: 10px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.batch-add-btn:hover {
+  background: #45a049;
+}
+
+/* 🔹 Actions */
+.batch-modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.batch-cancel-btn,
+.batch-save-btn {
+  padding: 0.8rem 1.4rem;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.batch-cancel-btn {
+  background: #f3f3f3;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.batch-cancel-btn:hover {
+  background: #e8e8e8;
+}
+
+.batch-save-btn {
+  background: #0077ff;
+  color: white;
+}
+
+.batch-save-btn:hover {
+  background: #005fcc;
+}
+
+/* Ligne ID + Description */
+#batch-id {
+  width: 10ch; /* largeur fixe pour environ 5 caractères */
+  flex: 0 0 auto; /* ne se réduit pas ni ne s’étire */
+}
+
+#batch-description {
+  flex: 1; /* prend tout le reste de la ligne */
+  min-width: 0; /* permet de réduire si la fenêtre est petite */
+}
+
+
+/* 🔹 Boutons d'action des items */
+.batch-item-action {
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    min-width: 80px;
+}
+
+/* Rentrer → vert */
+.batch-item-action.rentrer {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.batch-item-action.rentrer:hover {
+    background-color: #45a049;
+}
+
+/* Sortir → bleu */
+.batch-item-action.sortir {
+    background-color: #0077ff;
+    color: white;
+}
+
+.batch-item-action.sortir:hover {
+    background-color: #005fcc;
+}
+
+/* Indisponible → gris */
+.batch-item-action.indisponible {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+}

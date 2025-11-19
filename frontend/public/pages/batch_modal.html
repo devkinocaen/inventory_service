@@ -1,0 +1,49 @@
+<div id="batch-modal" class="batch-modal-overlay hidden" tabindex="-1">
+  <div class="batch-modal-dialog">
+    <h2 class="batch-modal-title">Lots</h2>
+
+    <!-- ID et description -->
+    <div class="batch-form-row">
+      <label for="batch-id">ID</label>
+      <input type="text" id="batch-id" readonly class="batch-small-input">
+
+      <label for="batch-description">Description</label>
+      <input type="text" id="batch-description" placeholder="Nom ou description du batch" class="batch-large-input">
+    </div>
+
+    <!-- Dates -->
+    <div class="batch-form-row">
+      <label for="batch-start-date">Dates de réservation</label>
+      <input type="datetime-local" id="batch-start-date" class="batch-datetime">
+      <span>→</span>
+      <input type="datetime-local" id="batch-end-date" class="batch-datetime">
+    </div>
+
+    <!-- Tableau des items -->
+    <table class="batch-table" id="batch-table">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Taille</th>
+          <th>Checkin/Checkout</th>
+          <th>Retirer du lot</th>
+        </tr>
+      </thead>
+      <tbody id="batch-tbody"></tbody>
+    </table>
+
+    <!-- Ajout d’items -->
+    <h3 class="batch-add-title">Ajouter des items</h3>
+    <div class="batch-add-container">
+      <input type="text" id="available-search" placeholder="Rechercher..." class="batch-add-search">
+      <select id="available-reservables" size="5" class="batch-add-select"></select>
+      <button id="add-reservable" class="batch-add-btn">➕ Ajouter</button>
+    </div>
+
+    <!-- Actions -->
+    <div class="batch-modal-actions">
+      <button id="batch-cancel" class="batch-cancel-btn">Annuler</button>
+      <button id="batch-save" class="batch-save-btn">Enregistrer</button>
+    </div>
+  </div>
+</div>

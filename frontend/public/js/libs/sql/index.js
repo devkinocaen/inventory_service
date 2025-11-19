@@ -39,6 +39,9 @@ export { fetchOrganizationById } from './fetchOrganizationById.js';
 export { fetchPersonById } from './fetchPersonById.js';
 export { fetchStorageLocations } from './fetchStorageLocations.js';
 export { fetchStorageLocationById } from './fetchStorageLocationById.js';
+export { updateBatch } from './updateBatch.js';
+export { fetchBatchById } from './fetchBatchById.js';
+export { fetchBookingById } from './fetchBookingById.js';
 
 
 
