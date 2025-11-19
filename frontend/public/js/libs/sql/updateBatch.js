@@ -30,8 +30,7 @@ export async function updateBatch(client, { id, description = null, reservables 
       )
     : null;
 
-
-  // console.log('[updateBatch] Params envoyés à RPC :', {
+  console.log('[updateBatch] Params envoyés à RPC :', {
     p_batch_id: id,
     p_description: description,
     p_reservable_ids: reservableIds,
@@ -48,6 +47,6 @@ export async function updateBatch(client, { id, description = null, reservables 
     throw error;
   }
 
- // console.log('[updateBatch] Batch mis à jour', data);
+  console.log('[updateBatch] Batch mis à jour', data);
   return single(data);
 }
