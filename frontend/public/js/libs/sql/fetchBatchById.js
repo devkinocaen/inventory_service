@@ -1,12 +1,13 @@
 // récupère un batch par ID avec ses reservables
 export async function fetchBatchById(client, id) {
+    console.log ('id', id)
     if (!id) return null;
     try {
         const { data, error } = await client.rpc('get_batch_by_id', { p_batch_id: id });
         if (error) throw error;
+
         // si aucun reservable, data est vide ou 1 ligne avec reservable_id null
         if (!data || data.length === 0) return null;
-
         const batchInfo = {
             id: data[0].batch_id,
             description: data[0].batch_description,

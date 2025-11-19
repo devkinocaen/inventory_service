@@ -260,7 +260,6 @@ function initSortableColumns(selector = '#bookings_table') {
 async function refreshTable(filters = {}) {
   try {
     const bookings = await fetchBookings(client, filters);
-    console.log('bookings', bookings);
     renderBookingTable(bookings);
   } catch (err) {
     console.error('[bookings] Erreur fetchBookings:', formatServerError(err));

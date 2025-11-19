@@ -15,10 +15,10 @@ BEGIN
     SELECT
         b.id AS batch_id,
         b.description AS batch_description,
-        r.id AS reservable_id,
-        r.name AS reservable_name,
-        r.status AS reservable_status,
-        r.is_in_stock AS reservable_in_stock
+        r.id::INT AS reservable_id,
+        r.name::TEXT AS reservable_name,
+        r.status::inventory.reservable_status AS reservable_status,
+        r.is_in_stock::BOOLEAN AS reservable_in_stock
     FROM inventory.reservable_batch b
     LEFT JOIN inventory.reservable_batch_link bl ON bl.batch_id = b.id
     LEFT JOIN inventory.reservable r ON r.id = bl.reservable_id

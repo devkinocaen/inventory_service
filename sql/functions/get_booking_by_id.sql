@@ -1,5 +1,5 @@
 -- ========================================
--- Fonction : get_booking_by_id
+-- Fonction : get_booking_by_id (JSONB “plat”)
 -- ========================================
 CREATE OR REPLACE FUNCTION inventory.get_booking_by_id(p_booking_id INT)
 RETURNS JSONB
@@ -29,13 +29,13 @@ BEGIN
         RETURN NULL;
     END IF;
 
-    -- Récupération du batch associé
+    -- Récupération du batch associé (si existant)
     SELECT id, description
     INTO batch_rec
     FROM inventory.reservable_batch
     WHERE id = booking_rec.reservable_batch_id;
 
-    -- Retour JSON
+    -- Retour JSON plat
     RETURN jsonb_build_object(
         'booking', jsonb_build_object(
             'id', booking_rec.id,
@@ -52,10 +52,14 @@ BEGIN
             'start_date', booking_rec.start_date,
             'end_date', booking_rec.end_date
         ),
-        'batch', jsonb_build_object(
-            'id', batch_rec.id,
-            'description', batch_rec.description
-        )
+        'batch', CASE
+                    WHEN batch_rec.id IS NOT NULL THEN
+                        jsonb_build_object(
+                            'id', batch_rec.id,
+                            'description', batch_rec.description
+                        )
+                    ELSE NULL
+                 END
     );
 END;
 $$;

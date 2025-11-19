@@ -115,14 +115,21 @@ export async function openBatchModal(bookingId) {
     await initBatchModal();
 
     // Récupérer le booking
-    currentBooking = await fetchBookingById(client, bookingId);
+    const bookingData = await fetchBookingById(client, bookingId);
+    currentBooking=bookingData.booking
     if (!currentBooking) return alert('Booking introuvable');
 
-    currentBatch = currentBooking.batch_id
-        ? await fetchBatchById(client, currentBooking.batch_id)
-        : { description: '', items: [] };
+    
+    console.log ('currentBooking', currentBooking)
+    currentBatch = bookingData.batch?.id
+    ? await fetchBatchById(client, bookingData.batch.id)
+    : { description: '', reservables: [] };
 
-    if (!currentBatch.items) currentBatch.items = [];
+
+    console.log ('currentBatch', currentBatch)
+
+    
+    if (!currentBatch.reservables) currentBatch.reservables = [];
 
     // Remplir le formulaire
     dialog.querySelector('#batch-id').value = currentBatch.id || '';
@@ -130,6 +137,8 @@ export async function openBatchModal(bookingId) {
     dialog.querySelector('#batch-start-date').value = currentBooking.start_date?.substring(0,16) || '';
     dialog.querySelector('#batch-end-date').value = currentBooking.end_date?.substring(0,16) || '';
 
+    console.log ('currentBooking.start_date?.substring(0,16)', currentBooking.start_date?.substring(0,16))
+    
     renderBatchItems();
 
     // Afficher overlay + dialogue avec animation
@@ -170,9 +179,9 @@ function renderBatchItems() {
     const tbody = dialog.querySelector('#batch-tbody');
     tbody.innerHTML = '';
 
-    if (!currentBatch.items.length) return;
+    if (!currentBatch.reservables.length) return;
 
-    currentBatch.items.forEach(item => {
+    currentBatch.reservables.forEach(item => {
         const tr = document.createElement('tr');
 
         tr.innerHTML = `
@@ -184,7 +193,7 @@ function renderBatchItems() {
 
         tr.querySelector('button').addEventListener('click', e => {
             e.stopPropagation();
-            currentBatch.items = currentBatch.items.filter(i => i.id !== item.id);
+            currentBatch.reservables = currentBatch.reservables.filter(i => i.id !== item.id);
             renderBatchItems();
         });
 
@@ -200,13 +209,13 @@ function addSelectedReservable() {
     const id = Number(select.value);
     if (!id) return;
 
-    const item = availableReservables.find(r => r.id === id);
-    if (!item) return;
+    const reservable = availableReservables.find(r => r.id === id);
+    if (!reservable) return;
 
-    if (!currentBatch.items.some(i => i.id === id)) {
-        currentBatch.items.push({
-            ...item,
-            status: item.status || 'réservé',
+    if (!currentBatch.reservables.some(i => i.id === id)) {
+        currentBatch.reservables.push({
+            ...reservable,
+            status: reservable.status || 'réservé',
             checkin: null,
             checkout: null
         });
@@ -222,7 +231,7 @@ async function saveBatch(e) {
     if (!currentBatch) return;
 
     const description = dialog.querySelector('#batch-description').value.trim();
-    const reservableIds = currentBatch.items.map(i => i.id);
+    const reservableIds = currentBatch.reservables.map(i => i.id);
 
     try {
         const saved = await updateBatch(client, {
