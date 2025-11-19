@@ -3,7 +3,7 @@ import { single } from '../helpers.js';
 export async function fetchStorageLocationById(client, id) {
     if (!id) return null;
     try {
-        const { data, error } = await client.rpc('inventory.get_storage_location_by_id', { p_id: id });
+        const { data, error } = await client.rpc('get_storage_location_by_id', { p_id: id });
         if (error) throw error;
         return single (data);
         

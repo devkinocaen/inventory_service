@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Modal Réservable Batch</title>
+<style>
+.modal {
+  display: none;
+  position: fixed;
+  top:0; left:0; width:100%; height:100%;
+  background: rgba(0,0,0,0.5);
+  justify-content:center; align-items:center;
+  z-index:1000;
+}
+.modal-content {
+  background:#fff;
+  padding:1.5rem;
+  border-radius:0.5rem;
+  width:650px;
+  max-width:95%;
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+}
+.modal-content h2 { margin:0 0 1rem 0; font-size:1.4rem; }
+.modal-content h3 { margin:1rem 0 0.5rem 0; font-size:1.2rem; }
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.form-row label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+    .small-input {
+      width: 50px; /* ou auto si tu veux qu'il s'adapte au contenu */
+      padding: 0.2rem 0.3rem;
+      text-align: center;
+    }
+
+.large-input {
+  flex: 1;             /* prend le reste de la ligne */
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+}
+
+.form-row span { font-weight: bold; }
+
+/* Inputs */
+    input[type="text"]:not(.small-input), input[type="date"], select {
+      flex:1;
+      padding:0.4rem;
+      border:1px solid #ccc;
+      border-radius:0.25rem;
+    }
+
+/* Tableau batch */
+.batch-table {
+  width:100%;
+  border-collapse:collapse;
+}
+.batch-table th, .batch-table td {
+  border:1px solid #ddd;
+  padding:0.5rem;
+  text-align:left;
+}
+.batch-table th { background:#f0f0f0; }
+.batch-table td.delete-btn { text-align:center; color:red; cursor:pointer; font-weight:bold; width:40px; }
+.batch-table input[type="checkbox"] { width:100%; }
+
+/* Ajout items */
+.add-container { display:flex; flex-direction:column; gap:0.3rem; }
+.add-container input[type="text"], .add-container select {
+  width:100%;
+  padding:0.4rem;
+  border:1px solid #ccc;
+  border-radius:0.25rem;
+}
+.add-container button { padding:0.4rem; border:none; border-radius:0.25rem; background:#4CAF50; color:#fff; cursor:pointer; }
+
+.modal-actions { display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem; }
+.modal-actions button { padding:0.5rem 1rem; border:none; border-radius:0.25rem; cursor:pointer; }
+#batch-cancel { background:#eee; }
+#batch-save { background:#4CAF50; color:#fff; }
+
+</style>
+</head>
+<body>
+
+<div id="batch-modal" class="modal">
+  <div class="modal-content">
+    <h2>Éditer Batch</h2>
+    
+    <div class="form-row">
+      <label for="batch-id">ID</label>
+      <input type="text" id="batch-id" readonly class="small-input">
+
+      <label for="batch-description">Description</label>
+      <input type="text" id="batch-description" placeholder="Nom ou description du batch" class="large-input">
+    </div>
+
+
+    <div class="form-row">
+      <label for="batch-start-date">Dates de réservation</label>
+      <input type="datetime-local" id="batch-start-date">
+      <span>→</span>
+      <input type="datetime-local" id="batch-end-date">
+    </div>
+
+    <!-- Tableau des reservables du batch -->
+    <table class="batch-table" id="batch-table">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Statut</th>
+          <th>Checkin/Checkout</th>
+          <th>Supprimer</th>
+        </tr>
+      </thead>
+      <tbody id="batch-tbody"></tbody>
+    </table>
+
+    <h3>Ajouter des items</h3>
+    <div class="add-container">
+      <input type="text" id="available-search" placeholder="Rechercher...">
+      <select id="available-reservables" size="5"></select>
+      <button id="add-reservable">➕ Ajouter</button>
+    </div>
+
+    <div class="modal-actions">
+      <button id="batch-cancel">Annuler</button>
+      <button id="batch-save">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const batchModal = document.getElementById('batch-modal');
+const batchId = document.getElementById('batch-id');
+const batchDesc = document.getElementById('batch-description');
+const batchStart = document.getElementById('batch-start-date');
+const batchEnd = document.getElementById('batch-end-date');
+const batchCancel = document.getElementById('batch-cancel');
+const batchSave = document.getElementById('batch-save');
+
+const batchTbody = document.getElementById('batch-tbody');
+const availableSearch = document.getElementById('available-search');
+const availableReservables = document.getElementById('available-reservables');
+const addBtn = document.getElementById('add-reservable');
+
+const allReservables = [
+  {id:1,name:'Reservable A',status:'OK'},
+  {id:2,name:'Reservable B',status:'En rupture'},
+  {id:3,name:'Reservable C',status:'OK'},
+  {id:4,name:'Reservable D',status:'OK'},
+  {id:5,name:'Reservable E',status:'En rupture'},
+  {id:6,name:'Reservable F',status:'OK'},
+];
+
+let batchItems = [];
+
+function renderBatchTable() {
+  batchTbody.innerHTML='';
+  batchItems.forEach(item=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${item.name}</td>
+                    <td>${item.status}</td>
+                    <td><input type="checkbox" ${item.checked?'checked':''}></td>
+                    <td class="delete-btn">❌</td>`;
+    tr.querySelector('.delete-btn').addEventListener('click',()=>{
+      batchItems = batchItems.filter(b=>b.id!==item.id);
+      renderBatchTable();
+      renderAvailable(availableSearch.value);
+    });
+    tr.querySelector('input[type="checkbox"]').addEventListener('change',e=>item.checked=e.target.checked);
+    batchTbody.appendChild(tr);
+  });
+}
+
+function renderAvailable(filter='') {
+  availableReservables.innerHTML='';
+  const filtered = allReservables
+    .filter(r=>r.name.toLowerCase().includes(filter.toLowerCase()))
+    .filter(r=>!batchItems.some(b=>b.id===r.id));
+  filtered.forEach(r=>{
+    const opt = document.createElement('option');
+    opt.value=r.id;
+    opt.textContent=r.name;
+    availableReservables.appendChild(opt);
+  });
+}
+
+addBtn.addEventListener('click',()=>{
+  const selected = [...availableReservables.selectedOptions].map(o=>Number(o.value));
+  selected.forEach(id=>{
+    const item = allReservables.find(r=>r.id===id);
+    if(item) batchItems.push({...item,checked:false});
+  });
+  renderBatchTable();
+  renderAvailable(availableSearch.value);
+});
+
+availableSearch.addEventListener('input',e=>renderAvailable(e.target.value));
+
+function openBatchModal(batch={}) {
+  batchId.value = batch.id ?? '';
+  batchDesc.value = batch.description || '';
+  
+  // Dates en format local pour datetime-local
+  batchStart.value = batch.startDate ? batch.startDate.substring(0,16) : ''; // "YYYY-MM-DDTHH:mm"
+  batchEnd.value = batch.endDate ? batch.endDate.substring(0,16) : '';
+
+  batchItems = batch.reservables ? batch.reservables.map(r=>({...r,checked:r.checked??false})) : [];
+  renderBatchTable();
+  renderAvailable();
+  batchModal.style.display='flex';
+}
+
+
+batchCancel.addEventListener('click',()=>batchModal.style.display='none');
+
+batchSave.addEventListener('click',()=>{
+  const updatedBatch = {
+    id: batchId.value,
+    description: batchDesc.value.trim(),
+    startDate: batchStart.value,
+    endDate: batchEnd.value,
+    reservables: batchItems
+  };
+  console.log('Batch à sauvegarder :',updatedBatch);
+  batchModal.style.display='none';
+});
+
+// Test
+openBatchModal({
+  id:42,
+  description:'Batch test',
+  startDate:'2025-11-18',
+  endDate:'2025-11-20',
+  reservables:[
+    {id:2,name:'Reservable B',status:'En rupture',checked:true},
+    {id:4,name:'Reservable D',status:'OK',checked:false}
+  ]
+});
+</script>
+
+</body>
+</html>

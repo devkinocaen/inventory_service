@@ -10,6 +10,7 @@ import {
 
 import { formatServerError, formatDateTime } from '../libs/helpers.js';
 import { initClient } from '../libs/client.js';
+import { openBatchModal } from '../modals/batch_modal.js';
 
 // -----------------------------
 // Client & état
@@ -47,14 +48,14 @@ function escapeHtml(str) {
 // -----------------------------
 // Rendu du tableau des réservations
 // -----------------------------
-function renderBookingTable(bookings) {
+async function renderBookingTable(bookings) {
   const tbody = document.querySelector('#bookings_table tbody');
   if (!tbody) return;
 
   tbody.innerHTML = '';
   currentBookings = bookings || [];
 
-  bookings.forEach(b => {
+  for (const b of bookings) {
     const tr = document.createElement('tr');
 
     const lotName = b.batch_description && b.batch_description.trim()
@@ -69,49 +70,96 @@ function renderBookingTable(bookings) {
       ? b.reservables.map(r => r.name || r.label || '').filter(Boolean).join(', ')
       : '';
 
+    // --- Colonnes fixes ---
     tr.innerHTML = `
       <td class="lot" data-id="${b.reservable_batch_id}">${escapeHtml(lotName)}</td>
       <td class="org" data-id="${b.renter_organization_id ?? ''}">${escapeHtml(orgName)}</td>
-      <td class="start" data-id="${b.booking_id}">${escapeHtml(startDate)}</td>
-      <td class="end" data-id="${b.booking_id}">${escapeHtml(endDate)}</td>
+      <td class="start" data-id="${b.booking_id}">
+        <input type="datetime-local" value="${b.start_date ? b.start_date.substring(0,16) : ''}" />
+      </td>
+      <td class="end" data-id="${b.booking_id}">
+        <input type="datetime-local" value="${b.end_date ? b.end_date.substring(0,16) : ''}" />
+      </td>
       <td class="items" data-id="${b.booking_id}">${escapeHtml(itemsList)}</td>
-      <td><button class="btn-check-stock" data-batch-id="${b.reservable_batch_id}">Check-in / Check-out</button></td>
-      <td><button class="btn-edit booking-btn" data-id="${b.booking_id}">Éditer</button></td>
-      <td><button class="btn-delete booking-btn" data-id="${b.booking_id}">Supprimer</button></td>
     `;
 
-    tbody.appendChild(tr);
+    // --- Bouton check-in / check-out ---
+    const tdBtn = document.createElement('td');
+    const btnCheck = document.createElement('button');
+    btnCheck.className = 'btn-check-stock';
+    btnCheck.dataset.batchId = b.reservable_batch_id;
 
-    // --- Initialisation bouton Check-in / Check-out ---
-    const btnCheck = tr.querySelector('.btn-check-stock');
-    if (btnCheck) {
-      (async () => {
-        try {
-          const stockStatus = await isBatchInStock(client, b.reservable_batch_id);
-          if (stockStatus === true) {
-            btnCheck.textContent = 'Sortir';
-          } else if (stockStatus === false) {
-            btnCheck.textContent = 'Rentrer';
-          } else {
-            btnCheck.textContent = 'Indéterminé';
-            btnCheck.disabled = true;
-          }
-        } catch (err) {
-          console.error('Erreur récupération stock batch:', err);
-          btnCheck.textContent = 'Erreur';
-          btnCheck.disabled = true;
-        }
-      })();
-
-      btnCheck.removeEventListener('click', onCheckStockClick);
-      btnCheck.addEventListener('click', onCheckStockClick);
+    try {
+      const stockStatus = await isBatchInStock(client, b.reservable_batch_id);
+      if (stockStatus === true) {
+        btnCheck.textContent = 'Sortir';
+        btnCheck.disabled = false;
+      } else if (stockStatus === false) {
+        btnCheck.textContent = 'Rentrer';
+        btnCheck.disabled = false;
+      } else {
+        btnCheck.textContent = 'Indéterminé';
+        btnCheck.disabled = true;
+      }
+    } catch (err) {
+      console.error('Erreur récupération stock batch:', err);
+      btnCheck.textContent = 'Erreur';
+      btnCheck.disabled = true;
     }
-  });
 
-  initBookingRowButtons();
+    btnCheck.addEventListener('click', onCheckStockClick);
+    tdBtn.appendChild(btnCheck);
+    tr.appendChild(tdBtn);
+
+    // --- Boutons edit/delete ---
+    const tdEdit = document.createElement('td');
+    const btnEdit = document.createElement('button');
+    btnEdit.className = 'btn-edit booking-btn';
+    btnEdit.dataset.id = b.booking_id;
+    btnEdit.textContent = 'Éditer';
+    btnEdit.addEventListener('click', onEditClick);
+    tdEdit.appendChild(btnEdit);
+    tr.appendChild(tdEdit);
+
+    const tdDelete = document.createElement('td');
+    const btnDelete = document.createElement('button');
+    btnDelete.className = 'btn-delete booking-btn';
+    btnDelete.dataset.id = b.booking_id;
+    btnDelete.textContent = 'Supprimer';
+    btnDelete.addEventListener('click', onDeleteClick);
+    tdDelete.appendChild(btnDelete);
+    tr.appendChild(tdDelete);
+
+    // --- Inputs start / end ---
+    tr.querySelector('.start input')?.addEventListener('change', async (e) => {
+      const newVal = e.target.value;
+      try {
+        await updateBooking(client, { id: b.booking_id, start_date: newVal });
+        b.start_date = newVal;
+      } catch (err) {
+        alert('Erreur mise à jour date de début : ' + formatServerError(err));
+        e.target.value = b.start_date ? b.start_date.substring(0,16) : '';
+      }
+    });
+
+    tr.querySelector('.end input')?.addEventListener('change', async (e) => {
+      const newVal = e.target.value;
+      try {
+        await updateBooking(client, { id: b.booking_id, end_date: newVal });
+        b.end_date = newVal;
+      } catch (err) {
+        alert('Erreur mise à jour date de fin : ' + formatServerError(err));
+        e.target.value = b.end_date ? b.end_date.substring(0,16) : '';
+      }
+    });
+
+    tbody.appendChild(tr);
+  }
+
   initSortableColumns('#bookings_table');
   setupBookingLookupFilter();
 }
+
 
 // -----------------------------
 // Filtrage (lookup)
@@ -165,37 +213,16 @@ async function onEditClick(e) {
   const bookingId = Number(e.currentTarget.dataset.id);
   if (!bookingId) return console.warn('booking id missing for edit');
 
-  const booking = currentBookings.find(b => Number(b.booking_id) === bookingId);
-  if (!booking) return alert('Réservation introuvable');
-
-  const oldStart = booking.start_date ? String(booking.start_date) : '';
-  const oldEnd = booking.end_date ? String(booking.end_date) : '';
-
-  const newStart = prompt('Nouvelle date de début (ISO ou vide pour conserver) :', oldStart);
-  if (newStart === null) return;
-  const newEnd = prompt('Nouvelle date de fin (ISO ou vide pour conserver) :', oldEnd);
-  if (newEnd === null) return;
-
-  const payload = { id: bookingId };
-  if (newStart && newStart.trim()) payload.start_date = newStart.trim();
-  if (newEnd && newEnd.trim()) payload.end_date = newEnd.trim();
-
   try {
-    if (typeof updateBooking !== 'function') {
-      if (payload.start_date) booking.start_date = payload.start_date;
-      if (payload.end_date) booking.end_date = payload.end_date;
-      renderBookingTable(currentBookings);
-      return;
-    }
-    await updateBooking(client, payload);
-    if (payload.start_date) booking.start_date = payload.start_date;
-    if (payload.end_date) booking.end_date = payload.end_date;
-    renderBookingTable(currentBookings);
+    openBatchModal(bookingId, () => {
+        refreshTable();
+    });
   } catch (err) {
-    alert('Erreur lors de la mise à jour : ' + formatServerError(err));
-    console.error(err);
+    console.error('Erreur ouverture modal batch :', err);
+    alert('Impossible d’ouvrir la modal batch.');
   }
 }
+
 
 async function onDeleteClick(e) {
   const bookingId = Number(e.currentTarget.dataset.id);
@@ -217,36 +244,7 @@ async function onDeleteClick(e) {
   }
 }
 
-// -----------------------------
-// Sortable columns
-// -----------------------------
-function initSortableColumns(selector = '#bookings_table') {
-  const table = document.querySelector(selector);
-  if (!table) return;
-  const headers = table.querySelectorAll('th.sortable');
-  const tbody = table.querySelector('tbody');
-  if (!tbody) return;
 
-  headers.forEach((th, index) => {
-    let asc = true;
-    th.style.cursor = 'pointer';
-    th.addEventListener('click', () => {
-      const rows = Array.from(tbody.querySelectorAll('tr'));
-      rows.sort((a, b) => {
-        const aText = a.children[index]?.textContent?.trim()?.toLowerCase() || '';
-        const bText = b.children[index]?.textContent?.trim()?.toLowerCase() || '';
-        const aNum = parseFloat(aText.replace(',', '.'));
-        const bNum = parseFloat(bText.replace(',', '.'));
-        const bothNum = !isNaN(aNum) && !isNaN(bNum);
-        if (bothNum) return asc ? aNum - bNum : bNum - aNum;
-        return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
-      });
-      tbody.innerHTML = '';
-      rows.forEach(r => tbody.appendChild(r));
-      asc = !asc;
-    });
-  });
-}
 
 // -----------------------------
 // Refresh / fetch
@@ -254,8 +252,7 @@ function initSortableColumns(selector = '#bookings_table') {
 async function refreshTable(filters = {}) {
   try {
     const bookings = await fetchBookings(client, filters);
-    console.log('bookings', bookings);
-    renderBookingTable(bookings);
+    await renderBookingTable(bookings); // ← await ajouté
   } catch (err) {
     console.error('[bookings] Erreur fetchBookings:', formatServerError(err));
   }
@@ -276,19 +273,22 @@ async function onCheckStockClick(e) {
       if (confirm("Tous les objets sont en stock. Voulez-vous les sortir ?")) {
         await setBatchInStock(client, batchId, false);
         alert('Batch sorti du stock.');
-        btn.textContent = 'Rentrer';
+          await updateCheckButtonLabel(btn, batchId);
+
       }
     } else if (stockStatus === false) {
       if (confirm("Tous les objets sont sortis. Voulez-vous les rentrer ?")) {
         await setBatchInStock(client, batchId, true);
         alert('Batch rentré dans le stock.');
-        btn.textContent = 'Sortir';
+          await updateCheckButtonLabel(btn, batchId);
       }
     } else {
       alert('Le batch contient des objets mixtes ou indisponibles. Action impossible.');
     }
 
-    await refreshTable();
+//    await refreshTable();
+      await refreshAllCheckButtons();
+
   } catch (err) {
     console.error('Erreur check-in/check-out:', err);
     alert('Erreur lors du check-in / check-out. Consultez la console.');
@@ -302,56 +302,6 @@ export async function init() {
   try {
     client = await initClient();
     await refreshTable();
-
-    const btnNew = document.getElementById('btn_new_booking');
-    if (btnNew) {
-      btnNew.addEventListener('click', async () => {
-        const batchDesc = prompt('Nom du lot (laisser vide pour Lot #N) :', '');
-        const renter = prompt('Organisation locataire (nom ou id) :', '');
-        const start = prompt('Date de début (ISO) :', '');
-        const end = prompt('Date de fin (ISO) :', '');
-        const items = prompt('Liste d\'IDs d\'objets séparés par des virgules (ex: 1,2,3) :', '');
-
-        const payload = {};
-        if (batchDesc) payload.p_batch_description = batchDesc;
-        if (renter) payload.p_renter_organization = renter;
-        if (start) payload.p_start_date = start;
-        if (end) payload.p_end_date = end;
-        if (items) payload.p_reservable_ids = items.split(',').map(s => Number(s.trim())).filter(Boolean);
-
-        try {
-          if (typeof createBooking !== 'function') {
-            const mock = {
-              booking_id: Date.now(),
-              reservable_batch_id: null,
-              batch_description: payload.p_batch_description || '',
-              renter_organization_id: null,
-              renter_name: payload.p_renter_organization || '',
-              booking_reference_id: null,
-              start_date: payload.p_start_date || '',
-              end_date: payload.p_end_date || '',
-              reservables: []
-            };
-            currentBookings.unshift(mock);
-            renderBookingTable(currentBookings);
-            return;
-          }
-          await createBooking(client, {
-            p_reservable_batch_id: payload.p_reservable_ids || [],
-            p_renter_organization_id: null,
-            p_booking_person_id: null,
-            p_pickup_person_id: null,
-            p_start_date: payload.p_start_date || null,
-            p_end_date: payload.p_end_date || null,
-            p_booking_reference_id: null
-          });
-          await refreshTable();
-        } catch (err) {
-          alert('Erreur création réservation : ' + formatServerError(err));
-          console.error(err);
-        }
-      });
-    }
 
     const btnApply = document.getElementById('btn_apply_filters');
     if (btnApply) {
@@ -373,4 +323,122 @@ export async function init() {
   } catch (err) {
     console.error('[bookings] Erreur initialisation :', formatServerError(err));
   }
+}
+
+
+async function updateCheckButtonLabel(btn, batchId) {
+  try {
+    const stockStatus = await isBatchInStock(client, batchId);
+
+    if (stockStatus === true) {
+      btn.textContent = 'Sortir';
+      btn.disabled = false;
+    } else if (stockStatus === false) {
+      btn.textContent = 'Rentrer';
+      btn.disabled = false;
+    } else {
+      btn.textContent = 'Indéterminé';
+      btn.disabled = true;
+    }
+  } catch (err) {
+    console.error('Erreur récupération stock batch:', err);
+    btn.textContent = 'Erreur';
+    btn.disabled = true;
+  }
+}
+
+
+// Met à jour uniquement tous les boutons Check-in/Check-out
+async function refreshAllCheckButtons() {
+  const buttons = document.querySelectorAll('.btn-check-stock');
+  for (const btn of buttons) {
+    const batchId = Number(btn.dataset.batchId);
+    if (!batchId) continue;
+
+    try {
+      const stockStatus = await isBatchInStock(client, batchId);
+      if (stockStatus === true) {
+        btn.textContent = 'Sortir';
+        btn.disabled = false;
+      } else if (stockStatus === false) {
+        btn.textContent = 'Rentrer';
+        btn.disabled = false;
+      } else {
+        btn.textContent = 'Indéterminé';
+        btn.disabled = true;
+      }
+    } catch (err) {
+      console.error('Erreur récupération stock batch:', err);
+      btn.textContent = 'Erreur';
+      btn.disabled = true;
+    }
+  }
+}
+
+
+
+function getCellValue(row, index) {
+  const cell = row.children[index];
+  if (!cell) return '';
+
+  // input datetime-local
+  const input = cell.querySelector('input[type="datetime-local"]');
+  if (input) return input.value || '';
+
+  // texte simple
+  return cell.textContent.trim();
+}
+
+function compareValues(aVal, bVal, asc = true) {
+  // Dates ISO
+  const aDate = new Date(aVal);
+  const bDate = new Date(bVal);
+  const aIsDate = !isNaN(aDate.getTime());
+  const bIsDate = !isNaN(bDate.getTime());
+  if (aIsDate && bIsDate) return asc ? aDate - bDate : bDate - aDate;
+
+  // Nombres
+  const aNum = parseFloat(aVal.replace(',', '.'));
+  const bNum = parseFloat(bVal.replace(',', '.'));
+  if (!isNaN(aNum) && !isNaN(bNum)) return asc ? aNum - bNum : bNum - aNum;
+
+  // Texte
+  return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+}
+
+
+
+function initSortableColumns(selector = '#bookings_table') {
+  const table = document.querySelector(selector);
+  if (!table) return;
+  const tbody = table.querySelector('tbody');
+  if (!tbody) return;
+
+  const headers = table.querySelectorAll('th.sortable');
+
+  headers.forEach((th, index) => {
+    if (th.dataset.sortableInit) return; // déjà attaché
+    th.dataset.sortableInit = true;
+    th.dataset.asc = 'true';
+    th.style.cursor = 'pointer';
+
+    th.addEventListener('click', () => {
+      const asc = th.dataset.asc === 'true';
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+
+      // Tri basé sur getCellValue
+      rows.sort((a, b) => compareValues(getCellValue(a, index), getCellValue(b, index), asc));
+
+      // Remet dans le DOM
+      tbody.innerHTML = '';
+      rows.forEach(r => tbody.appendChild(r));
+
+      // bascule asc/desc
+      th.dataset.asc = (!asc).toString();
+
+      // flèche visuelle
+      headers.forEach(h => h.classList.remove('asc', 'desc'));
+      th.classList.add(asc ? 'asc' : 'desc');
+    });
+  });
 }
