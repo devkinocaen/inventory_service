@@ -14,194 +14,199 @@ let currentBatch = null;
 let currentBooking = null;
 let availableReservables = [];
 
-// -----------------------------
-// Charger modal HTML et l'ajouter au body
-// -----------------------------
+/* -------------------------------------------------------
+   Chargement du HTML du modal
+------------------------------------------------------- */
 export async function loadBatchModal() {
-    // Vérifie si le modal existe déjà dans le DOM
-    
-    modal = document.getElementById('batch-modal');
-    console.log ("modal1", modal)
-    if (!modal) {
+    if (!document.getElementById('batch-modal')) {
         const response = await fetch(`${window.ENV.BASE_PATH}/pages/batch_modal.html`);
-        if (!response.ok) throw new Error('Impossible de charger le modal batch');
+        if (!response.ok) throw new Error('Impossible de charger batch_modal.html');
+
         const html = await response.text();
-        
-        // Crée un conteneur temporaire
-        const div = document.createElement('div');
-        div.innerHTML = html.trim();
-        console.log ("div", div)
-
-        // Récupère le modal dans ce conteneur
-        modal = div.querySelector('#batch-modal');
-        if (!modal) throw new Error('Le modal batch est introuvable dans le HTML chargé');
-
-        // Ajoute directement dans le body
-        document.body.appendChild(modal);
-      //  ensureModalInBody(modal);
-        console.log ("modal2", modal)
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        document.body.appendChild(wrapper);
     }
-    console.log ("modal3", modal)
 
-    // Sélection des éléments internes
-    dialog = modal.querySelector('.batch-modal-content');
-    if (!dialog) throw new Error('Le dialogue est introuvable dans le HTML chargé');
-    
-    cancelBtn = modal.querySelector('#batch-cancel');
-    saveBtn = modal.querySelector('#batch-save');
-    addBtn = modal.querySelector('#add-reservable');
+    modal = document.getElementById('batch-modal');
+    if (!modal) throw new Error('batch-modal introuvable après chargement');
 
-    // Ajout des listeners si nécessaire
+    dialog = modal.querySelector('.batch-modal-dialog');
+    if (!dialog) throw new Error('Élément .batch-modal-dialog introuvable');
+
+    cancelBtn = dialog.querySelector('#batch-cancel');
+    saveBtn   = dialog.querySelector('#batch-save');
+    addBtn    = dialog.querySelector('#add-reservable');
+
+    bindBatchEvents();
+}
+
+/* -------------------------------------------------------
+   Bind des events une seule fois
+------------------------------------------------------- */
+function bindBatchEvents() {
     if (cancelBtn && !cancelBtn.dataset.bound) {
-        cancelBtn.addEventListener('click', closeBatchModal);
         cancelBtn.dataset.bound = 'true';
+        cancelBtn.addEventListener('click', closeBatchModal);
     }
+
     if (saveBtn && !saveBtn.dataset.bound) {
-        saveBtn.addEventListener('click', saveBatch);
         saveBtn.dataset.bound = 'true';
+        saveBtn.addEventListener('click', saveBatch);
     }
+
     if (addBtn && !addBtn.dataset.bound) {
-        addBtn.addEventListener('click', addSelectedReservable);
         addBtn.dataset.bound = 'true';
+        addBtn.addEventListener('click', addSelectedReservable);
     }
 }
 
-// Déplacer le modal à la fin du body pour éviter tout parent avec transform/filter
-function ensureModalInBody(modalEl) {
-    if (!modalEl) return;
-    if (modalEl.parentElement !== document.body) {
-        document.body.appendChild(modalEl);
-        console.log('Modal déplacé directement sous <body>');
-    }
-}
-
-
-
-// -----------------------------
-// Initialisation modal
-// -----------------------------
+/* -------------------------------------------------------
+   Initialisation du modal
+------------------------------------------------------- */
 export async function initBatchModal() {
     if (!client) client = await initClient();
     await loadBatchModal();
 
     await loadAvailableReservables();
-    console.log ("modal5", modal)
-
     setupAvailableSearch();
 }
 
-// -----------------------------
-// Charger les réservables disponibles
-// -----------------------------
+/* -------------------------------------------------------
+   Charger la liste des réservables
+------------------------------------------------------- */
 async function loadAvailableReservables() {
-    if (!dialog) throw new Error('Dialog non initialisé avant chargement des réservables');
     availableReservables = await fetchReservables(client);
+
     const select = dialog.querySelector('#available-reservables');
+    if (!select) throw new Error('Select #available-reservables introuvable');
+
     populateSelect(select, availableReservables, 'id', 'name', 'Sélectionnez un item');
 }
 
-// -----------------------------
-// Filtrage dynamique du select
-// -----------------------------
+/* -------------------------------------------------------
+   Filtre dynamique du select
+------------------------------------------------------- */
 function setupAvailableSearch() {
-    if (!dialog) return;
-    const searchInput = dialog.querySelector('#available-search');
+    const search = dialog.querySelector('#available-search');
     const select = dialog.querySelector('#available-reservables');
-    if (!searchInput || !select) return;
+    if (!search || !select) return;
 
-    searchInput.addEventListener('input', () => {
-        const query = searchInput.value.trim().toLowerCase();
+    search.addEventListener('input', () => {
+        const q = search.value.trim().toLowerCase();
         select.innerHTML = '';
+
         availableReservables
-            .filter(r => r.name.toLowerCase().includes(query))
+            .filter(r => r.name.toLowerCase().includes(q))
             .forEach(r => {
-                const option = document.createElement('option');
-                option.value = r.id;
-                option.textContent = r.name;
-                select.appendChild(option);
+                const opt = document.createElement('option');
+                opt.value = r.id;
+                opt.textContent = r.name;
+                select.appendChild(opt);
             });
     });
 }
 
-// -----------------------------
-// Ouvrir modal batch
-// -----------------------------
+/* -------------------------------------------------------
+   Ouverture du modal
+------------------------------------------------------- */
 export async function openBatchModal(bookingId) {
     if (!client) client = await initClient();
+    await initBatchModal();
+
+    // Récupérer le booking
     currentBooking = await fetchBookingById(client, bookingId);
     if (!currentBooking) return alert('Booking introuvable');
 
     currentBatch = currentBooking.batch_id
         ? await fetchBatchById(client, currentBooking.batch_id)
         : { description: '', items: [] };
+
     if (!currentBatch.items) currentBatch.items = [];
 
-    await initBatchModal();
+    // Remplir le formulaire
     dialog.querySelector('#batch-id').value = currentBatch.id || '';
     dialog.querySelector('#batch-description').value = currentBatch.description || '';
     dialog.querySelector('#batch-start-date').value = currentBooking.start_date?.substring(0,16) || '';
     dialog.querySelector('#batch-end-date').value = currentBooking.end_date?.substring(0,16) || '';
 
     renderBatchItems();
-    modal.classList.add('show');
+
+    // Afficher overlay + dialogue avec animation
     modal.classList.remove('hidden');
-    console.log ('modal', modal)
+    modal.classList.add('show');
+    dialog.classList.add('show'); // <-- important pour scale/opacity
+
+    // Permettre de fermer en cliquant sur l'overlay (hors dialogue)
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeBatchModal();
+    }, { once: true });
 }
 
-// -----------------------------
-// Fermer modal
-// -----------------------------
+/* -------------------------------------------------------
+   Fermeture
+------------------------------------------------------- */
 export function closeBatchModal() {
     if (!modal) return;
+
+    // retirer l'animation
+    dialog.classList.remove('show');
     modal.classList.remove('show');
-    modal.classList.add('hidden');
+
+    // cacher après transition
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 250);
+
     currentBatch = null;
     currentBooking = null;
 }
 
-// -----------------------------
-// Rendu des items du batch
-// -----------------------------
+
+/* -------------------------------------------------------
+   Rendu tableau des items
+------------------------------------------------------- */
 function renderBatchItems() {
-    if (!dialog) return;
     const tbody = dialog.querySelector('#batch-tbody');
     tbody.innerHTML = '';
-    if (!currentBatch?.items?.length) return;
+
+    if (!currentBatch.items.length) return;
 
     currentBatch.items.forEach(item => {
         const tr = document.createElement('tr');
+
         tr.innerHTML = `
             <td>${item.name}</td>
             <td>${item.status || 'réservé'}</td>
             <td>${item.checkin || '-'} → ${item.checkout || '-'}</td>
             <td><button type="button" data-id="${item.id}">❌</button></td>
         `;
+
         tr.querySelector('button').addEventListener('click', e => {
             e.stopPropagation();
             currentBatch.items = currentBatch.items.filter(i => i.id !== item.id);
             renderBatchItems();
         });
+
         tbody.appendChild(tr);
     });
 }
 
-// -----------------------------
-// Ajouter item depuis disponible
-// -----------------------------
+/* -------------------------------------------------------
+   Ajouter un item depuis le select
+------------------------------------------------------- */
 function addSelectedReservable() {
-    if (!dialog) return;
     const select = dialog.querySelector('#available-reservables');
-    const selectedId = Number(select.value);
-    if (!selectedId) return;
+    const id = Number(select.value);
+    if (!id) return;
 
-    const selectedItem = availableReservables.find(r => r.id === selectedId);
-    if (!selectedItem) return;
+    const item = availableReservables.find(r => r.id === id);
+    if (!item) return;
 
-    if (!currentBatch.items) currentBatch.items = [];
-    if (!currentBatch.items.some(i => i.id === selectedItem.id)) {
+    if (!currentBatch.items.some(i => i.id === id)) {
         currentBatch.items.push({
-            ...selectedItem,
-            status: selectedItem.status || 'réservé',
+            ...item,
+            status: item.status || 'réservé',
             checkin: null,
             checkout: null
         });
@@ -209,15 +214,15 @@ function addSelectedReservable() {
     }
 }
 
-// -----------------------------
-// Sauvegarder le batch
-// -----------------------------
+/* -------------------------------------------------------
+   Sauvegarde
+------------------------------------------------------- */
 async function saveBatch(e) {
     e.preventDefault();
     if (!currentBatch) return;
 
     const description = dialog.querySelector('#batch-description').value.trim();
-    const reservableIds = (currentBatch.items || []).map(i => i.id);
+    const reservableIds = currentBatch.items.map(i => i.id);
 
     try {
         const saved = await updateBatch(client, {
@@ -225,9 +230,11 @@ async function saveBatch(e) {
             description,
             reservables: reservableIds
         });
+
         console.log('Batch enregistré', saved);
         alert('✅ Batch enregistré avec succès.');
         closeBatchModal();
+
     } catch (err) {
         console.error('[updateBatch]', err);
         alert(`❌ Impossible d’enregistrer :\n\n${formatServerError(err)}`);

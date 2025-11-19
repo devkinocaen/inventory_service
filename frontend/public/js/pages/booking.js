@@ -11,6 +11,7 @@ import {
 import { formatServerError, formatDateTime } from '../libs/helpers.js';
 import { initClient } from '../libs/client.js';
 import { openBatchModal } from '../modals/batch_modal.js';
+import { openOrgModal } from '../modals/org_modal.js';
 
 // -----------------------------
 // Client & état
@@ -196,6 +197,8 @@ async function onEditClick(e) {
 
   try {
     await openBatchModal(bookingId);
+  //  await openOrgModal([]);
+    //await openBatchTestModal([]);
   } catch (err) {
     console.error('Erreur ouverture modal batch :', err);
     alert('Impossible d’ouvrir la modal batch.');
