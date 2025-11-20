@@ -1,7 +1,8 @@
 // ==========================
 // CONFIGURATION
 // ==========================
-export { fetchAppConfig, upsertAppConfig } from './appConfig.js';
+export { fetchAppConfig } from './fetchAppConfig.js';
+export { upsertAppConfig } from './upsertAppConfig.js';
 
 // ==========================
 // ORGANISATIONS & PERSONNES
@@ -66,6 +67,7 @@ export { setBatchInStock } from './setBatchInStock.js';
 // ==========================
 export { fetchStorageLocations } from './fetchStorageLocations.js';
 export { fetchStorageLocationById } from './fetchStorageLocationById.js';
+export { upsertStorageLocation } from './upsertStorageLocation.js';
 
 // ==========================
 // UTILS / AUTRES

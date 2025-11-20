@@ -63,21 +63,54 @@
       </li>
       -->
     </ul>
-    </div
+    </div>
     <hr />
 
     <!-- 🔹 Viewer allowed -->
-    <h2>Paramétrage du site</h2>
+    <hr />
+    <h2>Paramètres globaux de l’application</h2>
+    <div class="section-box config-grid">
+      <!-- Grid sur 2 colonnes -->
+      <div class="config-item">
+        <label for="viewerAllowed">Autoriser le rôle viewer</label>
+        <input type="checkbox" id="viewerAllowed" />
+      </div>
 
-    <div>
-      <label for="viewerAllowed"> Autoriser le rôle viewer </label>
-      <input type="checkbox" id="viewerAllowed" />
-      <label for="showPrices"> Montrer les prix de location </label>
-      <input type="checkbox" id="showPrices" />
-      <button id="btnSaveConfig" class="record-button" disabled>Valider</button>
+      <div class="config-item">
+        <label for="showPrices">Montrer les prix de location</label>
+        <input type="checkbox" id="showPrices" />
+      </div>
+
+      <div class="config-item">
+        <label for="defaultManager">Gestionnaire par défaut</label>
+        <select id="defaultManager">
+          <option disabled selected>Chargement...</option>
+        </select>
+      </div>
+
+      <div class="config-item">
+        <label for="defaultOwner">Propriétaire par défaut</label>
+        <select id="defaultOwner">
+          <option disabled selected>Chargement...</option>
+        </select>
+      </div>
+
+      <div class="config-item">
+        <label for="defaultStorageLocation">Lieu de stockage par défaut</label>
+        <select id="defaultStorageLocation">
+          <option disabled selected>Chargement...</option>
+        </select>
+      </div>
+
+      <div class="config-item">
+        <button id="btnSaveConfig" class="record-button" disabled>Valider</button>
+      </div>
+
+      <div class="config-item" style="grid-column: span 2;">
+        <p id="statusMsg"></p>
+      </div>
     </div>
 
-    <p id="statusMsg"></p>
 
     <hr />
     
