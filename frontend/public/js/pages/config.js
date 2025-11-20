@@ -14,6 +14,7 @@ import {
     deleteSubcategory,
     fetchStorageLocations,
     upsertStorageLocation,
+    deleteStorageLocation,
     fetchOrganizations
 } from '../libs/sql/index.js';
 

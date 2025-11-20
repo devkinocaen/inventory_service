@@ -68,6 +68,7 @@ export { setBatchInStock } from './setBatchInStock.js';
 export { fetchStorageLocations } from './fetchStorageLocations.js';
 export { fetchStorageLocationById } from './fetchStorageLocationById.js';
 export { upsertStorageLocation } from './upsertStorageLocation.js';
+export { deleteStorageLocation } from './deleteStorageLocation.js';
 
 // ==========================
 // UTILS / AUTRES
