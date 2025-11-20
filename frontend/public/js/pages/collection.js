@@ -3,7 +3,8 @@ import {
     fetchReservables,
     fetchCategories,
     fetchSubcategories,
-    fetchStyles
+    fetchStyles,
+    fetchAppConfig
 } from '../libs/sql/index.js';
 
 import { initClient } from '../libs/client.js';
@@ -18,6 +19,8 @@ import {
 } from '../libs/image_utils.js';
 
 let client;
+let appConfig = null;
+
 let currentItems = [];
 let selectedItems = [];
 let activeFilters = { category: [], subcategory: [], style: [], gender: [] };
@@ -129,7 +132,8 @@ async function fetchItems() {
       : null,
     p_start_date: filterStartDate,
     p_end_date: filterEndDate,
-    p_privacy_min: 'private'
+    p_privacy_min: 'private',
+    p_status_ids: ['disponible']
   };
 
   try {
@@ -174,8 +178,9 @@ async function renderItems(itemsToRender = currentItems) {
     name.className = 'cstm-costume-name';
     name.innerHTML = `<strong>${item.name}</strong><br>
                       Taille: ${item.size || '-'}<br>
-                      Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}
-                      ${isUnavailable ? `<br><small style="color:red;">${item.status}</small>` : ''}`;
+                      ${appConfig.show_prices
+                      ? `Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}`
+                      : ''}                      ${isUnavailable ? `<br><small style="color:red;">${item.status}</small>` : ''}`;
     div.appendChild(name);
 
     // Click uniquement si disponible
@@ -210,7 +215,7 @@ async function fetchItemsAndRender() {
 async function loadData() {
   try {
     const [items, categories, subcategories, styles] = await Promise.all([
-    fetchReservables(client, {p_privacy_min: 'private'}),
+      fetchReservables(client, {p_privacy_min: 'private', p_status_ids: ['disponible']}),
       fetchCategories(client),
       fetchSubcategories(client),
       fetchStyles(client)
@@ -224,8 +229,11 @@ async function loadData() {
     renderFilterChips(categories, subcategories, styles);
     await renderItems();
   } catch (err) {
-    console.error('[Collection] Erreur :', formatServerError(err.message || err));
+    const errMsg = formatServerError(err.message || err);
+    console.error('[Collection] Erreur :', errMsg);
+    alert(`❌ Erreur : ${errMsg}`);
   }
+
 }
 
 /**
@@ -233,6 +241,8 @@ async function loadData() {
  */
 export async function init() {
   client = await initClient();
+    
+  appConfig = await fetchAppConfig(client);
 
   filtersSidebar = document.getElementById('cstm-filtersSidebar');
   filtersToggle = document.getElementById('cstm-filtersToggle');

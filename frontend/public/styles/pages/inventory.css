@@ -88,3 +88,42 @@ tr:nth-child(even) {
 #stock_table .btn-delete:hover {
   background-color: #d32f2f;
 }
+/* Bouton d’ajout d’un nouveau réservable */
+.add-btn-wrapper {
+  margin: 15px 0;
+  text-align: right; /* ou right si tu veux qu'il flotte à droite */
+  float: right;
+}
+
+.add-reservable-btn {
+  width: 70px;
+  height: 70px;
+  font-size: 48px;       /* 🔥 très grosse police */
+  font-weight: bold;
+  line-height: 0;
+
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+
+  background-color: #007bff;
+  color: white;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+
+  display: flex;         /* pour centrer parfaitement le "+" */
+  align-items: center;
+  justify-content: center;
+
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.add-reservable-btn:hover {
+  background-color: #0056b3;
+  transform: scale(1.08);
+}
+
+.add-reservable-btn:active {
+  transform: scale(0.95);
+  background-color: #004a9c;
+}

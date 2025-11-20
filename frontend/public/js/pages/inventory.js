@@ -3,7 +3,8 @@ import {
     fetchReservableById,
     updateReservable,
     createReservable,
-    deleteReservable
+    deleteReservable,
+    generateUniqueId
 } from '../libs/sql/index.js';
 
 import { formatServerError } from '../libs/helpers.js';
@@ -324,7 +325,6 @@ function setupDeleteButtons() {
 
 }
 
-
 function setupPhotoButtons() {
   const tbody = document.querySelector('#stock_table tbody');
   if (!tbody) return;
@@ -342,14 +342,12 @@ function setupPhotoButtons() {
         await openPhotoModal(client, itemId, itemName, (updatedPhotos) => {
           // Callback après sauvegarde : mettre à jour le texte du bouton
           const count = updatedPhotos.length;
-          btn.textContent = `Voir (${count})`;
+          btn.textContent = `Modifier (${count})`;
           console.log(`Photos mises à jour pour l’item ${itemId}`, updatedPhotos);
+          
+          // Mettre à jour l'objet currentItems pour garder le compteur à jour
+          if (item) item.photos = updatedPhotos;
         });
-
-        // Mettre à jour immédiatement le compteur si photos déjà existantes
-        const existingCount = item?.photos?.length || 0;
-        btn.textContent = `Voir (${existingCount})`;
-
       } catch (err) {
         alert('Erreur ouverture modal photos : ' + err.message);
         console.error(err);
@@ -369,11 +367,72 @@ function setupEditButtons() {
 
       try {
         // Ouvre le modal avec l'ID du reservable
-        await openReservableModal(itemId);
-      } catch (err) {
+        await openReservableModal(itemId, (savedItem) => {
+          const index = currentItems.findIndex(i => i.id === itemId.id);
+          if (index !== -1) currentItems[index] = savedItem;
+          updateTableRow(savedItem);
+        });
+
+                         
+        } catch (err) {
         console.error('[inventory] openReservableModal error', err);
         alert('Erreur lors de l’ouverture du modal d’édition : ' + err.message);
       }
     });
+  });
+}
+
+function refreshTable() {
+  fetchReservables(client, { p_privacy_min: 'hidden' })
+    .then(items => renderStockTable(items))
+    .catch(err => console.error('[inventory] Erreur refresh table:', formatServerError(err)));
+}
+
+function updateTableRow(item) {
+    console.log ('updateTableRow', item)
+  const tbody = document.querySelector('#stock_table tbody');
+  if (!tbody) return;
+    console.log ('tbody')
+  const row = tbody.querySelector(`tr td[data-id="${item.id}"]`)?.parentElement;
+    console.log ('row')
+
+  if (!row) return;
+    console.log ('updateTableRow2', item)
+
+  row.innerHTML = `
+    <td class="editable" data-field="name" data-id="${item.id}">${item.name || ''}</td>
+    <td class="editable" data-field="size" data-id="${item.id}">${item.size || ''}</td>
+    <td class="editable" data-field="description" data-id="${item.id}">${item.description || ''}</td>
+    <td class="editable-select" data-field="gender" data-id="${item.id}">${GENDER_MAP[item.gender] || ''}</td>
+    <td class="editable" data-field="price_per_day" data-id="${item.id}">${item.price_per_day != null ? item.price_per_day.toFixed(2) : ''}</td>
+    <td class="editable-select" data-field="status" data-id="${item.id}">${STATUS_MAP[item.status] || ''}</td>
+    <td class="editable-select" data-field="quality" data-id="${item.id}">${QUALITY_MAP[item.quality] || ''}</td>
+    <td class="editable-select" data-field="category" data-id="${item.id}">${item.category_name || ''}</td>
+    <td class="editable-select" data-field="subcategory" data-id="${item.id}">${item.subcategory_name || ''}</td>
+    <td data-field="styles" data-id="${item.id}">${item.style_names?.join(', ') || ''}</td>
+    <td><button class="btn-edit" data-id="${item.id}">Editer</button></td>
+    <td><button class="btn-photos" data-id="${item.id}">Modifier (${item.photos?.length || 0})</button></td>
+    <td><button class="btn-delete" data-id="${item.id}">Supprimer</button></td>
+  `;
+  initEditableCells();
+  setupDeleteButtons();
+  setupPhotoButtons();
+  setupEditButtons();
+}
+
+
+// Bouton "+" pour créer un nouveau réservable
+const addReservableBtn = document.getElementById('add-reservable-btn');
+if (addReservableBtn) {
+  addReservableBtn.addEventListener('click', async () => {
+    try {
+     await openReservableModal(null, (savedItem) => {
+       currentItems.push(savedItem);
+       renderStockTable(currentItems); // ou ajouter la ligne seule avec updateTableRow(savedItem)
+     });
+    } catch (err) {
+      console.error('[inventory] Erreur création réservable', formatServerError(err));
+      alert('Erreur création réservable : ' + formatServerError(err.message));
+    }
   });
 }

@@ -21,16 +21,8 @@ CREATE TYPE inventory.reservable_status AS ENUM (
 CREATE TYPE inventory.reservable_quality AS ENUM (
     'neuf', 'bon état', 'abîmé', 'très abîmé', 'inutilisable'
 );
--- ===========================
--- Configuration globale
--- ===========================
-CREATE TABLE inventory.app_config (
-    id SERIAL PRIMARY KEY,
-    app_name TEXT NOT NULL,
-    schema_version TEXT NOT NULL,
-    viewer_allowed BOOL DEFAULT FALSE,
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+
+
 
 -- ===========================
 -- Personnes et Organisations
@@ -71,6 +63,25 @@ CREATE TABLE inventory.storage_location (
     name VARCHAR(150) NOT NULL UNIQUE,
     address TEXT DEFAULT ''
 );
+
+
+
+-- ===========================
+-- Configuration globale
+-- ===========================
+CREATE TABLE inventory.app_config (
+    id SERIAL PRIMARY KEY,
+    app_name TEXT NOT NULL,
+    schema_version TEXT NOT NULL,
+    viewer_allowed BOOL DEFAULT FALSE,
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    default_manager_id INT REFERENCES inventory.organization(id) ON DELETE SET NULL,
+    default_owner_id INT REFERENCES inventory.organization(id) ON DELETE SET NULL,
+    default_storage_location_id INT REFERENCES inventory.storage_location(id) ON DELETE SET NULL,
+    show_prices BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+
 
 -- ===========================
 -- Style et genre

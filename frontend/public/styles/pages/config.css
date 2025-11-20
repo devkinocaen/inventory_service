@@ -166,3 +166,54 @@ hr {
 .section-box button {
   margin-bottom:6px;
 }
+
+/* === Grid 2 colonnes pour config globale === */
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.config-grid .config-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.config-grid label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.config-grid select,
+.config-grid input[type="checkbox"] {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.storage-form {
+  display: flex;
+  gap: 10px; /* espace entre les champs et le bouton */
+  align-items: center;
+}
+
+.storage-form input {
+  flex: 1; /* les champs prennent tout l'espace disponible */
+  padding: 6px 8px;
+  font-size: 14px;
+}
+
+#add-storage-btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  background-color: #4CAF50; /* vert */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#add-storage-btn:hover {
+  background-color: #45a049; /* vert plus foncé au survol */
+}

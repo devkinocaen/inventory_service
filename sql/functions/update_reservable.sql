@@ -15,12 +15,14 @@ CREATE OR REPLACE FUNCTION inventory.update_reservable(
     p_photos JSONB DEFAULT NULL,
     p_status inventory.reservable_status DEFAULT NULL,
     p_quality inventory.reservable_quality DEFAULT NULL,
-    p_is_in_stock BOOLEAN DEFAULT NULL
+    p_is_in_stock BOOLEAN DEFAULT NULL,
+    p_style_ids INT[] DEFAULT NULL      
 )
 RETURNS VOID
 LANGUAGE plpgsql
 AS $$
 BEGIN
+    -- Mise à jour du reservable
     UPDATE inventory.reservable
     SET
         name = COALESCE(p_name, name),
@@ -40,5 +42,16 @@ BEGIN
         quality = COALESCE(p_quality, quality),
         is_in_stock = COALESCE(p_is_in_stock, is_in_stock)
     WHERE id = p_id;
+
+    -- Mise à jour des styles si fourni
+    IF p_style_ids IS NOT NULL THEN
+        -- Supprimer les anciens liens
+        DELETE FROM inventory.reservable_style_link
+        WHERE reservable_id = p_id;
+
+        -- Ajouter les nouveaux
+        INSERT INTO inventory.reservable_style_link (reservable_id, style_id)
+        SELECT p_id, unnest(p_style_ids);
+    END IF;
 END;
 $$;

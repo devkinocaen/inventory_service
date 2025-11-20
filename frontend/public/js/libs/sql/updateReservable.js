@@ -20,7 +20,8 @@ export async function updateReservable(client, {
   photos = null,
   status = null,
   quality = null,
-  is_in_stock =  null
+  is_in_stock = null,
+  style_ids = null
 }) {
   const { data, error } = await client.rpc('update_reservable', {
     p_id: id,
@@ -39,13 +40,17 @@ export async function updateReservable(client, {
     p_photos: photos,
     p_status: status,
     p_quality: quality,
-    p_is_in_stock: is_in_stock
+    p_is_in_stock: is_in_stock,
+    p_style_ids: style_ids  
   });
 
   if (error) {
     console.error('[updateReservable] Erreur serveur :', error);
     throw new Error(error.message || 'Erreur lors de la mise à jour du reservable');
   }
-console.log ('updateReservable', data)
-  return single(data);
+
+  console.log('updateReservable', data);
+
+  // La fonction SQL RETURN VOID → data = null
+  return data ?? null;
 }

@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION inventory.get_reservables(
     p_subcategory_ids INT[] DEFAULT NULL,
     p_gender inventory.reservable_gender[] DEFAULT NULL,
     p_style_ids INT[] DEFAULT NULL,
+    p_status_ids inventory.reservable_status[] DEFAULT NULL,
     p_start_date TIMESTAMP DEFAULT NULL,
     p_end_date TIMESTAMP DEFAULT NULL,
     p_is_in_stock BOOLEAN DEFAULT NULL,
@@ -81,7 +82,9 @@ BEGIN
         AND (p_category_ids IS NULL OR r.category_id = ANY(p_category_ids))
         AND (p_subcategory_ids IS NULL OR r.subcategory_id = ANY(p_subcategory_ids))
         AND (p_gender IS NULL OR r.gender = ANY(p_gender))
-        -- 🔥 Filtre privacy basé sur les noms
+        AND (
+            p_status_ids IS NULL OR r.status = ANY(p_status_ids)   -- filtre status enum
+        )
         AND (
             p_privacy_min IS NULL
             OR array_position(ARRAY['hidden','private','public']::text[], r.privacy::text)
