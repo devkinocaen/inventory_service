@@ -113,10 +113,9 @@ async function refreshManagerAndStorageSelects() {
         storageLocations = await fetchStorageLocations(client);
         if (storageSelect) {
             populateSelect(storageSelect, storageLocations, 'id', 'name');
-
             // 🔹 Initialisation avec la config
-            if (appConfig?.storage_location_id) {
-                storageSelect.value = appConfig.storage_location_id;
+            if (appConfig?.default_storage_location_id) {
+                storageSelect.value = appConfig.default_storage_location_id;
             }
         }
 
@@ -126,16 +125,16 @@ async function refreshManagerAndStorageSelects() {
             populateSelect(ownerSelect, orgs, 'id', 'name');
 
             // 🔹 Initialisation avec la config
-            if (appConfig?.owner_id) {
-                ownerSelect.value = appConfig.owner_id;
+            if (appConfig?.default_owner_id) {
+                ownerSelect.value = appConfig.default_owner_id;
             }
         }
         if (managerSelect) {
             populateSelect(managerSelect, orgs, 'id', 'name');
 
             // 🔹 Initialisation avec la config
-            if (appConfig?.manager_id) {
-                managerSelect.value = appConfig.manager_id;
+            if (appConfig?.default_manager_id) {
+                managerSelect.value = appConfig.default_manager_id;
             }
         }
 

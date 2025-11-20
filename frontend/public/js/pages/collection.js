@@ -3,7 +3,8 @@ import {
     fetchReservables,
     fetchCategories,
     fetchSubcategories,
-    fetchStyles
+    fetchStyles,
+    fetchAppConfig
 } from '../libs/sql/index.js';
 
 import { initClient } from '../libs/client.js';
@@ -18,6 +19,8 @@ import {
 } from '../libs/image_utils.js';
 
 let client;
+let appConfig = null;
+
 let currentItems = [];
 let selectedItems = [];
 let activeFilters = { category: [], subcategory: [], style: [], gender: [] };
@@ -175,8 +178,9 @@ async function renderItems(itemsToRender = currentItems) {
     name.className = 'cstm-costume-name';
     name.innerHTML = `<strong>${item.name}</strong><br>
                       Taille: ${item.size || '-'}<br>
-                      Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}
-                      ${isUnavailable ? `<br><small style="color:red;">${item.status}</small>` : ''}`;
+                      ${appConfig.show_prices
+                      ? `Prix/jour: ${item.price_per_day ? item.price_per_day + ' €' : '-'}`
+                      : ''}                      ${isUnavailable ? `<br><small style="color:red;">${item.status}</small>` : ''}`;
     div.appendChild(name);
 
     // Click uniquement si disponible
@@ -237,6 +241,8 @@ async function loadData() {
  */
 export async function init() {
   client = await initClient();
+    
+  appConfig = await fetchAppConfig(client);
 
   filtersSidebar = document.getElementById('cstm-filtersSidebar');
   filtersToggle = document.getElementById('cstm-filtersToggle');

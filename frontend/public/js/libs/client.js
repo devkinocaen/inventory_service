@@ -138,7 +138,7 @@ token: null, // JWT stocké après login
     // ==============================
     // RPC
     // ==============================
-    async rpc(functionName, params = {}, DEBUG = true) {
+    async rpc(functionName, params = {}, DEBUG = false) {
       this.ensureValidToken(true);
 
       const idBase = localStorage.getItem("currentDataBase");
@@ -173,7 +173,7 @@ token: null, // JWT stocké après login
       let res;
       try {
         // 🛑 Attrape absolument TOUT ce que fetch peut throw
-        console.log(`fetching ${this.baseUrl}/rpc/${idBase}/${functionName}`);
+      //  console.log(`fetching ${this.baseUrl}/rpc/${idBase}/${functionName}`);
         res = await fetch(`${this.baseUrl}/rpc/${idBase}/${functionName}`, options);
       } catch (err) {
         let msg = "Erreur interne pendant l'appel réseau";
