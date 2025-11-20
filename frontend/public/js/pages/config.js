@@ -87,6 +87,24 @@ async function loadAppConfig() {
     }
 }
 
+async function loadAppVersions() {
+    const appVersionEl = document.getElementById('appVersion');
+    const schemaVersionEl = document.getElementById('schemaVersion');
+
+    // 🔹 Application
+    if (appVersionEl) {
+        appVersionEl.value = `${window.ENV.APP_NAME} - ${window.ENV.APP_VERSION}`;
+    }
+
+    // 🔹 Schéma PostgreSQL
+    if (appConfig?.schema_version) {
+        schemaVersionEl.value = appConfig.schema_version;
+    } else {
+        schemaVersionEl.value = "Inconnue";
+    }
+}
+
+
 
 function showLoadingOverlay(message = "⏳ Patienter quelques minutes...") {
     const overlay = document.getElementById("loadingOverlay");
@@ -265,50 +283,57 @@ function renderStorageLocations() {
         const div = document.createElement('div');
         div.className = 'item';
         div.textContent = loc.name;
-                             
-        // 🟦 Single click → Éditer le lieu
-        div.onclick = () => {
-             createModal(
-                "Modifier le lieu",
-                [
-                    { type: "text", key: "name", label: "Nom", value: loc.name },
-                    { type: "text", key: "address", label: "Adresse", value: loc.address || "" }
-                ],
-                async (values) => {
-                    try {
-                        await upsertStorageLocation(client, {
-                            id: loc.id,
-                            name: values.name.trim(),
-                            address: values.address.trim()
-                        });
 
-                        await loadStorageLocations();
-                        await refreshManagerAndStorageSelects();
+        let clickCount = 0;
+        const clickDelay = 250;
 
-                    } catch (err) {
-                        alert(`Erreur mise à jour lieu: ${formatServerError(err)}`);
+        div.addEventListener('mousedown', () => {
+            clickCount++;
+            setTimeout(async () => {
+                if (clickCount === 1) {
+                    // Single click → Edit
+                    createModal(
+                        "Modifier le lieu",
+                        [
+                            { type: "text", key: "name", label: "Nom", value: loc.name },
+                            { type: "text", key: "address", label: "Adresse", value: loc.address || "" }
+                        ],
+                        async (values) => {
+                            try {
+                                await upsertStorageLocation(client, {
+                                    id: loc.id,
+                                    name: values.name.trim(),
+                                    address: values.address.trim()
+                                });
+                                await loadStorageLocations();
+                                await refreshManagerAndStorageSelects();
+                            } catch (err) {
+                                alert(`Erreur mise à jour lieu: ${formatServerError(err)}`);
+                            }
+                        }
+                    );
+                } else if (clickCount === 2) {
+                    // Double click → Delete
+                    clickCount = 0; // reset compteur
+                    if (confirm(`Supprimer le lieu "${loc.name}" ?`)) {
+                        try {
+                            await deleteStorageLocation(client, loc.id);
+                            await loadStorageLocations();
+                            await refreshManagerAndStorageSelects();
+                        } catch (err) {
+                            alert(`Erreur suppression lieu: ${formatServerError(err)}`);
+                        }
                     }
                 }
-            );
-        };
-
-        // 🟥 Double-clic → Supprimer
-        div.ondblclick = async (e) => {
-            e.stopPropagation();
-            if (confirm(`Supprimer le lieu "${loc.name}" ?`)) {
-                try {
-                    await deleteStorageLocation(client, loc.id);
-                    await loadStorageLocations();
-                    await refreshManagerAndStorageSelects();
-                } catch (err) {
-                    alert(`Erreur suppression lieu: ${formatServerError(err)}`);
-                }
-            }
-        };
+                clickCount = 0; // reset après délai
+            }, clickDelay);
+        });
 
         storageListEl.appendChild(div);
     });
+
 }
+
 
 
 function attachStorageLocationListeners() {
@@ -497,6 +522,7 @@ async function initBackups() {
 
     // 🔹 Charger la liste des backups
     async function loadBackupList() {
+        console.log ('loadBackupList')
         try {
             const backups = await client.listBackups(true);
             backupListSelect.innerHTML = "";
@@ -567,6 +593,7 @@ export async function init() {
 
     // 🔹 Charger la config
     await loadAppConfig();
+    await loadAppVersions();
 
     // 🔹 Configuration application (session / viewer_allowed)
     initAppConfigSave();

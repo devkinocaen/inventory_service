@@ -20,9 +20,6 @@ logger = logging.getLogger(__name__)
 
 # Ordre de restauration pour éviter les FK : parents avant enfants
 RESTORE_ORDER = [
-    # 🔹 Config globale
-    "inventory.app_config",
-
     # 🔹 Personnes et organisations
     "inventory.person",
     "inventory.organization",
@@ -31,10 +28,10 @@ RESTORE_ORDER = [
     # 🔹 Stockage
     "inventory.storage_location",
 
+    # 🔹 Config globale (après que tout soit créé)
+    "inventory.app_config",
+
     # 🔹 Styles et tailles
-    # size_type et size sont désactivés, on les laisse commentés si non utilisés
-    # "inventory.size_type",
-    # "inventory.size",
     "inventory.reservable_style",
 
     # 🔹 Catégories et sous-catégories
@@ -56,6 +53,7 @@ RESTORE_ORDER = [
     "inventory.reservable_booking"
 ]
 
+
 # Ordre de purge pour éviter les FK : enfants avant parents
 TRUNCATE_ORDER = [
     # 🔹 Réservations et liens N:N
@@ -64,6 +62,7 @@ TRUNCATE_ORDER = [
     "inventory.reservable_style_link",
 
     # 🔹 Objets réservable
+    "inventory.reservable_batch",
     "inventory.reservable",
 
     # 🔹 Références de booking
@@ -161,7 +160,7 @@ def restore_strict(local_file, cur):
             line_strip = line.strip()
             # début d'un bloc COPY
             m = re.match(r"COPY (\S+) \(", line_strip)
-            if m and m.group(1) in TABLES:
+            if m and m.group(1) in RESTORE_ORDER:
                 keep_table = m.group(1)
                 table_lines[keep_table].append(line)
                 continue
@@ -234,7 +233,7 @@ def restore_tolerant(local_file, cur):
         for line in f:
             line_strip = line.strip()
             m = re.match(r"COPY (\S+) \(", line_strip)
-            if m and m.group(1) in TABLES:
+            if m and m.group(1) in RESTORE_ORDER:
                 keep_table = m.group(1)
                 table_lines[keep_table].append(line)
                 continue
@@ -327,43 +326,55 @@ def realign_sequences(cur):
             logger.warning(f"⚠ Impossible de réaligner la séquence pour {table}: {e}")
 
 def get_backup_version(dump_path):
-    """Extrait schema_version depuis le dump, si présent."""
+    """Extrait schema_version depuis le dump, si présent, de manière dynamique."""
     backup_version = None
     with open(dump_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
+    # Trouver le début du COPY pour app_config
     try:
         start_idx = next(i for i, line in enumerate(lines) if line.startswith("COPY inventory.app_config"))
     except StopIteration:
         return None
 
-    # lire la première ligne du bloc COPY
+    # Extraire les noms de colonnes depuis la ligne COPY
+    header_line = lines[start_idx]
+    m = re.match(r"COPY \S+ \((.+)\) FROM stdin;", header_line.strip())
+    if not m:
+        return None
+
+    columns = [c.strip() for c in m.group(1).split(",")]
+    if "schema_version" not in columns:
+        return None
+
+    schema_idx = columns.index("schema_version")
+
+    # Lire la première ligne de données
     i = start_idx + 1
     while i < len(lines) and lines[i].strip() != r"\.":
         row = lines[i].rstrip("\n").split("\t")
-        if len(row) >= 6:  # index 5 = schema_version
-            backup_version = row[5] or None
+        if len(row) > schema_idx:
+            backup_version = row[schema_idx] or None
             break
         i += 1
 
     return backup_version
 
 
-def get_current_versions(conn):
-    """Récupère schema_version et app_version depuis la base actuelle."""
+
+def get_current_version(conn):
+    """Récupère uniquement schema_version depuis la base actuelle."""
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT schema_version, app_version
+            SELECT schema_version
             FROM inventory.app_config
             LIMIT 1;
         """)
         result = cur.fetchone()
         if result:
-            return result[0], result[1]  # (schema_version, app_version)
+            return result[0]  # schema_version
         else:
-            return None, None
-
-
+            return None
 
 
 def register_routes(app):
@@ -420,10 +431,10 @@ def register_routes(app):
                 cur.execute("SAVEPOINT pre_restore;")
 
             backup_version = get_backup_version(local_file)
-            current_schema_version, current_app_version = get_current_versions(conn)
+            current_schema_version = get_current_version(conn)
 
             logger.info(f"🔹 Backup schema_version: {backup_version}")
-            logger.info(f"🔹 Current schema_version: {current_schema_version}, app_version: {current_app_version}")
+            logger.info(f"🔹 Current schema_version: {current_schema_version}")
             logger.info(f"🔹 strict_mode flag: {strict_mode}")
 
             mode_str = None
@@ -459,9 +470,9 @@ def register_routes(app):
                 # 4️⃣ Remettre app_config aux versions pré-restore
                 cur.execute("""
                     UPDATE inventory.app_config
-                    SET schema_version = %s,
-                        app_version = %s
-                """, (current_schema_version, current_app_version))
+                    SET schema_version = %s
+                """, (current_schema_version,))
+
 
             logger.info(f"🔹 Restore terminé en mode: {mode_str}")
 

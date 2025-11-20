@@ -4,13 +4,20 @@ set -e
 # Usage : ./generate_env.sh ./frontend/public/js/env-config.js
 OUTPUT_FILE="${1:-./frontend/public/js/env-config.js}"
 
+# 🔹 Récupère le nom de la branche Git
+if git rev-parse --git-dir > /dev/null 2>&1; then
+    APP_VERSION=$(git rev-parse --abbrev-ref HEAD)
+else
+    APP_VERSION="unknown"
+fi
 
 mkdir -p "$(dirname "$OUTPUT_FILE")"
 
-
-# Écriture du fichier env-config.js
+# 🔹 Écriture du fichier env-config.js
 cat > "$OUTPUT_FILE" <<EOF
 window.ENV = {
+  APP_NAME: "${APP_NAME}",
+  APP_VERSION: "${APP_VERSION}",
   DB_CLIENT: "${DB_CLIENT}",
   BASE_PATH: "${BASE_PATH}",
   API_REST_URLS: [
@@ -22,4 +29,4 @@ window.ENV = {
 };
 EOF
 
-echo "✅ env-config.js généré avec les bases depuis $CSV_FILE dans $OUTPUT_FILE"
+echo "✅ env-config.js généré avec APP_NAME=$APP_NAME dans $OUTPUT_FILE"

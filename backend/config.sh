@@ -19,6 +19,7 @@ if [[ -n "${DB_CONFIG:-}" ]]; then
   source "$CONFIG_DIR/../databases/$DB_PROVIDER/config.sh"
 fi
 
+export APP_NAME=Costumerie
 
 export ALWAYS_DATA_API_REST_URL=https://inventory-service.alwaysdata.net
 export RENDER_API_REST_URL=https://inventory-service-tz0g.onrender.com

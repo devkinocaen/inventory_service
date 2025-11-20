@@ -1,4 +1,6 @@
 window.ENV = {
+  APP_NAME: "Costumerie",
+  APP_VERSION: "dev",
   DB_CLIENT: "",
   BASE_PATH: "",
   API_REST_URLS: [
