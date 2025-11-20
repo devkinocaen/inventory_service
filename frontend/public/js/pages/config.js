@@ -174,14 +174,43 @@ function renderCategories() {
         const div = document.createElement('div');
         div.className = 'item' + (selectedCategoryId === c.id ? ' selected' : '');
         div.textContent = c.name;
+
+        let clickTimer = null;
+
         div.onclick = async () => {
-            selectedCategoryId = c.id;
-            await loadSubCategories(c.id);
-            renderCategories();
+            if (clickTimer == null) {
+                clickTimer = setTimeout(async () => {
+                    // Clic simple : sélection de la catégorie
+                    selectedCategoryId = c.id;
+                    await loadSubCategories(c.id);
+                    renderCategories();
+                    clickTimer = null;
+                }, 250); // 250ms pour différencier du double-clic
+            }
         };
+
+        div.ondblclick = async () => {
+            if (clickTimer) {
+                clearTimeout(clickTimer);
+                clickTimer = null;
+            }
+            // Double-clic : suppression
+            if (confirm(`Supprimer la catégorie "${c.name}" et toutes ses sous-catégories ?`)) {
+                try {
+                    await deleteCategory(client, c.id);
+                    await loadCategories();
+                    selectedCategoryId = null;
+                    renderSubCategories();
+                } catch (err) {
+                    alert(`Erreur suppression catégorie: ${formatServerError(err)}`);
+                }
+            }
+        };
+
         categoryList.appendChild(div);
     });
 }
+
 
 function renderSubCategories() {
     subCategoryList.innerHTML = '';
