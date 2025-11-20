@@ -178,7 +178,7 @@ export async function openReservableModal(reservableId, onSave = null) {
             console.warn(`[openReservableModal] Aucun reservable trouvé pour ID ${reservableId}, création d'un nouvel item.`);
         }
     }
-    currentReservable = fetchedReservable || { id: null };
+    currentReservable = fetchedReservable || { id: null, inventory_type: 'costume' };
 
     await initReservableModal();
     if (!modal || !dialog) return;
@@ -255,6 +255,7 @@ async function saveReservable(e) {
     const data = {
         id: currentReservable?.id || null,
         name,
+        inventory_type: 'costume',
         type: getEl('#rsb-res-type')?.value || null,
         size: getEl('#rsb-res-size').value || null,
         price_per_day: parseFloat(getEl('#rsb-res-price').value) || null,
@@ -276,6 +277,7 @@ async function saveReservable(e) {
         if (currentReservable?.id) {
             saved = await updateReservable(client, data);
         } else {
+            console.log ("data"), data
             saved = await createReservable(client, data);
             currentReservable = saved;
         }
