@@ -138,59 +138,96 @@ token: null, // JWT stocké après login
     // ==============================
     // RPC
     // ==============================
-     async rpc(functionName, params = {}, DEBUG = false) {
-       this.ensureValidToken(true);
+    async rpc(functionName, params = {}, DEBUG = true) {
+      this.ensureValidToken(true);
 
-       const idBase = localStorage.getItem("currentDataBase");
-       if (!idBase) {
-         alert("❌ Aucun identifiant de base défini !");
-         throw new Error("Aucun identifiant de base défini");
-       }
+      const idBase = localStorage.getItem("currentDataBase");
+      if (!idBase) {
+        alert("❌ Aucun identifiant de base défini !");
+        throw new Error("Aucun identifiant de base défini");
+      }
 
-       if (DEBUG) {
-         const payload = parseJwt(this.token);
-         console.log("🔍 JWT payload:", payload);
-         const role = payload?.app_metadata?.role;
-         if (role) console.log("✅ JWT role OK:", role);
-       }
+      if (DEBUG) {
+        const payload = parseJwt(this.token);
+        console.log("🔍 JWT payload:", payload);
+        const role = payload?.app_metadata?.role;
+        if (role) console.log("✅ JWT role OK:", role);
+      }
 
-       const headers = {
-         "Content-Type": "application/json",
-         Authorization: `Bearer ${this.token}`,
-       };
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.token}`,
+      };
 
-       const options = {
-         method: "POST",
-         headers,
-         body: JSON.stringify(params || {}),
-       };
+      const options = {
+        method: "POST",
+        headers,
+        body: JSON.stringify(params || {}),
+      };
 
-       if (DEBUG) {
-         console.log("functionName ", functionName);
-         console.log(" -- with options", options);
-       }
+      if (DEBUG) {
+        console.log("functionName ", functionName);
+        console.log(" -- with options", options);
+      }
 
-       const res = await fetch(`${this.baseUrl}/rpc/${idBase}/${functionName}`, options);
+      let res;
+      try {
+        // 🛑 Attrape absolument TOUT ce que fetch peut throw
+        console.log(`fetching ${this.baseUrl}/rpc/${idBase}/${functionName}`);
+        res = await fetch(`${this.baseUrl}/rpc/${idBase}/${functionName}`, options);
+      } catch (err) {
+        let msg = "Erreur interne pendant l'appel réseau";
+        if (err?.message) msg = err.message;
+        else if (typeof err === "string") msg = err;
+        else msg = JSON.stringify(err, null, 2);
 
-       // ========== 🔥 NOUVELLE PARTIE: meilleure gestion des erreurs ==========
-       let payload = null;
-       try {
-         payload = await res.json();      // lit même si 400 / 500
-       } catch (_) {
-         // fallback si la réponse n’est pas du JSON
-         payload = { error: await res.text() };
-       }
+        throw new Error(`Fetch error: ${msg}`);
+      }
 
-       if (!res.ok) {
-         const errMsg = payload.error || `Erreur HTTP ${res.status}`;
-         throw new Error(errMsg);         // ⬅️ ENFIN un message propre !
-       }
-       // ======================================================================
+      // ------------------- Décodage JSON ou texte -------------------
+      let payload = null;
+      try {
+        payload = await res.json();
+      } catch (_) {
+        // fallback si pas JSON
+        payload = { text: await res.text() };
+      }
 
-       if (DEBUG) console.log(`🔹 RPC ${functionName} response:`, payload);
+      if (DEBUG) console.log(`🔹 RPC ${functionName} response:`, res);
+      if (DEBUG) console.log(`🔹 RPC ${functionName} payload:`, payload);
 
-       return payload;
-     },
+      // ------------------- Gestion propre des erreurs -------------------
+      if (!res.ok) {
+        let errMsg = `Erreur HTTP ${res.status}`;
+
+        if (payload) {
+          if (payload.error) {
+            // payload.error peut être string ou objet
+            if (typeof payload.error === "string") {
+              errMsg = payload.error;
+            } else if (typeof payload.error === "object" && payload.error.message) {
+              errMsg = payload.error.message; // ✅ Extraction du vrai message
+            } else {
+              errMsg = JSON.stringify(payload.error);
+            }
+          } else if (payload.detail) {
+            errMsg = payload.detail;
+          } else if (payload.details) {
+            errMsg = payload.details;
+          } else if (payload.message) {
+            errMsg = payload.message;
+          } else if (payload.text) {
+            errMsg = payload.text;
+          }
+        }
+
+        throw new Error(errMsg);
+      }
+      // ------------------------------------------------------------------
+
+      return payload;
+    }
+,
 
 
     // ==============================

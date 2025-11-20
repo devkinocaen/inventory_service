@@ -368,8 +368,7 @@ function setupEditButtons() {
       try {
         // Ouvre le modal avec l'ID du reservable
         await openReservableModal(itemId, (savedItem) => {
-          console.log('Item édité :', savedItem);
-          const index = currentItems.findIndex(i => i.id === savedItem.id);
+          const index = currentItems.findIndex(i => i.id === itemId.id);
           if (index !== -1) currentItems[index] = savedItem;
           updateTableRow(savedItem);
         });
@@ -390,10 +389,15 @@ function refreshTable() {
 }
 
 function updateTableRow(item) {
+    console.log ('updateTableRow', item)
   const tbody = document.querySelector('#stock_table tbody');
   if (!tbody) return;
+    console.log ('tbody')
   const row = tbody.querySelector(`tr td[data-id="${item.id}"]`)?.parentElement;
+    console.log ('row')
+
   if (!row) return;
+    console.log ('updateTableRow2', item)
 
   row.innerHTML = `
     <td class="editable" data-field="name" data-id="${item.id}">${item.name || ''}</td>
@@ -423,7 +427,6 @@ if (addReservableBtn) {
   addReservableBtn.addEventListener('click', async () => {
     try {
      await openReservableModal(null, (savedItem) => {
-       console.log ('savedItem', savedItem)
        currentItems.push(savedItem);
        renderStockTable(currentItems); // ou ajouter la ligne seule avec updateTableRow(savedItem)
      });

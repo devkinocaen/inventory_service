@@ -168,8 +168,7 @@ async function loadStorageSelect() {
 export async function openReservableModal(reservableId, onSave = null) {
     client = await initClient();
     onSaveCallback = onSave;
-console.log ('openReservableModal onSave', onSave)
-    let fetchedReservable = null;
+     let fetchedReservable = null;
 
     if (reservableId != null) {
         try {
@@ -250,16 +249,16 @@ async function saveReservable(e) {
 
     const gender = dialog.querySelector('input[name="rsb-res-gender"]:checked')?.value;
     const privacy = dialog.querySelector('input[name="rsb-res-privacy"]:checked')?.value;
-    const styles = Array.from(dialog.querySelectorAll('#rsb-chips-style .rsb-chip')).map(c => Number(c.dataset.id));
+    const style_ids = Array.from(dialog.querySelectorAll('#rsb-chips-style .rsb-chip')).map(c => Number(c.dataset.id));
 
     const data = {
         id: currentReservable?.id || null,
         name,
         inventory_type: 'costume',
         type: getEl('#rsb-res-type')?.value || null,
-        size: getEl('#rsb-res-size').value || null,
-        price_per_day: parseFloat(getEl('#rsb-res-price').value) || null,
-        description: getEl('#rsb-res-description').value || null,
+        size: getEl('#rsb-res-size').value,
+        price_per_day: parseFloat(getEl('#rsb-res-price').value),
+        description: getEl('#rsb-res-description').value,
         status: getEl('#rsb-res-status').value || 'disponible',
         quality: getEl('#rsb-res-quality').value || 'bon état',
         category_id: getEl('#rsb-res-category').value || null,
@@ -269,13 +268,14 @@ async function saveReservable(e) {
         storage_location_id: getEl('#rsb-res-storage').value || null,
         gender,
         privacy,
-        styles
+        style_ids
     };
 
     try {
         let saved, savedId;
         if (currentReservable?.id) {
-            saved = await updateReservable(client, data);
+            await updateReservable(client, data);
+            saved = await fetchReservableById(client, data.id);
         } else {
             savedId = await createReservable(client, data);
             saved = await fetchReservableById(client, savedId);
