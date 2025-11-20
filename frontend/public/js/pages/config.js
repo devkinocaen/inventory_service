@@ -508,16 +508,15 @@ function initAppConfigSave() {
             const owner_id = ownerSelect?.value ? Number(ownerSelect.value) : null;
             const manager_id = managerSelect?.value ? Number(managerSelect.value) : null;
 
-            await upsertAppConfig(
-                client,
-                null,               // session_id → on ne l'utilise pas ici
-                false,              // useCurrentTime → inutile
-                owner_id,
-                manager_id,
+            // 🔹 Appel avec le nouvel objet
+            await upsertAppConfig(client, {
+                appName: 'costumerie de Julie',
                 viewerAllowed,
-                storage_location_id,
-                showPrices
-            );
+                showPrices,
+                defaultOwnerId: owner_id,
+                defaultManagerId: manager_id,
+                defaultStorageLocationId: storage_location_id
+            });
 
             setStatusMsg(statusMsg, '✅ Configuration sauvegardée avec succès !', true);
 
@@ -529,6 +528,7 @@ function initAppConfigSave() {
         }
     });
 }
+
 
 
 export async function init() {
