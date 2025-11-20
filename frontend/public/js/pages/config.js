@@ -15,7 +15,8 @@ import {
     fetchStorageLocations,
     upsertStorageLocation,
     deleteStorageLocation,
-    fetchOrganizations
+    fetchOrganizations,
+    realignSequences
 } from '../libs/sql/index.js';
 
 import {
@@ -542,6 +543,39 @@ async function initBackups() {
     await loadBackupList();
 }
 
+function initSequenceRealign() {
+    const btnRealign = document.getElementById('btnRealignSequences');
+    const statusMsg = document.getElementById('statusMsg');
+
+    if (!btnRealign) return;
+
+    btnRealign.addEventListener('click', async () => {
+        if (!client) client = await initClient();
+
+        // Désactive le bouton et affiche overlay
+        btnRealign.disabled = true;
+        showLoadingOverlay('⏳ Réalignement des séquences en cours...');
+        if (statusMsg) statusMsg.textContent = 'Réalignement des séquences...';
+
+        try {
+            const success = await realignSequences(client);
+            if (success) {
+                if (statusMsg) statusMsg.textContent = '✅ Séquences réalignées avec succès !';
+                alert('✅ Séquences réalignées avec succès !');
+            } else {
+                if (statusMsg) statusMsg.textContent = '❌ Échec du réalignement des séquences.';
+            }
+        } catch (err) {
+            console.error('Erreur réalignement séquences :', err);
+            if (statusMsg) statusMsg.textContent = `❌ Erreur : ${formatServerError(err)}`;
+            alert(`❌ Erreur lors du réalignement : ${formatServerError(err)}`);
+        } finally {
+            btnRealign.disabled = false;
+            hideLoadingOverlay();
+        }
+    });
+}
+
 // 🔹 Gestion de la sauvegarde de la configuration
 function initAppConfigSave() {
     const btnSaveConfig = document.getElementById('btnSaveConfig');
@@ -610,10 +644,11 @@ export async function init() {
 
     // 🔹 Storage manager (préparer les éléments)
     initStorageManager();
-    await loadStorageLocations(); // <-- ajout
+    await loadStorageLocations(); 
 
     // 🔹 Rafraîchit les selects manager / owner / storage
     await refreshManagerAndStorageSelects();
+    initSequenceRealign();
     
     hideLoadingOverlay()
 }

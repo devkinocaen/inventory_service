@@ -25,8 +25,6 @@ export async function fetchReservables(client, filters = {}) {
     p_privacy_min: filters.p_privacy_min ?? null
   };
 
-  console.log('params fetchReservables:', params);
-
   const { data, error } = await client.rpc('get_reservables', params);
 
   if (error) {

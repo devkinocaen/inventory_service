@@ -75,3 +75,5 @@ export { deleteStorageLocation } from './deleteStorageLocation.js';
 // ==========================
 export { fetchGenders } from './fetchGenders.js';
 export { generateUniqueId } from './generateUniqueId.js';
+export { realignSequences } from './realignSequences.js';
+
