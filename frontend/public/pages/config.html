@@ -141,5 +141,28 @@
       <p id="restoreStatus"></p>
     </div>
 
+ <!-- Overlay de chargement -->
+    <div id="loadingOverlay" style="
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-align: center;
+      z-index: 1000;
+
+      /* centrage vertical + horizontal */
+      display: grid;
+      place-items: center;
+    ">
+      ⏳ Patienter...
+    </div>
+
+
 </body>
 </html>

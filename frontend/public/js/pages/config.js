@@ -589,6 +589,8 @@ function initAppConfigSave() {
 
 
 export async function init() {
+    
+    showLoadingOverlay(`⏳ Chargement de la page...`);
     if (!client) client = await initClient();
 
     // 🔹 Charger la config
@@ -612,6 +614,8 @@ export async function init() {
 
     // 🔹 Rafraîchit les selects manager / owner / storage
     await refreshManagerAndStorageSelects();
+    
+    hideLoadingOverlay()
 }
 
 
