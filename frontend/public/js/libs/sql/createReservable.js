@@ -44,6 +44,7 @@ export async function createReservable(client, {
     console.error('[createReservable] Erreur serveur :', error);
     throw new Error(error.message || 'Erreur lors de la création du reservable');
   }
-
-  return single(data);
+console.log ('data in creatreservable', data);
+    
+  return single(data).create_reservable;
 }

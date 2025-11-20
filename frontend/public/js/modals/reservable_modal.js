@@ -168,7 +168,7 @@ async function loadStorageSelect() {
 export async function openReservableModal(reservableId, onSave = null) {
     client = await initClient();
     onSaveCallback = onSave;
-
+console.log ('openReservableModal onSave', onSave)
     let fetchedReservable = null;
 
     if (reservableId != null) {
@@ -273,22 +273,22 @@ async function saveReservable(e) {
     };
 
     try {
-        let saved;
+        let saved, savedId;
         if (currentReservable?.id) {
             saved = await updateReservable(client, data);
         } else {
-            console.log ("data"), data
-            saved = await createReservable(client, data);
-            currentReservable = saved;
+            savedId = await createReservable(client, data);
+            saved = await fetchReservableById(client, savedId);
         }
 
         alert('✅ Reservable enregistré avec succès.');
         console.log('Reservable enregistré', saved);
-        closeReservableModal();
-
+        
         if (typeof onSaveCallback === 'function') {
             onSaveCallback(saved);
         }
+        closeReservableModal();
+
     } catch (err) {
         console.error('[saveReservable]', err);
         alert(`❌ Impossible d’enregistrer : ${formatServerError(err)}`);

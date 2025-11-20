@@ -423,6 +423,7 @@ if (addReservableBtn) {
   addReservableBtn.addEventListener('click', async () => {
     try {
      await openReservableModal(null, (savedItem) => {
+       console.log ('savedItem', savedItem)
        currentItems.push(savedItem);
        renderStockTable(currentItems); // ou ajouter la ligne seule avec updateTableRow(savedItem)
      });
