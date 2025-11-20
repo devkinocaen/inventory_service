@@ -7,12 +7,15 @@ import {
     fetchSubcategoriesByCategory,
     fetchStyles,
     fetchOrganizations,
-    fetchStorageLocations
+    fetchStorageLocations,
+    fetchAppConfig
 } from '../libs/sql/index.js';
 import { populateSelect } from '../libs/ui/populateSelect.js';
 import { formatServerError } from '../libs/helpers.js';
 
-let client;
+let client = null;
+let appConfig = null;
+
 let modal, dialog, cancelBtn, saveBtn;
 let currentReservable = null;
 let allStyles = [];
@@ -167,6 +170,10 @@ async function loadStorageSelect() {
 // -----------------------------
 export async function openReservableModal(reservableId, onSave = null) {
     client = await initClient();
+    // 🔥 Charger la config
+    const res = await fetchAppConfig(client);
+    appConfig = res || {}; // sécurité
+    
     onSaveCallback = onSave;
      let fetchedReservable = null;
 
@@ -219,6 +226,22 @@ export async function openReservableModal(reservableId, onSave = null) {
         dialog.querySelector('#rsb-res-quality').value = 'neuf';
         dialog.querySelector('input[name="rsb-res-gender"][value="unisex"]').checked = true;
         dialog.querySelector('input[name="rsb-res-privacy"][value="public"]').checked = true;
+        
+        
+        // ================================
+        // Injecter les valeurs par défaut
+        // ================================
+        if (appConfig) {
+            if (appConfig.default_owner_id) {
+                dialog.querySelector('#rsb-res-owner').value = appConfig.default_owner_id;
+            }
+            if (appConfig.default_manager_id) {
+                dialog.querySelector('#rsb-res-manager').value = appConfig.default_manager_id;
+            }
+            if (appConfig.default_storage_location_id) {
+                dialog.querySelector('#rsb-res-storage').value = appConfig.default_storage_location_id;
+            }
+        }
     }
 
     renderStyleChips();
