@@ -260,11 +260,41 @@ async function loadStorageLocations() {
 
 function renderStorageLocations() {
     storageListEl.innerHTML = '';
+
     storageLocations.forEach(loc => {
         const div = document.createElement('div');
         div.className = 'item';
         div.textContent = loc.name;
-        div.onclick = async () => {
+                             
+        // 🟦 Single click → Éditer le lieu
+        div.onclick = () => {
+             createModal(
+                "Modifier le lieu",
+                [
+                    { type: "text", key: "name", label: "Nom", value: loc.name },
+                    { type: "text", key: "address", label: "Adresse", value: loc.address || "" }
+                ],
+                async (values) => {
+                    try {
+                        await upsertStorageLocation(client, {
+                            id: loc.id,
+                            name: values.name.trim(),
+                            address: values.address.trim()
+                        });
+
+                        await loadStorageLocations();
+                        await refreshManagerAndStorageSelects();
+
+                    } catch (err) {
+                        alert(`Erreur mise à jour lieu: ${formatServerError(err)}`);
+                    }
+                }
+            );
+        };
+
+        // 🟥 Double-clic → Supprimer
+        div.ondblclick = async (e) => {
+            e.stopPropagation();
             if (confirm(`Supprimer le lieu "${loc.name}" ?`)) {
                 try {
                     await deleteStorageLocation(client, loc.id);
@@ -275,9 +305,11 @@ function renderStorageLocations() {
                 }
             }
         };
+
         storageListEl.appendChild(div);
     });
 }
+
 
 function attachStorageLocationListeners() {
     if (!addStorageBtn) return;
