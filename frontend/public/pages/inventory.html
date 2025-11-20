@@ -6,18 +6,23 @@
   <title>Gestion du stock</title>
 </head>
 <body>
-  <!-- Barre de recherche -->
-  <div>
-    <label for="lookup_item_name">Rechercher :</label>
-    <input type="text" id="lookup_item_name" name="lookup_item_name" />
-  </div>
+    
+    <!-- Barre de recherche -->
+    <div>
+      <label for="lookup_item_name">Rechercher :</label>
+      <input type="text" id="lookup_item_name" name="lookup_item_name" />
+    </div>
+
+    <!-- Bouton d'ajout -->
+    <div class="add-btn-wrapper">
+      <button id="add-reservable-btn" class="add-reservable-btn">+</button>
+    </div>
+
 
   <!-- Tableau de stock -->
   <div class="table-wrapper">
     <table id="stock_table">
       <thead>
-        <tr>
-          <thead>
             <tr>
               <th class="sortable">Nom</th>
               <th class="sortable">Taille</th>
@@ -32,9 +37,6 @@
               <th>Editer</th>
               <th>Photos</th>
               <th>Supprimer</th>
-            </tr>
-          </thead>
-
         </tr>
       </thead>
       <tbody>

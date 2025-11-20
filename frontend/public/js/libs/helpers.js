@@ -245,25 +245,42 @@ export function decodeUnicode(str) {
   
   return str;
 }
-           
+
 // Fonction pour formater proprement les erreurs serveur
 export function formatServerError(err) {
- if (!err) return 'Erreur inconnue';
+  if (!err) return 'Erreur inconnue';
 
- // Si c'est un objet
- if (typeof err === 'object') {
-   // Cas classique pour ton RPC backend
-   if (err.detail) return err.detail.split('\n')[0]; // première ligne seulement
-   if (err.error) return err.error.split('\n')[0];
-   if (err.message) return err.message.split('\n')[0];
+  // Si c'est un objet
+  if (typeof err === 'object') {
 
-   // Si rien de connu, stringify
-       console.log ('stringify', err)
-   return JSON.stringify(err);
- }
+    // PostgreSQL / Supabase : err.details (très important)
+    if (err.details) return err.details.split('\n')[0];
 
- // Si c'est déjà une string
- return err.toString().split('\n')[0];
+    // PostgreSQL / Supabase standard
+    if (err.detail) return err.detail.split('\n')[0];
+
+    // Les erreurs retournées par Supabase "rpc" (souvent err.message)
+    if (err.error) return err.error.split('\n')[0];
+
+    if (err.message) return err.message.split('\n')[0];
+
+    // PostgreSQL "hint"
+    if (err.hint) return err.hint.split('\n')[0];
+
+    // Code PostgreSQL (ex: 23505, 23503...)
+    if (err.code) return `Erreur SQL (${err.code})`;
+
+    // Dernier recours : stringify safe
+    try {
+      return JSON.stringify(err);
+    } catch (e) {
+      console.warn('[formatServerError] Impossible de JSON.stringify l\'erreur :', e, err);
+      return 'Erreur inconnue (objet non sérialisable)';
+    }
+  }
+
+  // Si c'est une string
+  return err.toString().split('\n')[0];
 }
 
 
