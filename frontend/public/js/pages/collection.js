@@ -129,7 +129,8 @@ async function fetchItems() {
       : null,
     p_start_date: filterStartDate,
     p_end_date: filterEndDate,
-    p_privacy_min: 'private'
+    p_privacy_min: 'private',
+    p_status_ids: ['disponible']
   };
 
   try {
@@ -210,7 +211,7 @@ async function fetchItemsAndRender() {
 async function loadData() {
   try {
     const [items, categories, subcategories, styles] = await Promise.all([
-    fetchReservables(client, {p_privacy_min: 'private'}),
+      fetchReservables(client, {p_privacy_min: 'private', p_status_ids: ['disponible']}),
       fetchCategories(client),
       fetchSubcategories(client),
       fetchStyles(client)
@@ -224,8 +225,11 @@ async function loadData() {
     renderFilterChips(categories, subcategories, styles);
     await renderItems();
   } catch (err) {
-    console.error('[Collection] Erreur :', formatServerError(err.message || err));
+    const errMsg = formatServerError(err.message || err);
+    console.error('[Collection] Erreur :', errMsg);
+    alert(`❌ Erreur : ${errMsg}`);
   }
+
 }
 
 /**

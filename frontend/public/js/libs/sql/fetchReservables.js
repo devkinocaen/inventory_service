@@ -11,18 +11,22 @@ export async function fetchReservables(client, filters = {}) {
       : null,
     p_gender: Array.isArray(filters.p_gender) && filters.p_gender.length
       ? filters.p_gender
-      : null, // <- maintenant vecteur
+      : null, // <- vecteur
     p_style_ids: Array.isArray(filters.p_style_ids) && filters.p_style_ids.length
       ? filters.p_style_ids
       : null,
+    p_status_ids: Array.isArray(filters.p_status_ids) && filters.p_status_ids.length
+      ? filters.p_status_ids
+      : null, 
     p_start_date: filters.p_start_date ?? null,
     p_end_date: filters.p_end_date ?? null,
     p_is_in_stock: filters.p_is_in_stock ?? null,
-
-    // 🔹 Nouveau filtre privacy_min (ENUM: 'hidden' | 'private' | 'public')
+    // 🔹 filtre privacy_min (ENUM: 'hidden' | 'private' | 'public')
     p_privacy_min: filters.p_privacy_min ?? null
   };
-console.log ('params fetchReservables:',  params)
+
+  console.log('params fetchReservables:', params);
+
   const { data, error } = await client.rpc('get_reservables', params);
 
   if (error) {
