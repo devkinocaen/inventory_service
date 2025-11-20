@@ -2,6 +2,7 @@ import { initClient } from '../libs/client.js';
 import {
     fetchReservableById,
     updateReservable,
+    createReservable,
     fetchCategories,
     fetchSubcategoriesByCategory,
     fetchStyles,
@@ -19,6 +20,7 @@ let categories = [];
 let subCategories = {}; // { categoryId: [subcat,...] }
 let organizations = [];
 let storageLocations = [];
+let onSaveCallback = null; // callback à appeler après sauvegarde
 
 // -----------------------------
 // Initialisation modal
@@ -152,32 +154,40 @@ async function loadOrganizationsSelects() {
 // -----------------------------
 async function loadStorageSelect() {
     storageLocations = await fetchStorageLocations(client);
-    console.log ('storageLocations', storageLocations)
     const storageSelect = dialog.querySelector('#rsb-res-storage');
 
     populateSelect(storageSelect, storageLocations, 'id', 'name', 'Sélectionnez un stockage');
-console.log ('currentReservable', currentReservable)
     if (currentReservable) {
         storageSelect.value = currentReservable.storage_location_id || '';
     }
-    console.log("storageSelect", storageSelect)
-    console.log("storageSelect", storageSelect.value)
-    console.log("currentReservable.storage_location_id", currentReservable.storage_location_id)
 }
 
 // -----------------------------
 // Ouvrir / fermer modal
 // -----------------------------
-export async function openReservableModal(reservableId) {
+export async function openReservableModal(reservableId, onSave = null) {
     client = await initClient();
-    currentReservable = reservableId ? await fetchReservableById(client, reservableId) : null;
+    onSaveCallback = onSave;
+
+    let fetchedReservable = null;
+
+    if (reservableId != null) {
+        try {
+            fetchedReservable = await fetchReservableById(client, reservableId);
+        } catch {
+            console.warn(`[openReservableModal] Aucun reservable trouvé pour ID ${reservableId}, création d'un nouvel item.`);
+        }
+    }
+    currentReservable = fetchedReservable || { id: null };
 
     await initReservableModal();
     if (!modal || !dialog) return;
 
     const getEl = id => dialog.querySelector(id);
 
-    if (currentReservable) {
+    if (currentReservable.id != null) {
+        document.getElementById('rsb-title').textContent = 'Editer un item';
+
         const fields = {
             '#rsb-res-name': currentReservable.name,
             '#rsb-res-size': currentReservable.size,
@@ -199,17 +209,20 @@ export async function openReservableModal(reservableId) {
 
         dialog.querySelectorAll('input[name="rsb-res-gender"]').forEach(r => r.checked = r.value === currentReservable.gender);
         dialog.querySelectorAll('input[name="rsb-res-privacy"]').forEach(r => r.checked = r.value === currentReservable.privacy);
-        renderStyleChips();
     } else {
+        document.getElementById('rsb-title').textContent = 'Créer un nouvel item';
+
         dialog.querySelectorAll('input, select, textarea').forEach(el => {
             if (el.type === 'radio') el.checked = false;
             else el.value = '';
         });
+        dialog.querySelector('#rsb-res-status').value = 'disponible';
+        dialog.querySelector('#rsb-res-quality').value = 'neuf';
         dialog.querySelector('input[name="rsb-res-gender"][value="unisex"]').checked = true;
         dialog.querySelector('input[name="rsb-res-privacy"][value="public"]').checked = true;
-        renderStyleChips();
     }
 
+    renderStyleChips();
     modal.classList.remove('hidden');
     void dialog.offsetWidth;
     dialog.classList.add('show');
@@ -220,6 +233,7 @@ export function closeReservableModal() {
     dialog.classList.remove('show');
     modal.classList.add('hidden');
     currentReservable = null;
+    onSaveCallback = null;
 }
 
 // -----------------------------
@@ -236,33 +250,45 @@ async function saveReservable(e) {
 
     const gender = dialog.querySelector('input[name="rsb-res-gender"]:checked')?.value;
     const privacy = dialog.querySelector('input[name="rsb-res-privacy"]:checked')?.value;
-    const styles = Array.from(dialog.querySelectorAll('#rsb-chips-style .rsb-chip.selected')).map(c => c.textContent.trim());
+    const styles = Array.from(dialog.querySelectorAll('#rsb-chips-style .rsb-chip')).map(c => Number(c.dataset.id));
 
-    const updateData = {
+    const data = {
         id: currentReservable?.id || null,
         name,
         type: getEl('#rsb-res-type')?.value || null,
         size: getEl('#rsb-res-size').value || null,
         price_per_day: parseFloat(getEl('#rsb-res-price').value) || null,
         description: getEl('#rsb-res-description').value || null,
-        status: getEl('#rsb-res-status').value || null,
-        quality: getEl('#rsb-res-quality').value || null,
+        status: getEl('#rsb-res-status').value || 'disponible',
+        quality: getEl('#rsb-res-quality').value || 'bon état',
         category_id: getEl('#rsb-res-category').value || null,
         subcategory_id: getEl('#rsb-res-subcategory').value || null,
         owner_id: getEl('#rsb-res-owner').value || null,
         manager_id: getEl('#rsb-res-manager').value || null,
-        storage_id: getEl('#rsb-res-storage').value || null,
+        storage_location_id: getEl('#rsb-res-storage').value || null,
         gender,
         privacy,
         styles
     };
 
     try {
-        const saved = await updateReservable(client, updateData);
-        console.log('Reservable enregistré', saved);
+        let saved;
+        if (currentReservable?.id) {
+            saved = await updateReservable(client, data);
+        } else {
+            saved = await createReservable(client, data);
+            currentReservable = saved;
+        }
+
         alert('✅ Reservable enregistré avec succès.');
+        console.log('Reservable enregistré', saved);
+        closeReservableModal();
+
+        if (typeof onSaveCallback === 'function') {
+            onSaveCallback(saved);
+        }
     } catch (err) {
-        console.error('[updateReservable]', err);
-        alert(`❌ Impossible d’enregistrer :\n\n${formatServerError(err)}`);
+        console.error('[saveReservable]', err);
+        alert(`❌ Impossible d’enregistrer : ${formatServerError(err)}`);
     }
 }

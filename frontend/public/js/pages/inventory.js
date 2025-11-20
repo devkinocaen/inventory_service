@@ -3,7 +3,8 @@ import {
     fetchReservableById,
     updateReservable,
     createReservable,
-    deleteReservable
+    deleteReservable,
+    generateUniqueId
 } from '../libs/sql/index.js';
 
 import { formatServerError } from '../libs/helpers.js';
@@ -324,7 +325,6 @@ function setupDeleteButtons() {
 
 }
 
-
 function setupPhotoButtons() {
   const tbody = document.querySelector('#stock_table tbody');
   if (!tbody) return;
@@ -342,14 +342,12 @@ function setupPhotoButtons() {
         await openPhotoModal(client, itemId, itemName, (updatedPhotos) => {
           // Callback après sauvegarde : mettre à jour le texte du bouton
           const count = updatedPhotos.length;
-          btn.textContent = `Voir (${count})`;
+          btn.textContent = `Modifier (${count})`;
           console.log(`Photos mises à jour pour l’item ${itemId}`, updatedPhotos);
+          
+          // Mettre à jour l'objet currentItems pour garder le compteur à jour
+          if (item) item.photos = updatedPhotos;
         });
-
-        // Mettre à jour immédiatement le compteur si photos déjà existantes
-        const existingCount = item?.photos?.length || 0;
-        btn.textContent = `Voir (${existingCount})`;
-
       } catch (err) {
         alert('Erreur ouverture modal photos : ' + err.message);
         console.error(err);
@@ -369,11 +367,38 @@ function setupEditButtons() {
 
       try {
         // Ouvre le modal avec l'ID du reservable
-        await openReservableModal(itemId);
-      } catch (err) {
+        await openReservableModal(itemId, (savedItem) => {
+          console.log('Item édité :', savedItem);
+          refreshTable(); // ou mettre à jour uniquement la ligne modifiée
+        });
+                         
+        } catch (err) {
         console.error('[inventory] openReservableModal error', err);
         alert('Erreur lors de l’ouverture du modal d’édition : ' + err.message);
       }
     });
+  });
+}
+
+function refreshTable() {
+  fetchReservables(client, { p_privacy_min: 'hidden' })
+    .then(items => renderStockTable(items))
+    .catch(err => console.error('[inventory] Erreur refresh table:', formatServerError(err)));
+}
+
+// Bouton "+" pour créer un nouveau réservable
+const addReservableBtn = document.getElementById('add-reservable-btn');
+if (addReservableBtn) {
+  addReservableBtn.addEventListener('click', async () => {
+    try {
+     // const newId = await generateUniqueId(client, 'reservable');
+      await openReservableModal(null, (savedItem) => {
+        console.log('Nouvel item créé :', savedItem);
+        refreshTable();
+      });
+    } catch (err) {
+      console.error('[inventory] Erreur création réservable', formatServerError(err));
+      alert('Erreur création réservable : ' + formatServerError(err.message));
+    }
   });
 }

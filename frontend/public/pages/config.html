@@ -42,13 +42,38 @@
       </div>
 
     </div>
-    
+      <hr />
+
+    <h2>Gestion des lieux de stockage</h2>
+    <div id="storage-manager">
+
+    <!-- Formulaire d’ajout -->
+    <div class="storage-form">
+      <input type="text" id="storage-name" placeholder="Nom du lieu">
+      <input type="text" id="storage-address" placeholder="Adresse postale">
+      <button id="add-storage-btn">Ajouter</button>
+    </div>
+
+    <!-- Liste des lieux (remplie dynamiquement) -->
+    <ul id="storage-list" class="storage-list">
+      <!-- Exemple de rendu (à générer en JS) :
+      <li data-id="123">
+        <span class="storage-label">Nom — Adresse</span>
+        <button class="delete-storage-btn">Supprimer</button>
+      </li>
+      -->
+    </ul>
+    </div
     <hr />
 
     <!-- 🔹 Viewer allowed -->
+    <h2>Paramétrage du site</h2>
+
     <div>
       <label for="viewerAllowed"> Autoriser le rôle viewer </label>
       <input type="checkbox" id="viewerAllowed" />
+      <label for="showPrices"> Montrer les prix de location </label>
+      <input type="checkbox" id="showPrices" />
       <button id="btnSaveConfig" class="record-button" disabled>Valider</button>
     </div>
 
