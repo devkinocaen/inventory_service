@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION ivnentory.get_app_config()
+CREATE OR REPLACE FUNCTION inventory.get_app_config()
 RETURNS TABLE (
     current_session_id INTEGER,
     use_current_time BOOLEAN,

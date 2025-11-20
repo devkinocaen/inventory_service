@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION inventory.upsert_storage_location(
-    p_id INT DEFAULT NULL,
+    p_id INT,
     p_name TEXT,
     p_address TEXT DEFAULT NULL
 )
