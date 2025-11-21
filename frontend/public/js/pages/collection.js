@@ -159,7 +159,9 @@ async function renderItems(itemsToRender = currentItems) {
   for (const item of filteredItems) {
     const div = document.createElement('div');
     div.className = 'cstm-costume-card' + (selectedItems.includes(item.id) ? ' selected' : '');
+    div.addEventListener('dblclick', () => openZoom(item));
 
+      
     // Ajouter classe indisponible
     const isUnavailable = item.status !== 'disponible';
     if (isUnavailable) div.classList.add('unavailable');
@@ -422,4 +424,181 @@ async function renderItemPhoto(item, container) {
       await showPhoto(item.photos[currentIndex]);
     });
   }
+}
+
+
+/***********************************
+ * ZOOM DETAILLE D’UN ITEM
+ ***********************************/
+let zoomOverlay = null;
+
+// Listener global ESC (déclaré ici pour pouvoir remove)
+function handleEscClose(e) {
+  if (e.key === 'Escape') {
+    closeZoom();
+  }
+}
+
+function closeZoom() {
+  if (zoomOverlay) {
+    zoomOverlay.remove();
+    zoomOverlay = null;
+    document.body.style.overflow = '';
+  }
+
+  // Supprimer l’écouteur ESC
+  document.removeEventListener('keydown', handleEscClose);
+}
+
+async function openZoom(item) {
+  // Fermer tout overlay existant avant d’en ouvrir un nouveau
+  closeZoom();
+
+  document.body.style.overflow = 'hidden';
+
+  zoomOverlay = document.createElement('div');
+  zoomOverlay.className = 'zoom-overlay';
+
+  const content = document.createElement('div');
+  content.className = 'zoom-content';
+
+  /**************************
+   * Bouton fermer
+   **************************/
+  const closeBtn = document.createElement('div');
+  closeBtn.className = 'zoom-close-btn';
+  closeBtn.innerHTML = '&times;';
+  closeBtn.onclick = closeZoom;
+  content.appendChild(closeBtn);
+
+  /**************************
+   * Titre
+   **************************/
+  const title = document.createElement('h2');
+  title.textContent = item.name;
+  content.appendChild(title);
+
+  /**************************
+   * CARROUSEL
+   **************************/
+  const carousel = document.createElement('div');
+  carousel.className = 'zoom-carousel';
+
+  if (item.photos?.length) {
+    for (const photo of item.photos) {
+      const cell = document.createElement('div');
+      cell.className = 'zoom-carousel-cell';
+
+      await displayImage(cell, photo.url); // compatible Instagram etc.
+      cell.addEventListener('click', () => openImageZoom(photo.url));
+
+      carousel.appendChild(cell);
+    }
+  } else {
+    const noPhoto = document.createElement('div');
+    noPhoto.className = 'no-photo';
+    noPhoto.textContent = 'Aucune photo disponible';
+    carousel.appendChild(noPhoto);
+  }
+
+  content.appendChild(carousel);
+
+  /**************************
+   * INFOS EN 3 COLONNES
+   **************************/
+  const infoData = [
+    { label: 'Taille', value: item.size || '-' },
+    { label: 'Catégorie', value: item.category_name || '-' },
+    { label: 'Sous-catégorie', value: item.subcategory_name || '-' },
+    { label: 'Style', value: item.style_name || '-' },
+    { label: 'Genre', value: item.gender || '-' },
+    { label: 'Statut', value: item.status },
+  ];
+
+  if (appConfig.show_prices) {
+    infoData.push({
+      label: 'Prix/jour',
+      value: item.price_per_day ? item.price_per_day + ' €' : '-'
+    });
+  }
+
+  const infoGrid = document.createElement('div');
+  infoGrid.className = 'zoom-info-grid';
+
+  for (const info of infoData) {
+    const p = document.createElement('p');
+    p.innerHTML = `<strong>${info.label} :</strong> ${info.value}`;
+    infoGrid.appendChild(p);
+  }
+
+  content.appendChild(infoGrid);
+
+  /**************************
+   * Finalisation overlay
+   **************************/
+  zoomOverlay.appendChild(content);
+  document.body.appendChild(zoomOverlay);
+
+  // Clic extérieur → fermeture
+  zoomOverlay.addEventListener('click', (e) => {
+    if (e.target === zoomOverlay) closeZoom();
+  });
+
+  // Activation écouteur ESC
+  document.addEventListener('keydown', handleEscClose);
+}
+
+
+/***********************************
+ * IMAGE ZOOM (800px)
+ ***********************************/
+let imgZoomOverlay = null;
+
+function closeImageZoom() {
+  if (imgZoomOverlay) {
+    imgZoomOverlay.remove();
+    imgZoomOverlay = null;
+  }
+  document.removeEventListener('keydown', handleEscImgZoom);
+}
+
+function handleEscImgZoom(e) {
+  if (e.key === 'Escape') {
+    closeImageZoom();
+  }
+}
+
+function openImageZoom(url) {
+  // fermer si déjà ouvert
+  closeImageZoom();
+
+  imgZoomOverlay = document.createElement('div');
+  imgZoomOverlay.className = 'imgzoom-overlay';
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'imgzoom-wrapper';
+
+  const img = document.createElement('img');
+  img.className = 'imgzoom-img';
+  img.src = url;
+
+  // ⚡ forcer largeur max 800px
+  img.style.width = '800px';
+  img.style.height = 'auto';
+  img.style.objectFit = 'contain';
+
+  wrapper.appendChild(img);
+  imgZoomOverlay.appendChild(wrapper);
+
+  document.body.appendChild(imgZoomOverlay);
+
+  // clic à l’extérieur → fermer
+  imgZoomOverlay.addEventListener('click', (e) => {
+    if (e.target === imgZoomOverlay) {
+      closeImageZoom();
+    }
+  });
+
+  // ESC
+  document.addEventListener('keydown', handleEscImgZoom);
 }

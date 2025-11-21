@@ -55,8 +55,7 @@ function renderStockTable(items) {
       <td><button class="btn-photos" data-id="${item.id}">Modifier (${item.photos?.length || 0})</button></td>
       <td><button class="btn-delete" data-id="${item.id}">Supprimer</button></td>
     `;
-        
-        tbody.appendChild(tr);
+
     });
     
     initEditableCells();
