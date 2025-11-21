@@ -4,7 +4,8 @@ import {
   createBatch,
   upsertBookingReference,
   createBooking,
-  isAvailable
+  isAvailable,
+  fetchAppConfig
 } from '../libs/sql/index.js';
  
 import {
@@ -15,12 +16,13 @@ import {
 
 import { populateSelect } from '../libs/ui/populateSelect.js';
 
-let client;
+let client =  null;
+let appConfig =  null;
 let modal, dialog, itemsContainer, cancelBtn, validateBtn;
 let orgSelect, bookingPersonSelect, startDateInput, endDateInput;
 let bookingItems = [];
 let organizations = [];
-
+let priceInput;
 // -----------------------------
 // Charger modal dans le DOM
 // -----------------------------
@@ -44,6 +46,7 @@ export async function loadBookingModal() {
   bookingPersonSelect = document.getElementById('booking_person');
   startDateInput = document.getElementById('startDate');
   endDateInput = document.getElementById('endDate');
+  priceInput = document.getElementById('price');
 
   if (cancelBtn && !cancelBtn.dataset.bound) {
     cancelBtn.addEventListener('click', closeBookingModal);
@@ -75,7 +78,7 @@ export async function openBookingModal(selectedItems = [], dates = {}) {
 
   bookingItems = selectedItems || [];
   renderBookingItems();
-
+    
   // --------------------------
   // Initialisation date/heure
   // --------------------------
@@ -95,6 +98,12 @@ export async function openBookingModal(selectedItems = [], dates = {}) {
   startDateInput.value = startInit;
   endDateInput.value = endInit;
 
+    updateBookingPrice();
+
+    startDateInput.addEventListener('change', updateBookingPrice);
+    endDateInput.addEventListener('change', updateBookingPrice);
+
+    
   // --------------------------
   dialog.classList.remove('show');
   modal.classList.remove('hidden');
@@ -163,6 +172,8 @@ export function renderBookingItems() {
 // -----------------------------
 export async function initBookingModal() {
   client = await initClient();
+  appConfig =  await fetchAppConfig(client);
+    
   await loadBookingModal();
 
   try {
@@ -308,4 +319,47 @@ async function handleBookingValidate() {
     console.error('[Booking Modal] Erreur création réservation :', err);
     alert(`Erreur : ${formatServerError(err.message || err)}`);
   }
+}
+
+function updateBookingPrice() {
+  if (!bookingItems || !bookingItems.length) return;
+console.log ('appConfig', appConfig)
+    if (!appConfig?.show_prices) {
+      if (priceInput) {
+        priceInput.value = '';
+        priceInput.style.display = 'none';
+        
+        // masquer le label associé
+        const label = document.querySelector(`label[for="${priceInput.id}"]`);
+        if (label) label.style.display = 'none';
+      }
+      return;
+    } else {
+      if (priceInput) {
+        priceInput.style.display = '';
+        
+        // réafficher le label
+        const label = document.querySelector(`label[for="${priceInput.id}"]`);
+        if (label) label.style.display = '';
+      }
+    }
+
+    const start = new Date(startDateInput.value);
+    const end = new Date(endDateInput.value);
+
+    if (isNaN(start) || isNaN(end) || end <= start) {
+      if (priceInput) priceInput.value = '';
+      console.log('dates invalides', start, end);
+      return;
+    }
+
+    const diffHours = (end - start) / (1000 * 60 * 60);
+console.log ('diffHours', diffHours)
+    const total = bookingItems.reduce((sum, item) => {
+      const price = item.price_per_day ?? 0;
+      return sum + price * (diffHours / 24); // proportion en jours
+    }, 0);
+
+    if (priceInput) priceInput.value = total.toFixed(2);
+
 }

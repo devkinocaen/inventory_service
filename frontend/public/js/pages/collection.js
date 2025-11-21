@@ -268,9 +268,11 @@ export async function init() {
   cartToggle.addEventListener('click', async () => {
     const itemsForModal = selectedItems.map(id => {
       const item = currentItems.find(i => i.id === id);
+        console.log ('item', item)
       return item ? {
         id: item.id,
         name: item.name,
+        price_per_day: item.price_per_day,
         category_name: item.category_name,
         photos: item.photos
       } : null;
