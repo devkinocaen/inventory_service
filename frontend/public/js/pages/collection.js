@@ -201,6 +201,8 @@ async function renderItems(itemsToRender = currentItems) {
           selectedItems.push(item.id);
           div.classList.add('selected');
         }
+          updateCartCount();
+
       });
     }
 
@@ -318,6 +320,7 @@ export async function init() {
   });
 
   await loadData();
+  updateCartCount();
 }
 
 /**
@@ -609,4 +612,22 @@ function openImageZoom(url) {
 
   // ESC
   document.addEventListener('keydown', handleEscImgZoom);
+}
+
+function updateCartCount() {
+  if (!cartToggle) return;
+
+  const count = selectedItems.length;
+
+  if (count === 0) {
+    cartToggle.textContent = '🛒';
+    cartToggle.classList.add('disabled');
+    cartToggle.style.pointerEvents = 'none';
+    cartToggle.style.opacity = '0.5';
+  } else {
+    cartToggle.textContent = `🛒 (${count})`;
+    cartToggle.classList.remove('disabled');
+    cartToggle.style.pointerEvents = 'auto';
+    cartToggle.style.opacity = '1';
+  }
 }
