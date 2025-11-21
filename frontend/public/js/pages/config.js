@@ -110,9 +110,10 @@ async function loadAppVersions() {
 function showLoadingOverlay(message = "⏳ Patienter quelques minutes...") {
     const overlay = document.getElementById("loadingOverlay");
     if (overlay) {
-        overlay.textContent = message;
-        overlay.style.display = "block";
-    }
+            const textEl = overlay.querySelector('.overlay-text');
+            if (textEl) textEl.textContent = message;
+            overlay.style.display = "flex"; 
+        }
 }
 
 function hideLoadingOverlay() {
