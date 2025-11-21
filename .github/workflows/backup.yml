@@ -1,0 +1,99 @@
+name: Daily Backup
+
+on:
+  schedule:
+    # Toutes les 4h
+    - cron: "0 */4 * * *"
+  workflow_dispatch:
+    inputs:
+      server:
+        description: "Base URL du serveur Flask (ex: http://kinocaen.alwaysdata.net/)"
+        required: true
+        type: string
+        default: "https://inventory-service.alwaysdata.net"
+env:
+    # ✅ Valeur par défaut utilisée quand l'action est lancée automatiquement (cron)
+    FLASK_URL_DEFAULT: "https://inventory-service.alwaysdata.net"
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        database: [COSTUMERIE_CAEN]
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+      - name: Print date
+        run: date
+
+      - name: Set credentials and URL
+        run: |
+          DB_NAME=${{ matrix.database }}
+          DB_PREFIX=${DB_NAME^^}
+          SERVER_INPUT="${{ github.event.inputs.server || env.FLASK_URL_DEFAULT }}"
+
+          # ❗ Pas de fallback, si SERVER_INPUT n’est pas fourni → erreur
+          if [ -z "$SERVER_INPUT" ]; then
+            echo "❌ SERVER_INPUT non défini (paramètre 'server' manquant)"
+            exit 1
+          fi
+
+          echo "DB_NAME=$DB_NAME" >> $GITHUB_ENV
+          echo "FLASK_URL_BASE=$SERVER_INPUT" >> $GITHUB_ENV
+
+          if [ "$DB_NAME" = "COSTUMERIE_CAEN" ]; then
+            echo "USER_EMAIL=${{ secrets.COSTUMERIE_CAEN_USER_EMAIL }}" >> $GITHUB_ENV
+            echo "USER_PASSWORD=${{ secrets.COSTUMERIE_CAEN_USER_PASSWORD }}" >> $GITHUB_ENV
+            echo "::add-mask::$USER_PASSWORD"  # masque le mot de passe dans les logs
+          fi
+
+      - name: Get JWT Token from Flask
+        id: get_token
+        run: |
+          set -euo pipefail
+          echo "Requesting token for database $DB_NAME..."
+          RESPONSE=$(curl --noproxy "*" -s -X POST "$FLASK_URL_BASE/login/$DB_NAME" \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"$USER_EMAIL\",\"password\":\"$USER_PASSWORD\"}")
+
+          echo "RAW RESPONSE: $RESPONSE"
+
+          TOKEN=$(echo "$RESPONSE" | jq -r '.access_token' 2>/dev/null || echo "")
+          if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
+            echo "❌ Failed to retrieve token!"
+            exit 1
+          fi
+
+          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
+          echo "✅ Token retrieved (hidden in logs)"
+
+      - name: Trigger Backup Endpoint
+        run: |
+          set -euo pipefail
+          echo "Triggering backup for database $DB_NAME..."
+          RESPONSE=$(curl --noproxy "*" -s -X POST "$FLASK_URL_BASE/backup/$DB_NAME" \
+               -H "Authorization: Bearer $TOKEN" \
+               -H "Content-Type: application/json" \
+               -d '{}')
+
+          echo "Backup response: $RESPONSE"
+
+          STATUS=$(echo "$RESPONSE" | jq -r '.status // empty')
+          FILE=$(echo "$RESPONSE" | jq -r '.file // empty')
+          REASON=$(echo "$RESPONSE" | jq -r '.reason // empty')
+
+          if [ "$STATUS" = "success" ]; then
+            echo "✅ Backup succeeded for $DB_NAME: $FILE"
+          elif [ "$STATUS" = "skipped" ]; then
+            echo "ℹ️  Backup skipped for $DB_NAME: ${REASON:-No reason provided}"
+          else
+            echo "❌ Backup failed for $DB_NAME! Response: $RESPONSE"
+            exit 1
+          fi
