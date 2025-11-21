@@ -38,6 +38,12 @@ const genderMap = {
   'Unisexe': 'unisex'
 };
 
+// Inverser le mapping pour affichage
+const genderLabelMap = Object.fromEntries(
+  Object.entries(genderMap).map(([label, key]) => [key, label])
+);
+
+
 // ---- DOM Elements ----
 let filtersSidebar, filtersToggle, cartToggle, orgToggle, container;
 let lookupInput;
@@ -268,9 +274,11 @@ export async function init() {
   cartToggle.addEventListener('click', async () => {
     const itemsForModal = selectedItems.map(id => {
       const item = currentItems.find(i => i.id === id);
+        console.log ('item', item)
       return item ? {
         id: item.id,
         name: item.name,
+        price_per_day: item.price_per_day,
         category_name: item.category_name,
         photos: item.photos
       } : null;
@@ -511,8 +519,8 @@ async function openZoom(item) {
     { label: 'Catégorie', value: item.category_name || '-' },
     { label: 'Sous-catégorie', value: item.subcategory_name || '-' },
     { label: 'Style', value: item.style_name || '-' },
-    { label: 'Genre', value: item.gender || '-' },
-    { label: 'Statut', value: item.status },
+    { label: 'Genre', value: genderLabelMap[item.gender] || '-' },
+    { label: 'État', value: item.quality },
   ];
 
   if (appConfig.show_prices) {
