@@ -44,6 +44,13 @@ const genderLabelMap = Object.fromEntries(
 );
 
 
+function normalize(str) {
+  return str
+    .normalize("NFD")               // décompose les accents
+    .replace(/[\u0300-\u036f]/g, "") // supprime les diacritiques
+    .toLowerCase();
+}
+
 // ---- DOM Elements ----
 let filtersSidebar, filtersToggle, cartToggle, orgToggle, container;
 let lookupInput;
@@ -159,8 +166,10 @@ async function renderItems(itemsToRender = currentItems) {
   const lookupValue = lookupInput?.value?.trim().toLowerCase();
 
   const filteredItems = lookupValue
-    ? itemsToRender.filter(i => i.name.toLowerCase().includes(lookupValue))
-    : itemsToRender;
+  ? itemsToRender.filter(i =>
+      normalize(i.name).includes(normalize(lookupValue))
+    )
+  : itemsToRender;
 
   for (const item of filteredItems) {
     const div = document.createElement('div');
