@@ -489,30 +489,31 @@ async function openZoom(item) {
   title.textContent = item.name;
   content.appendChild(title);
 
-  /**************************
-   * CARROUSEL
-   **************************/
-  const carousel = document.createElement('div');
-  carousel.className = 'zoom-carousel';
+    /**************************
+     * CARROUSEL
+     **************************/
+    const carousel = document.createElement('div');
+    carousel.className = 'zoom-carousel';
 
-  if (item.photos?.length) {
-    for (const photo of item.photos) {
-      const cell = document.createElement('div');
-      cell.className = 'zoom-carousel-cell';
+    if (item.photos?.length) {
+      for (const [index, photo] of item.photos.entries()) {
+        const cell = document.createElement('div');
+        cell.className = 'zoom-carousel-cell';
 
-      await displayImage(cell, photo.url); // compatible Instagram etc.
-      cell.addEventListener('click', () => openImageZoom(photo.url));
+        await displayImage(cell, photo.url); // OK car dans for...of
 
-      carousel.appendChild(cell);
+        cell.addEventListener('click', () => openImageZoom(item, index));
+
+        carousel.appendChild(cell);
+      }
+    } else {
+      const noPhoto = document.createElement('div');
+      noPhoto.className = 'no-photo';
+      noPhoto.textContent = 'Aucune photo disponible';
+      carousel.appendChild(noPhoto);
     }
-  } else {
-    const noPhoto = document.createElement('div');
-    noPhoto.className = 'no-photo';
-    noPhoto.textContent = 'Aucune photo disponible';
-    carousel.appendChild(noPhoto);
-  }
 
-  content.appendChild(carousel);
+    content.appendChild(carousel);
 
   /**************************
    * INFOS EN 3 COLONNES
@@ -564,24 +565,67 @@ async function openZoom(item) {
  * IMAGE ZOOM (800px)
  ***********************************/
 let imgZoomOverlay = null;
+let imgZoomCurrentIndex = 0;
+let imgZoomCurrentItem = null;
+
 
 function closeImageZoom() {
   if (imgZoomOverlay) {
     imgZoomOverlay.remove();
     imgZoomOverlay = null;
+    imgZoomCurrentIndex = 0;
+    imgZoomCurrentItem = null;
   }
   document.removeEventListener('keydown', handleEscImgZoom);
+  document.removeEventListener('keydown', handleArrowImgZoom);
 }
 
 function handleEscImgZoom(e) {
-  if (e.key === 'Escape') {
-    closeImageZoom();
+  if (e.key === 'Escape') closeImageZoom();
+}
+
+function handleArrowImgZoom(e) {
+  if (!imgZoomCurrentItem?.photos?.length) return;
+
+  const len = imgZoomCurrentItem.photos.length;
+
+  if (e.key === 'ArrowLeft') {
+    imgZoomCurrentIndex = (imgZoomCurrentIndex - 1 + len) % len;
+    updateImgZoom();
+  } else if (e.key === 'ArrowRight') {
+    imgZoomCurrentIndex = (imgZoomCurrentIndex + 1) % len;
+    updateImgZoom();
   }
 }
 
-function openImageZoom(url) {
-  // fermer si déjà ouvert
+async function updateImgZoom() {
+  if (!imgZoomOverlay || !imgZoomCurrentItem?.photos) return;
+  const img = imgZoomOverlay.querySelector('.imgzoom-img');
+  if (!img) return;
+
+  const photo = imgZoomCurrentItem.photos[imgZoomCurrentIndex];
+  
+  // Si Instagram
+  if (photo.url && isInstagramUrl(photo.url)) {
+    // remplacer l'img par un blockquote Instagram
+    imgZoomOverlay.querySelector('.imgzoom-wrapper').innerHTML = '';
+    const bq = createInstagramBlockquote(photo.url);
+    bq.style.width = '100%';
+    bq.style.height = 'auto';
+    imgZoomOverlay.querySelector('.imgzoom-wrapper').appendChild(bq);
+    if (window.instgrm) window.instgrm.Embeds.process();
+  } else {
+    img.src = photo.url;
+  }
+}
+
+function openImageZoom(item, startIndex = 0) {
+  if (!item?.photos?.length) return;
+
   closeImageZoom();
+
+  imgZoomCurrentItem = item;
+  imgZoomCurrentIndex = startIndex;
 
   imgZoomOverlay = document.createElement('div');
   imgZoomOverlay.className = 'imgzoom-overlay';
@@ -591,27 +635,23 @@ function openImageZoom(url) {
 
   const img = document.createElement('img');
   img.className = 'imgzoom-img';
-  img.src = url;
-
-  // ⚡ forcer largeur max 800px
   img.style.width = '800px';
   img.style.height = 'auto';
   img.style.objectFit = 'contain';
 
   wrapper.appendChild(img);
   imgZoomOverlay.appendChild(wrapper);
-
   document.body.appendChild(imgZoomOverlay);
+
+  updateImgZoom(); // affiche la première image
 
   // clic à l’extérieur → fermer
   imgZoomOverlay.addEventListener('click', (e) => {
-    if (e.target === imgZoomOverlay) {
-      closeImageZoom();
-    }
+    if (e.target === imgZoomOverlay) closeImageZoom();
   });
 
-  // ESC
   document.addEventListener('keydown', handleEscImgZoom);
+  document.addEventListener('keydown', handleArrowImgZoom);
 }
 
 function updateCartCount() {
