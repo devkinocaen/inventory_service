@@ -217,3 +217,25 @@ hr {
 #add-storage-btn:hover {
   background-color: #45a049; /* vert plus foncé au survol */
 }
+
+
+#loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  display: none;         /* hidden par défaut */
+  justify-content: center;
+  align-items: center;
+  display: flex;         /* flex pour centrer */
+  z-index: 9999;
+  color: white;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+#loadingOverlay .overlay-text {
+  max-width: 80%;
+}
