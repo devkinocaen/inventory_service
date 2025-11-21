@@ -1,6 +1,8 @@
 import {
     fetchReservables,
     fetchReservableById,
+    fetchCategories,
+    fetchSubcategories,
     updateReservable,
     createReservable,
     deleteReservable,
@@ -15,6 +17,10 @@ import { openReservableModal } from '../modals/reservable_modal.js'; // chemin v
 const client = await initClient();
 let currentItems = [];
 
+let categories = null;
+let subCategories = {}; // { categoryId: [subcat,...] }
+let selectedCategoryId = null;
+
 // ========== Utilitaire pour afficher le genre ==========
 function displayGender(value) {
   if (!value) return '';
@@ -24,6 +30,17 @@ function displayGender(value) {
     case 'unisex': return 'Unisexe';
     default: return value;
   }
+}
+
+async function loadAllSubCategories() {
+    const all = await fetchSubcategories(client);
+    subCategories = {};
+
+    for (const sc of all) {
+        const cid = sc.category_id;
+        if (!subCategories[cid]) subCategories[cid] = [];
+        subCategories[cid].push(sc);
+    }
 }
 
 // ========== Rendu du tableau ==========
@@ -114,6 +131,9 @@ function setupLookupFilter() {
 export async function init() {
   try {
       const items = await fetchReservables(client,  {p_privacy_min: 'hidden'});
+      categories = await fetchCategories(client);
+      await loadAllSubCategories();
+
     renderStockTable(items);
     initSortableColumns();
     setupLookupFilter();
@@ -134,7 +154,6 @@ function initEditableCells() {
     const field = td.dataset.field;
     // fields à traiter en input simple : tout sauf gender/status/quality/category/subcategory
     if (['gender','status','quality','category','subcategory'].includes(field)) return;
-
     td.addEventListener('dblclick', async () => {
       const oldValue = td.textContent;
       const input = document.createElement('input');
@@ -186,26 +205,43 @@ function initEditableCells() {
       if (field === 'gender') options = Object.keys(GENDER_MAP);
       else if (field === 'status') options = Object.keys(STATUS_MAP);
       else if (field === 'quality') options = Object.keys(QUALITY_MAP);
-      else if (field === 'category') options = item?.category_list || [];
-      else if (field === 'subcategory') options = item?.subcategory_list || [];
+      else if (field === 'category')  options = categories;
+      else if (field === 'subcategory') {
+          const catId = item?.category_id;
+          options = subCategories[catId] || [];
+      }
 
-      options.forEach(opt => {
+     options.forEach(opt => {
         const option = document.createElement('option');
-        if (typeof opt === 'object') {
+
+        // ----- CAS 1 : objets category / subcategory -----
+        if (opt && typeof opt === 'object') {
           option.value = opt.id;
           option.textContent = opt.name;
-          if (item && item[field + '_id'] === opt.id) option.selected = true;
-        } else {
+
+          // auto-select si l'item a le bon *_id
+          if (item && item[field + '_id'] === opt.id) {
+            option.selected = true;
+          }
+        }
+
+        // ----- CAS 2 : ENUMs (gender, status, quality) -----
+        else {
           option.value = opt;
           option.textContent =
-            field === 'gender' ? GENDER_MAP[opt] :
-            field === 'status' ? STATUS_MAP[opt] :
+            field === 'gender'  ? GENDER_MAP[opt] :
+            field === 'status'  ? STATUS_MAP[opt] :
             field === 'quality' ? QUALITY_MAP[opt] :
             opt;
-          if (item && item[field] === opt) option.selected = true;
+
+          if (item && item[field] === opt) {
+            option.selected = true;
+          }
         }
+
         select.appendChild(option);
       });
+
 
       td.appendChild(select);
       select.focus();
@@ -215,28 +251,47 @@ function initEditableCells() {
           field === 'gender' ? GENDER_MAP[item[field]] :
           field === 'status' ? STATUS_MAP[item[field]] :
           field === 'quality' ? QUALITY_MAP[item[field]] :
+          field === 'category' ? categories.find(c => c.id === Number(newValue))?.name || '' :
+          field === 'subcategory' ? subCategories[item.category_id]?.find(sc => sc.id === Number(newValue))?.name || '' :
           item[field + '_name'] || '';
       };
 
       select.addEventListener('change', async () => {
-        const newValue = select.value;
+        let newValue = select.value;
+          const row = td.closest('tr');
         if (item) {
           try {
+            if (['category', 'subcategory'].includes(field)) newValue = Number(newValue);
+
             const payload = { id: itemId };
-            payload[field] = newValue;
+            payload[field + '_id'] = newValue; // envoyer l'ID au serveur
             await updateReservable(client, payload);
-            item[field] = newValue;
+
+            item[field + '_id'] = newValue;
+            item[field + '_name'] = options.find(o => o.id === newValue)?.name || '';
+
+            // === Si on change la catégorie, reset la sous-catégorie ===
+            if (field === 'category') {
+              item.subcategory_id = null;
+              item.subcategory_name = '';
+              const subcatCell = row.querySelector('[data-field="subcategory"]');
+              if (subcatCell) subcatCell.textContent = '';
+            }
+
             td.textContent =
               field === 'gender' ? GENDER_MAP[newValue] :
               field === 'status' ? STATUS_MAP[newValue] :
               field === 'quality' ? QUALITY_MAP[newValue] :
-              typeof newValue === 'number' ? options.find(o => o.id === newValue).name : newValue;
+              item[field + '_name'] || '';
+
           } catch (err) {
             alert('Erreur lors de la sauvegarde : ' + formatServerError(err));
             cancelEdit();
           }
         }
       });
+
+
 
       select.addEventListener('blur', cancelEdit);
       select.addEventListener('keydown', e => { if (e.key === 'Escape') cancelEdit(); });
@@ -368,7 +423,7 @@ function setupEditButtons() {
       try {
         // Ouvre le modal avec l'ID du reservable
         await openReservableModal(itemId, (savedItem) => {
-          const index = currentItems.findIndex(i => i.id === itemId.id);
+          const index = currentItems.findIndex(i => i.id === itemId);
           if (index !== -1) currentItems[index] = savedItem;
           updateTableRow(savedItem);
         });
@@ -392,13 +447,11 @@ function updateTableRow(item) {
     console.log ('updateTableRow', item)
   const tbody = document.querySelector('#stock_table tbody');
   if (!tbody) return;
-    console.log ('tbody')
   const row = tbody.querySelector(`tr td[data-id="${item.id}"]`)?.parentElement;
-    console.log ('row')
 
   if (!row) return;
     console.log ('updateTableRow2', item)
-
+console.log ('item', item)
   row.innerHTML = `
     <td class="editable" data-field="name" data-id="${item.id}">${item.name || ''}</td>
     <td class="editable" data-field="size" data-id="${item.id}">${item.size || ''}</td>

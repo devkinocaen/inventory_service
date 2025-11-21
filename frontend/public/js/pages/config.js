@@ -9,6 +9,7 @@ import {
     fetchCategories,
     upsertCategory,
     deleteCategory,
+    fetchSubcategories,
     fetchSubcategoriesByCategory,
     upsertSubcategory,
     deleteSubcategory,
