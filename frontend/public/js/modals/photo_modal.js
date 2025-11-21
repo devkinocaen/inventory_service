@@ -85,7 +85,6 @@ async function displayImage(container, url) {
   placeholder.style.height = '100%';
   placeholder.style.objectFit = 'cover';
   container.appendChild(placeholder);
-    console.log ('url', url)
 
   if (!url) return;
 
@@ -118,7 +117,6 @@ async function displayImage(container, url) {
 
     // Cas URL classique (Drive ou autre)
     const { url: displayUrl } = await getDisplayableImageUrl(url, { client: globalClient, withPreview: true });
-      console.log ('displayUrl', displayUrl)
     if (displayUrl) {
       container.innerHTML = '';
       const imgEl = document.createElement('img');
