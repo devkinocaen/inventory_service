@@ -48,10 +48,10 @@ jobs:
           echo "DB_NAME=$DB_NAME" >> $GITHUB_ENV
           echo "FLASK_URL_BASE=$SERVER_INPUT" >> $GITHUB_ENV
 
-          if [ "$DB_NAME" = "COSTUMERIE_CAEN"* ]; then
+          if [[ "$DB_NAME" == COSTUMERIE_CAEN* ]]; then
             echo "USER_EMAIL=${{ secrets.COSTUMERIE_CAEN_USER_EMAIL }}" >> $GITHUB_ENV
             echo "USER_PASSWORD=${{ secrets.COSTUMERIE_CAEN_USER_PASSWORD }}" >> $GITHUB_ENV
-            echo "::add-mask::$USER_PASSWORD"  # masque le mot de passe dans les logs
+            echo "USER_PASSWORD is set? [$( [ -n "$USER_PASSWORD" ] && echo yes || echo no )]"
           fi
 
       - name: Get JWT Token from Flask
