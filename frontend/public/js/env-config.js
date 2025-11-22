@@ -1,6 +1,6 @@
 window.ENV = {
   APP_NAME: "Costumerie",
-  APP_VERSION: "AddDBTest",
+  APP_VERSION: "0.0.8",
   DB_CLIENT: "",
   BASE_PATH: "",
   API_REST_URLS: [
