@@ -20,6 +20,8 @@ done
 
 echo "🔹 Current PostgreSQL user: ${DBUSER}"
 $PSQL -c "SELECT current_user;"
-$PSQL -c "SET ROLE ${DBUSER};"
+# SET ROLE avec guillemets (protège si DBUSER contient des tirets)
+$PSQL -c "SET ROLE \"${DBUSER}\";"
 $PSQL -c "SELECT current_user;"
+$PSQL -c "SET client_encoding = 'UTF8';"
 $PSQL -f "$SQL_SCRIPTS_DIR/init_db.sql"

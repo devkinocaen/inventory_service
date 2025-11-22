@@ -36,10 +36,13 @@ done <<< "$functions"
 
 echo "✅ Toutes les fonctions de $TARGET_OWNER dans le schéma inventory sont passées en SECURITY DEFINER."
 
-# 🔹 Droits sur le schéma inventory
 echo "⚡ Application des droits sur le schéma inventory"
-echo "GRANT USAGE ON SCHEMA inventory TO $ANONYMOUS_ROLE, $AUTHENTICATED_ROLE;" | $PSQL
-echo "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA inventory TO $ANONYMOUS_ROLE, $AUTHENTICATED_ROLE;" | $PSQL
-echo "ALTER DEFAULT PRIVILEGES IN SCHEMA inventory GRANT EXECUTE ON FUNCTIONS TO $ANONYMOUS_ROLE, $AUTHENTICATED_ROLE;" | $PSQL
+
+$PSQL <<EOF
+GRANT USAGE ON SCHEMA inventory TO "${ANONYMOUS_ROLE}", "${AUTHENTICATED_ROLE}";
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA inventory TO "${ANONYMOUS_ROLE}", "${AUTHENTICATED_ROLE}";
+ALTER DEFAULT PRIVILEGES IN SCHEMA inventory GRANT EXECUTE ON FUNCTIONS TO "${ANONYMOUS_ROLE}", "${AUTHENTICATED_ROLE}";
+EOF
+
 
 echo "✅ Droits anon/authenticated appliqués sur le schéma et les fonctions."

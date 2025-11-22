@@ -8,7 +8,7 @@ export GOOGLE_TOKEN_JSON_FOLDER=$ROOT_DIR/services/gcloud/secrets
 
 export FLASK_WITH_CRYPTO=1
 
-export DB_PROVIDER="neon" # ou alwaysdata ou supabase
+export DB_PROVIDER="alwaysdata" # ou alwaysdata ou supabase
 export DEPLOYMENT_ENV="local" # local, render ou alwaysdata
 
 # configurer l'environnement de deploiement du server

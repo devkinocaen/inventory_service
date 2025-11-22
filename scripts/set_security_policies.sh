@@ -91,21 +91,21 @@ for table in $tables; do
       if [[ "$allowed" == "✔" ]]; then
         case "$perm" in
           select)
-            $PSQL -q -c "GRANT SELECT ON inventory.$table TO $AUTHENTICATED_ROLE;"
+            $PSQL -q -c "GRANT SELECT ON inventory.$table TO \"$AUTHENTICATED_ROLE\";"
             $PSQL -q -c "DROP POLICY IF EXISTS ${table}_${perm}_${role} ON inventory.$table;"
-            $PSQL -q -c "CREATE POLICY ${table}_${perm}_${role} ON inventory.$table FOR SELECT TO $AUTHENTICATED_ROLE USING (get_user_role() = '$role');" ;;
+            $PSQL -q -c "CREATE POLICY ${table}_${perm}_${role} ON inventory.$table FOR SELECT TO \"$AUTHENTICATED_ROLE\" USING (get_user_role() = '$role');" ;;
           insert)
-            $PSQL -q -c "GRANT INSERT ON inventory.$table TO $AUTHENTICATED_ROLE;"
+            $PSQL -q -c "GRANT INSERT ON inventory.$table TO \"$AUTHENTICATED_ROLE\";"
             $PSQL -q -c "DROP POLICY IF EXISTS ${table}_${perm}_${role} ON inventory.$table;"
-            $PSQL -q -c "CREATE POLICY ${table}_${perm}_${role} ON inventory.$table FOR INSERT TO $AUTHENTICATED_ROLE WITH CHECK (get_user_role() = '$role');" ;;
+            $PSQL -q -c "CREATE POLICY ${table}_${perm}_${role} ON inventory.$table FOR INSERT TO \"$AUTHENTICATED_ROLE\" WITH CHECK (get_user_role() = '$role');" ;;
           update)
-            $PSQL -q -c "GRANT UPDATE ON inventory.$table TO $AUTHENTICATED_ROLE;"
+            $PSQL -q -c "GRANT UPDATE ON inventory.$table TO \"$AUTHENTICATED_ROLE\";"
             $PSQL -q -c "DROP POLICY IF EXISTS ${table}_${perm}_${role} ON inventory.$table;"
-            $PSQL -q -c "CREATE POLICY ${table}_${perm}_${role} ON inventory.$table FOR UPDATE TO $AUTHENTICATED_ROLE USING (get_user_role() = '$role') WITH CHECK (get_user_role() = '$role');" ;;
+            $PSQL -q -c "CREATE POLICY ${table}_${perm}_${role} ON inventory.$table FOR UPDATE TO \"$AUTHENTICATED_ROLE\" USING (get_user_role() = '$role') WITH CHECK (get_user_role() = '$role');" ;;
           delete)
-            $PSQL -q -c "GRANT DELETE ON inventory.$table TO $AUTHENTICATED_ROLE;"
+            $PSQL -q -c "GRANT DELETE ON inventory.$table TO \"$AUTHENTICATED_ROLE\";"
             $PSQL -q -c "DROP POLICY IF EXISTS ${table}_${perm}_${role} ON inventory.$table;"
-            $PSQL -q -c "CREATE POLICY ${table}_${perm}_${role} ON inventory.$table FOR DELETE TO $AUTHENTICATED_ROLE USING (get_user_role() = '$role');" ;;
+            $PSQL -q -c "CREATE POLICY ${table}_${perm}_${role} ON inventory.$table FOR DELETE TO \"$AUTHENTICATED_ROLE\" USING (get_user_role() = '$role');" ;;
         esac
       fi
 

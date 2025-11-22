@@ -50,8 +50,9 @@ if [ "$STEP" -le 1 ]; then
     echo "▶ Étape 1 : Création des tables..."
     echo "🔹 Current PostgreSQL user: ${DBUSER}"
     $PSQL -c "SELECT current_user;"
-    $PSQL -c "SET ROLE ${DBUSER};"
+    $PSQL -c "SET ROLE \"${DBUSER}\";"
     $PSQL -c "SELECT current_user;"
+    $PSQL -c "SET client_encoding = 'UTF8';"
 
     $PSQL -f "$SQL_SCRIPTS_DIR/schema.sql"
     $PSQL -f "$SQL_SCRIPTS_DIR/init_db.sql"
