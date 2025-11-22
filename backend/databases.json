@@ -16,7 +16,7 @@
     },
     {
         "baseid": "HMCTEST_AD",
-        "dbname"="inventory-service_julie",
+        "dbname": "inventory-service_julie",
         "basename": "Base de tests Always Data",
         "issuer":"https://www.alwaysdata.com",
         "host": "postgresql-inventory-service.alwaysdata.net",
