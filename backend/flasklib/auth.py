@@ -42,7 +42,7 @@ def login(database_id=None):
 
         cur = conn.cursor()
         logger.debug("Connected to DB, setting role %s", DBUSER)
-        cur.execute(f"SET ROLE {DBUSER};")
+        cur.execute(f"SET ROLE \"{DBUSER}\";")
 
         # 🔹 Vérifie si les viewers sont autorisés
         cur.execute("SELECT viewer_allowed FROM inventory.app_config LIMIT 1;")

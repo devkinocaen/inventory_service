@@ -35,8 +35,10 @@ $PSQL -f $SQL_TEST_SCRIPTS_DIR/insert_booking_references.sql
 echo "▶ Étape 4 : Création des personnes..."
 CSV_PERSON_FILE="$SQL_SCRIPTS_DIR/tests/persons_data.csv"
 
-# Créer la table temporaire et charger le CSV
 $PSQL <<SQL
+-- ===========================================
+-- 1️⃣ Table temporaire + import CSV
+-- ===========================================
 DROP TABLE IF EXISTS persons_temp_raw;
 
 CREATE TEMP TABLE persons_temp_raw (
@@ -48,14 +50,16 @@ CREATE TEMP TABLE persons_temp_raw (
 
 \copy persons_temp_raw FROM '$CSV_PERSON_FILE' CSV HEADER;
 
--- Nettoyage : suppression des lignes avec champs obligatoires vides
 DELETE FROM persons_temp_raw
 WHERE first_name IS NULL OR trim(first_name) = ''
    OR last_name IS NULL OR trim(last_name) = '';
-SQL
 
-# Appel du script PL/pgSQL qui insère dans inventory.person
-$PSQL -f "$SQL_TEST_SCRIPTS_DIR/insert_persons.sql"
+-- ===========================================
+-- 2️⃣ Appel du script d’insertion
+-- ===========================================
+\ir $SQL_TEST_SCRIPTS_DIR/insert_persons.sql
+
+SQL
 
 # ===========================================
 # 5️⃣ Création des organisations
@@ -63,24 +67,30 @@ $PSQL -f "$SQL_TEST_SCRIPTS_DIR/insert_persons.sql"
 echo "▶ Étape 5 : Création des organisations..."
 CSV_ORG_FILE="$SQL_SCRIPTS_DIR/tests/organizations_data.csv"
 
-# Créer la table temporaire et charger le CSV
-$PSQL <<SQL
+# Exécution dans UNE SEULE session psql
+$PSQL -v ON_ERROR_STOP=1 <<SQL
+\echo '➡ Création de la table temporaire organizations_temp_raw'
+
 DROP TABLE IF EXISTS organizations_temp_raw;
 
 CREATE TEMP TABLE organizations_temp_raw (
-    name text,
+    name text NOT NULL,
     address text
 );
 
+\echo '➡ Import du CSV'
 \copy organizations_temp_raw FROM '$CSV_ORG_FILE' CSV HEADER;
 
--- Nettoyage : suppression des lignes avec champs obligatoires vides
+\echo '➡ Nettoyage des entrées vides'
 DELETE FROM organizations_temp_raw
 WHERE name IS NULL OR trim(name) = '';
+
+\echo '➡ Appel du script insert_organizations.sql'
+\ir $SQL_TEST_SCRIPTS_DIR/insert_organizations.sql
+
 SQL
 
-# Appel du script PL/pgSQL qui insère dans inventory.organization
-$PSQL -f "$SQL_TEST_SCRIPTS_DIR/insert_organizations.sql"
+echo "✔ Étape 5 terminée."
 
 # ===========================================
 # 6️⃣ Création des réservables (costumes & accessoires)
@@ -88,14 +98,14 @@ $PSQL -f "$SQL_TEST_SCRIPTS_DIR/insert_organizations.sql"
 echo "▶ Étape 6 : Création des réservables..."
 CSV_RESERVABLE_FILE="$SQL_SCRIPTS_DIR/tests/reservables_data.csv"
 
-$PSQL <<SQL
--- Suppression de la table temporaire si elle existe
+$PSQL -v ON_ERROR_STOP=1 <<SQL
+\echo '➡ Suppression de la table temporaire'
 DROP TABLE IF EXISTS reservable_temp_raw;
 
--- Création de la table temporaire correspondant au CSV simplifié
+\echo '➡ Création de la table temporaire reservable_temp_raw'
 CREATE TEMP TABLE reservable_temp_raw (
-    name text,
-    size text,
+    name text NOT NULL,
+    size text NOT NULL,
     price_per_day text,
     description text,
     photo1 text,
@@ -103,18 +113,20 @@ CREATE TEMP TABLE reservable_temp_raw (
     photo3 text
 );
 
--- Import des données CSV
+\echo '➡ Import du CSV'
 \copy reservable_temp_raw FROM '$CSV_RESERVABLE_FILE' CSV HEADER;
 
--- Nettoyage : suppression des lignes avec champs obligatoires vides
+\echo '➡ Nettoyage des entrées invalides'
 DELETE FROM reservable_temp_raw
 WHERE name IS NULL OR trim(name) = ''
    OR size IS NULL OR trim(size) = '';
 
+\echo '➡ Exécution du script insert_reservables.sql'
+\ir $SQL_TEST_SCRIPTS_DIR/insert_reservables.sql
+
 SQL
 
-# Appel du script PL/pgSQL qui insère dans inventory.reservable
-$PSQL -f "$SQL_TEST_SCRIPTS_DIR/insert_reservables.sql"
+echo "✔ Étape 6 terminée."
 
 
 # ===========================================

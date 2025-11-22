@@ -66,7 +66,7 @@ def register_routes(app):
                 raise ValueError("JWT missing required 'role' claim for RLS")
 
             try:
-                cur.execute(f"SET ROLE {rls_role};")
+                cur.execute(f"SET ROLE \"{rls_role}\";")
             except psycopg.errors.UndefinedObject as e:
                 raise ValueError(f"RLS role '{rls_role}' not found in database: {str(e)}")
 
@@ -202,7 +202,7 @@ def register_routes(app):
 
             finally:
                 try:
-                    cur.execute(f"SET ROLE {DBUSER};")
+                    cur.execute(f"SET ROLE \"{DBUSER}\";")
                 except Exception as e:
                     logger.warning("⚠️ Impossible de remettre le rôle DBUSER: %s", e)
                 cur.close()
