@@ -215,7 +215,6 @@ export async function initBookingModal() {
 
    try {
      const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
-                       console.log('loggedUser', loggedUser)
      personId = typeof loggedUser.personId === "number" || typeof loggedUser.personId === "string"
        ? loggedUser.personId
        : null;

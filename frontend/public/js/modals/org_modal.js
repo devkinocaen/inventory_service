@@ -326,8 +326,7 @@ async function loadOrganizations() {
   if (!client) client = await initClient();
   organizations = await fetchOrganizations(client);
   if (!orgSelect) return;
-console.log ('organizations', organizations)
-  orgSelect.innerHTML = '<option value="">-- Choisir une organisation --</option>';
+   orgSelect.innerHTML = '<option value="">-- Choisir une organisation --</option>';
   organizations.forEach(org => {
     const opt = document.createElement('option');
     opt.value = org.id;
