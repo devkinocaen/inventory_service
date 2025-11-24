@@ -1,31 +1,73 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Connexion - Costumerie</title>
   <link rel="icon" href="./images/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="./pages/styles.css">
 </head>
-<body>
+
+<body class="login-page">
 
   <div class="login-container">
-    <img src="images/bandeau_costumerie.png" alt="Bandeau Costumerie" class="bandeau-img" />
+    <img src="images/bandeau_costumerie.png"
+         alt="Bandeau Costumerie"
+         class="bandeau-img" />
+
     <div class="login-title">Page de connexion à la base de gestion d'inventaire</div>
 
+    <!-- Formulaire Login / Création -->
     <form class="login-form" id="login-form">
-      <input type="text" id="email" placeholder="Email" required>
-      <input type="password" id="password" placeholder="Mot de passe" required>
-          
-      <!-- Select pour choisir la base -->
+      
+      <!-- Champs mode création (masqués au départ) -->
+      <div class="create-field" style="display:none;">
+        <input type="text" id="prenom" placeholder="Prénom">
+      </div>
+
+      <div class="create-field" style="display:none;">
+        <input type="text" id="nom" placeholder="Nom">
+      </div>
+
+      <div class="create-field" style="display:none;">
+        <input type="text" id="organisation" placeholder="Organisation">
+      </div>
+      
+      <div class="create-field" style="display:none;">
+        <input type="text" id="adresse" placeholder="Adresse postale">
+      </div>
+
+      <div class="create-field" style="display:none;">
+        <input type="tel" id="telephone" placeholder="Téléphone">
+      </div>
+
+      <!-- Email (commun aux deux modes) -->
+      <input type="email" id="email" placeholder="Email" required>
+
+      <!-- Mot de passe (mode connexion uniquement si tu veux) -->
+      <div id="password-block">
+        <input type="password" id="password" placeholder="Mot de passe" required>
+      </div>
+
+      <!-- Choix base -->
       <label for="database">Choisir la base :</label>
       <select id="database" name="database" required>
         <option value="" disabled selected>-- Sélectionnez une base --</option>
       </select>
 
-      
-      <button type="submit" class="btn-submit" disabled>Se connecter</button>
+      <!-- Bouton principal -->
+      <button type="submit" class="btn-submit" id="main-submit" disabled>
+        Se connecter
+      </button>
     </form>
+
+    <!-- Switch connexion / création -->
+    <div class="login-switch">
+      <button id="switch-to-create">Créer un compte</button>
+      <button id="switch-to-login" style="display:none;">Retour à la connexion</button>
+    </div>
+
   </div>
+
   <script src="./js/env-config.js"></script>
   <script type="module" src="./js/login.js"></script>
 

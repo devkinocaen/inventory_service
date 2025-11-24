@@ -3,6 +3,8 @@ import { getRedirectByRole } from './libs/auth/roles.js';
 import { parseJwt } from './libs/auth/jwt.js';
 import { wakeUpFirstAvailable, startWakeupRoutine } from "./libs/ui/wakeup.js";
 
+console.log("Page login chargée", document.getElementById("switch-to-create"));
+
 const client = await initClient();
 
 /**
@@ -210,3 +212,96 @@ if (!dbSelect) {
 
   });
 }
+
+
+
+
+// -------------------------------------------------------------
+// 🔄 GESTION DU MODE CREATION DE COMPTE
+// -------------------------------------------------------------
+
+const switchToCreateBtn = document.getElementById("switch-to-create");
+const switchToLoginBtn = document.getElementById("switch-to-login");
+const createFields = document.querySelectorAll(".create-field");
+const passwordBlock = document.getElementById("password-block");
+const mainSubmitBtn = document.getElementById("main-submit");
+
+let mode = "login"; // login | create
+
+function updateFormMode() {
+  if (mode === "create") {
+
+    // ➕ afficher les champs spécifiques
+    createFields.forEach(f => f.style.display = "block");
+
+    // ➖ masquer mot de passe
+    passwordBlock.style.display = "none";
+
+    // 🔘 adapter le bouton principal
+    mainSubmitBtn.textContent = "Créer un compte";
+    mainSubmitBtn.disabled = false; // création toujours autorisée
+
+    // 🔁 afficher bouton retour
+    switchToCreateBtn.style.display = "none";
+    switchToLoginBtn.style.display = "inline-block";
+
+  } else {
+
+    // ➖ masquer champs création
+    createFields.forEach(f => f.style.display = "none");
+
+    // ➕ réafficher mot de passe
+    passwordBlock.style.display = "block";
+
+    // 🔘 revenir au mode connexion
+    mainSubmitBtn.textContent = "Se connecter";
+
+    // ⚠️ Le code original gère l’activation/désactivation du bouton
+    // → on ne touche PAS à ton système
+    submitBtn.disabled = false;
+
+    switchToCreateBtn.style.display = "inline-block";
+    switchToLoginBtn.style.display = "none";
+  }
+}
+
+// 🎯 Bouton « Créer un compte »
+switchToCreateBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  mode = "create";
+  updateFormMode();
+});
+
+// 🎯 Bouton « Retour à la connexion »
+switchToLoginBtn.addEventListener("click", (e) => {
+                                  console.log ("ici")
+
+  e.preventDefault();
+  mode = "login";
+  updateFormMode();
+});
+
+
+// -------------------------------------------------------------
+// 📨 SUBMIT MODE CREATION — récupère les champs, ne fait rien d'autre
+// -------------------------------------------------------------
+loginForm.addEventListener("submit", (e) => {
+  if (mode !== "create") return; // Laisser le submit normal gérer le login
+
+  e.preventDefault();
+
+  // 🔍 Récupération des valeurs
+  const data = {
+    prenom: document.getElementById("prenom")?.value.trim(),
+    nom: document.getElementById("nom")?.value.trim(),
+    organisation: document.getElementById("organisation")?.value.trim(),
+    address: document.getElementById("adresse")?.value.trim(),
+    telephone: document.getElementById("telephone")?.value.trim(),
+    email: document.getElementById("email")?.value.trim(),
+    base: document.getElementById("database")?.value
+  };
+
+  console.log("📥 Données création de compte:", data);
+
+  alert("✔ Données récupérées en mode création (voir console)");
+});
