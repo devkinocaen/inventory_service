@@ -16,7 +16,7 @@ export { fetchPersonById } from './fetchPersonById.js';
 export { upsertPerson } from './upsertPerson.js';
 export { deletePerson } from './deletePerson.js';
 
-export { createAccount } from './createAccount.js';
+export { getOrganizationsByPersonId } from './getOrganizationsByPersonId.js';
 
 // ==========================
 // STOCK & RÉSERVABLES

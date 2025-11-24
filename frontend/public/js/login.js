@@ -2,7 +2,10 @@ import { initClient } from './libs/client.js';
 import { getRedirectByRole } from './libs/auth/roles.js';
 import { parseJwt } from './libs/auth/jwt.js';
 import { wakeUpFirstAvailable, startWakeupRoutine } from "./libs/ui/wakeup.js";
-
+import {
+    fetchPersonByName,
+    fetchOrganizationsByPersonid
+} from '../libs/sql/index.js'
 
 const client = await initClient();
 
@@ -183,6 +186,8 @@ if (!dbSelect) {
          const firstName = claims?.first_name || claims?.app_metadata?.first_name || '';
          const lastName  = claims?.last_name  || claims?.app_metadata?.last_name  || '';
    
+        
+          
          // 🔹 Stockage local isolé
         localStorage.setItem("loggedUser", JSON.stringify({
           email,
@@ -192,6 +197,7 @@ if (!dbSelect) {
           accessToken,
           loginAt: new Date().toISOString()
         }));
+          
                             
         // 🔹 Redirection
         const redirectUrl = getRedirectByRole(role);
