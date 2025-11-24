@@ -225,47 +225,38 @@ if (!dbSelect) {
 const switchToCreateBtn = document.getElementById("switch-to-create");
 const switchToLoginBtn = document.getElementById("switch-to-login");
 const createFields = document.querySelectorAll(".create-field");
-const passwordBlock = document.getElementById("password-block");
+//const passwordBlock = document.getElementById("password-block");
 const mainSubmitBtn = document.getElementById("main-submit");
 
 let mode = "login"; // login | create
 
 function updateFormMode() {
   if (mode === "create") {
-
-    // ➕ afficher les champs spécifiques
+    // Affiche tous les champs de création
     createFields.forEach(f => f.style.display = "block");
 
-    // ➖ masquer mot de passe
-    passwordBlock.style.display = "none";
-
-    // 🔘 adapter le bouton principal
+    // Bouton principal
     mainSubmitBtn.textContent = "Créer un compte";
-    mainSubmitBtn.disabled = false; // création toujours autorisée
+    mainSubmitBtn.disabled = false;
 
-    // 🔁 afficher bouton retour
-    switchToCreateBtn.style.display = "none";
-    switchToLoginBtn.style.display = "inline-block";
+    // Affiche bouton retour à login, masque bouton créer
+    if (switchToLoginBtn) switchToLoginBtn.style.display = "inline-block";
+    if (switchToCreateBtn) switchToCreateBtn.style.display = "none";
 
   } else {
-
-    // ➖ masquer champs création
+    // Masque tous les champs de création
     createFields.forEach(f => f.style.display = "none");
 
-    // ➕ réafficher mot de passe
-    passwordBlock.style.display = "block";
-
-    // 🔘 revenir au mode connexion
+    // Bouton principal
     mainSubmitBtn.textContent = "Se connecter";
-
-    // ⚠️ Le code original gère l’activation/désactivation du bouton
-    // → on ne touche PAS à ton système
     submitBtn.disabled = false;
 
-    switchToCreateBtn.style.display = "inline-block";
-    switchToLoginBtn.style.display = "none";
+    // Affiche bouton créer, masque bouton retour à login
+    if (switchToCreateBtn) switchToCreateBtn.style.display = "inline-block";
+    if (switchToLoginBtn) switchToLoginBtn.style.display = "none";
   }
 }
+
 
 // 🎯 Bouton « Créer un compte »
 switchToCreateBtn.addEventListener("click", (e) => {
@@ -340,6 +331,27 @@ loginForm.addEventListener("submit", async (e) => {
 
     console.log("✨ Signup OK :", result);
     alert("✔ Compte créé avec succès !");
+      
+      // 🔄 Après création → on repasse en mode login + on remplit email et mot de passe
+      mode = "login";
+      updateFormMode();
+
+      // Remplit les champs login avec les valeurs de création
+      document.getElementById("email").value = data.email;
+      document.getElementById("password").value = data.password;
+
+      // Débloque bouton connexion
+      submitBtn.disabled = false;
+      mainSubmitBtn.textContent = "Se connecter";
+
+      // Force l'affichage du bon bouton
+      if (switchToCreateBtn) switchToCreateBtn.style.display = "inline-block";
+      if (switchToLoginBtn) switchToLoginBtn.style.display = "none";
+
+      // Focus sur le bouton
+      mainSubmitBtn.focus();
+
+      
   } catch (err) {
     console.error("❌ Erreur signup:", err);
 

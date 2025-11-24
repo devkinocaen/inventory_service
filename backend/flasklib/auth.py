@@ -50,17 +50,26 @@ def login(database_id=None):
         viewer_allowed = cur.fetchone()
         viewer_allowed = viewer_allowed and viewer_allowed[0]
 
-        # 🔹 Cherche l'utilisateur avancé
         cur.execute("""
-            SELECT u.id, u.email, p.raw_user_meta_data->'app_metadata'->>'role' AS role, u.encrypted_password
+            SELECT 
+                u.id,
+                u.email,
+                p.raw_user_meta_data->'app_metadata'->>'first_name',
+                p.raw_user_meta_data->'app_metadata'->>'last_name',
+                u.encrypted_password,
+                u.role
             FROM auth.users u
             LEFT JOIN auth.user_profiles p ON u.id = p.user_id
             WHERE u.email = %s
         """, (email,))
         row = cur.fetchone()
 
+
         if row:
-            user_id, user_email, user_role, db_password = row
+            user_id, user_email, first_name, last_name, db_password, user_role = row
+            logger.info("row: %s", row)
+            logger.info("user found for email: %s, with role: %s", email, user_role)
+
         else:
             logger.info("No advanced user found for email: %s, checking participants for basic role viewer...", email)
             cur.close()
@@ -214,13 +223,35 @@ def signup(database_id=None):
 
         # Hash et insert user avec rôle viewer
         encrypted_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
         cur.execute("""
-            INSERT INTO auth.users (email, encrypted_password)
-            VALUES (%s, %s)
+            INSERT INTO auth.users (email, encrypted_password, role)
+            VALUES (%s, %s, %s)
             RETURNING id;
-        """, (email, encrypted_password))
+        """, (
+            email,
+            encrypted_password,
+            "viewer"
+        ))
+
         user_id = cur.fetchone()[0]
 
+
+        # Mettre à jour user_profiles avec raw_user_meta_data = {"app_metadata": {"role": p_role}}
+        cur.execute("""
+            UPDATE auth.user_profiles
+            SET raw_user_meta_data = %s
+            WHERE user_id = %s;
+        """, (
+            json.dumps({"app_metadata": {
+                    "role": "viewer",
+                    "first_name": first_name,
+                    "last_name": last_name
+                }
+            }),
+            user_id
+        ))
+                
         # Création / rattachement personne + organisation via create_account
         cur.execute("""
             SELECT * FROM inventory.create_account(
@@ -230,10 +261,12 @@ def signup(database_id=None):
                 p_phone := %s,
                 p_organization_name := %s,
                 p_organization_address := %s,
-                p_role := 'viewer'
+                p_role := %s
             );
-        """, (first_name, last_name, email, phone, organization, address))
+        """, (first_name, last_name, email, phone, organization, address, role))
+
         person_id, organization_id = cur.fetchone()
+
 
         # Tout est OK → commit
         cur.execute("RELEASE SAVEPOINT sp_signup;")

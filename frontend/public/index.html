@@ -18,8 +18,18 @@
 
     <!-- Formulaire Login / Création -->
     <form class="login-form" id="login-form">
+        
+        <!-- Email (commun aux deux modes) -->
+        <input type="email" id="email" placeholder="Email" required>
+        <!-- Mot de passe (commun aux deux modes) -->
+        <input type="password" id="password" placeholder="Mot de passe">
+      
       
       <!-- Champs mode création (masqués au départ) -->
+      <div class="create-field" style="display:none;">
+        <input type="password" id="passwordConfirm" placeholder="Confirmer le mot de passe">
+      </div>
+
       <div class="create-field" style="display:none;">
         <input type="text" id="prenom" placeholder="Prénom">
       </div>
@@ -43,17 +53,7 @@
       <div class="create-field" style="display:none;">
         <input type="tel" id="telephone" placeholder="Téléphone">
       </div>
-
-      <div class="create-field" style="display:none;">
-        <input type="password" id="password" placeholder="Mot de passe">
-      </div>
-
-      <div class="create-field" style="display:none;">
-        <input type="password" id="passwordConfirm" placeholder="Confirmer le mot de passe">
-      </div>
-
-      <!-- Email (commun aux deux modes) -->
-      <input type="email" id="email" placeholder="Email" required>
+ 
 
       <!-- Choix base -->
       <label for="database">Choisir la base :</label>

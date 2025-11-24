@@ -22,6 +22,18 @@ fi
 
 DB_CONFIG="$(echo "$1" | tr '[:lower:]' '[:upper:]')"
 
+# ------------------------------------------------------------
+# Si l'argument contient un "/", on split en PROVIDER/CONFIG
+# ------------------------------------------------------------
+if [[ "$1" == *"/"* ]]; then
+    # Ex: pg/mybase  →  DB_PROVIDER="pg", DB_CONFIG="MYBASE"
+    RAW_PROVIDER="${1%%/*}"
+    RAW_CONFIG="${1#*/}"
+
+    DB_PROVIDER="$(echo "$RAW_PROVIDER" | tr '[:lower:]' '[:upper:]')"
+    DB_CONFIG="$(echo "$RAW_CONFIG" | tr '[:lower:]' '[:upper:]')"
+fi
+
 # ===========================================
 # Détermination du répertoire courant
 # ===========================================
