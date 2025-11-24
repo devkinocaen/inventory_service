@@ -4,8 +4,8 @@ import { parseJwt } from './libs/auth/jwt.js';
 import { wakeUpFirstAvailable, startWakeupRoutine } from "./libs/ui/wakeup.js";
 import {
     fetchPersonByName,
-    fetchOrganizationsByPersonid
-} from '../libs/sql/index.js'
+    fetchOrganizationsByPersonId
+} from './libs/sql/index.js'
 
 const client = await initClient();
 
@@ -127,8 +127,7 @@ if (!dbSelect) {
 
       const email = document.getElementById("email")?.value.trim(); // email ou téléphone
       const password = document.getElementById("password")?.value.trim();
-//      console.log ('email',email)
-//      console.log ('password', password)
+ 
       // 🔹 Vérifie que les champs sont remplis
       if (!email || !password) {
         alert("❌ Email ou téléphone et mot de passe requis");
@@ -186,7 +185,17 @@ if (!dbSelect) {
          const firstName = claims?.first_name || claims?.app_metadata?.first_name || '';
          const lastName  = claims?.last_name  || claims?.app_metadata?.last_name  || '';
    
-        
+        // stocke le person_id par défaut
+        let personId = null;
+
+        if (client) {
+            const person = await fetchPersonByName(client, firstName, lastName); // si fetchPersonByName est async
+             console.log(firstName, lastName, person)
+            if (person && !isNaN(Number(person.id))) {
+                personId = person.id;
+            }
+         }
+     
           
          // 🔹 Stockage local isolé
         localStorage.setItem("loggedUser", JSON.stringify({
@@ -194,11 +203,12 @@ if (!dbSelect) {
           role,
           firstName,
           lastName,
+          personId,
           accessToken,
           loginAt: new Date().toISOString()
         }));
-          
-                            
+          const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
+
         // 🔹 Redirection
         const redirectUrl = getRedirectByRole(role);
         console.log(`➡️ Redirection vers : ${redirectUrl}`);
@@ -220,8 +230,6 @@ if (!dbSelect) {
 
   });
 }
-
-
 
 
 // -------------------------------------------------------------

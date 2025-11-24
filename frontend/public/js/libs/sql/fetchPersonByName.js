@@ -1,9 +1,9 @@
 // récupère une personne par ID
 import { single } from '../helpers.js';
 export async function fetchPersonByName(client, firstName, lastName) {
-    if (!id) return null;
+    if (!firstName || !lastName) return null;
     try {
-        const { data, error } = await client.rpc('inventory.get_person_by_name', { p_first_name: firstName, p_last_name: lastName });
+        const { data, error } = await client.rpc('get_person_by_name', { p_first_name: firstName, p_last_name: lastName });
         if (error) throw error;
         return single(data);
     } catch (err) {

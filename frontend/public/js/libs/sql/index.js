@@ -13,10 +13,11 @@ export { upsertOrganization } from './upsertOrganization.js';
 export { deleteOrganization } from './deleteOrganization.js';
 
 export { fetchPersonById } from './fetchPersonById.js';
+export { fetchPersonByName } from './fetchPersonByName.js';
 export { upsertPerson } from './upsertPerson.js';
 export { deletePerson } from './deletePerson.js';
 
-export { getOrganizationsByPersonId } from './getOrganizationsByPersonId.js';
+export { fetchOrganizationsByPersonId } from './fetchOrganizationsByPersonId.js';
 
 // ==========================
 // STOCK & RÉSERVABLES

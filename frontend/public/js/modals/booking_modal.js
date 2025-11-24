@@ -1,6 +1,7 @@
 import { initClient } from '../libs/client.js';
 import {
   fetchOrganizations,
+  fetchOrganizationsByPersonId,
   createBatch,
   upsertBookingReference,
   createBooking,
@@ -23,6 +24,7 @@ let orgSelect, bookingPersonSelect, startDateInput, endDateInput;
 let bookingItems = [];
 let organizations = [];
 let priceInput;
+let personId = null;
 // -----------------------------
 // Charger modal dans le DOM
 // -----------------------------
@@ -62,6 +64,41 @@ export async function loadBookingModal() {
     orgSelect.addEventListener('change', updateBookingPersons);
     orgSelect.dataset.bound = 'true';
   }
+    
+    // Fermeture avec ESC
+    if (!modal.dataset.escBound) {
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+          closeBookingModal();
+        }
+      });
+      modal.dataset.escBound = "true";
+    }
+
+    
+    // Désactivation automatique du checkbox "immediate_checkout" selon le rôle
+    const immediateCheckoutCheckbox = document.getElementById('immediate_checkout');
+
+    if (immediateCheckoutCheckbox) {
+      let userRole = 'viewer';
+
+      try {
+        const raw = localStorage.getItem("loggedUser");
+        if (raw) {
+          const logged = JSON.parse(raw);
+          if (logged?.role) userRole = logged.role;
+        }
+      } catch (e) {
+        console.warn("[Booking Modal] Impossible de lire loggedUser", e);
+      }
+
+      if (userRole === 'viewer') {
+        immediateCheckoutCheckbox.checked = false;   // Ne jamais laisser coché
+        immediateCheckoutCheckbox.disabled = true;   // Interdit aux viewers
+      } else {
+        immediateCheckoutCheckbox.disabled = false;  // Autorisé pour admin / manager
+      }
+    }
 }
 
 // -----------------------------
@@ -171,24 +208,43 @@ export function renderBookingItems() {
 // Initialisation du modal
 // -----------------------------
 export async function initBookingModal() {
-  client = await initClient();
-  appConfig =  await fetchAppConfig(client);
-    
-  await loadBookingModal();
+    client = client || await initClient();
+    appConfig = await fetchAppConfig(client);
 
-  try {
-    organizations = await fetchOrganizations(client);
+    await loadBookingModal();
 
-    populateSelect(orgSelect, organizations, null, {
-      labelField: 'name',
-      placeholder: '-- Choisir une organisation --'
-    });
+   try {
+     const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
+                       console.log('loggedUser', loggedUser)
+     personId = typeof loggedUser.personId === "number" || typeof loggedUser.personId === "string"
+       ? loggedUser.personId
+       : null;
+   } catch (e) {
+     console.error("❌ Erreur lecture loggedUser :", e);
+   }
 
-    updateBookingPersons();
-  } catch (err) {
-    console.error('[Booking Modal] Erreur chargement organisations :', formatServerError(err.message || err));
-  }
+
+    try {
+        // 🔹 Récupérer les organisations liées à personId
+        organizations = personId
+            ? await fetchOrganizationsByPersonId(client, personId)
+            : await fetchOrganizations(client);
+         populateSelect(orgSelect, organizations, null, {
+            labelField: 'name',
+            placeholder: '-- Choisir une organisation --'
+        });
+       if (personId && Array.isArray(organizations) && organizations.length > 0 && orgSelect) {
+           const firstOrgId = organizations[0]?.id;
+           if (firstOrgId != null) {
+               orgSelect.value = firstOrgId;
+               updateBookingPersons(); // mettre à jour les personnes associées
+           }
+       }
+    } catch (err) {
+        console.error('[Booking Modal] Erreur chargement organisations :', formatServerError(err.message || err));
+    }
 }
+
 
 // -----------------------------
 // Met à jour le select des personnes de l’organisation
@@ -196,7 +252,6 @@ export async function initBookingModal() {
 function updateBookingPersons() {
   const orgId = parseInt(orgSelect.value);
   const org = organizations.find(o => o.id === orgId);
-  console.log('org', org);
 
   if (!org) {
     console.warn('[Booking Modal] Organisation introuvable pour id:', orgId);
@@ -231,7 +286,11 @@ function updateBookingPersons() {
   // ---------------------
   // 🔥 Populate avec la liste fusionnée
   // ---------------------
-  populateSelect(bookingPersonSelect, persons, org.referent_id, {
+
+  // Valeur par défaut = personId si défini, sinon référent
+  const defaultPersonId = personId ?? org.referent_id;
+
+  populateSelect(bookingPersonSelect, persons, defaultPersonId, {
     labelField: (p) => `${p.first_name} ${p.last_name}${p.role ? ` (${p.role})` : ''}`,
     placeholder: '-- Choisir la personne de retrait --',
     disablePlaceholder: true
@@ -323,8 +382,7 @@ async function handleBookingValidate() {
 
 function updateBookingPrice() {
   if (!bookingItems || !bookingItems.length) return;
-console.log ('appConfig', appConfig)
-    if (!appConfig?.show_prices) {
+     if (!appConfig?.show_prices) {
       if (priceInput) {
         priceInput.value = '';
         priceInput.style.display = 'none';
@@ -354,8 +412,7 @@ console.log ('appConfig', appConfig)
     }
 
     const diffHours = (end - start) / (1000 * 60 * 60);
-console.log ('diffHours', diffHours)
-    const total = bookingItems.reduce((sum, item) => {
+     const total = bookingItems.reduce((sum, item) => {
       const price = item.price_per_day ?? 0;
       return sum + price * (diffHours / 24); // proportion en jours
     }, 0);
