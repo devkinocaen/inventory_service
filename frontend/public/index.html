@@ -35,18 +35,25 @@
       <div class="create-field" style="display:none;">
         <input type="text" id="adresse" placeholder="Adresse postale">
       </div>
+      
+      <div class="create-field" style="display:none;">
+        <input type="text" id="role" placeholder="Rôle (ex: Administrateur)">
+      </div>
 
       <div class="create-field" style="display:none;">
         <input type="tel" id="telephone" placeholder="Téléphone">
       </div>
 
+      <div class="create-field" style="display:none;">
+        <input type="password" id="password" placeholder="Mot de passe">
+      </div>
+
+      <div class="create-field" style="display:none;">
+        <input type="password" id="passwordConfirm" placeholder="Confirmer le mot de passe">
+      </div>
+
       <!-- Email (commun aux deux modes) -->
       <input type="email" id="email" placeholder="Email" required>
-
-      <!-- Mot de passe (mode connexion uniquement si tu veux) -->
-      <div id="password-block">
-        <input type="password" id="password" placeholder="Mot de passe" required>
-      </div>
 
       <!-- Choix base -->
       <label for="database">Choisir la base :</label>
@@ -56,7 +63,7 @@
 
       <!-- Bouton principal -->
       <button type="submit" class="btn-submit" id="main-submit" disabled>
-        Se connecter
+        Se connecter / Créer
       </button>
     </form>
 

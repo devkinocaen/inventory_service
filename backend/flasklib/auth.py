@@ -2,6 +2,7 @@
 import os
 import re
 import logging
+import json
 from flask import request, jsonify
 from datetime import datetime, timezone, timedelta
 import jwt
@@ -171,3 +172,111 @@ def check_get_function_prototype_exists(conn):
             raise RuntimeError(
                 "Erreur lors de la vérification de la fonction get_function_prototype"
             ) from e
+
+
+
+def signup(database_id=None):
+    data = request.get_json(force=True) or {}
+    db_config = get_db_config(database_id.upper() if database_id else "")
+    auth_role = db_config.get("auth_role", "authenticated")
+    jwt_audience = auth_role
+    jwt_issuer = db_config.get("issuer", "https://fallback.issuer")
+    DBUSER = db_config.get("user")
+
+    email = data.get("email")
+    password = data.get("password")
+    first_name = data.get("firstName")
+    last_name = data.get("lastName")
+    phone = data.get("phone")
+    address = data.get("address")
+    organization = data.get("organization")
+    role = data.get("role")
+    logger.info("signup data %s", json.dumps(data))
+
+    if not email or not password:
+        return jsonify({"error": "Email and password required"}), 400
+    if not first_name or not last_name:
+        return jsonify({"error": "First name and last name required"}), 400
+
+    conn = None
+    try:
+        conn = get_conn(database_id)
+        cur = conn.cursor()
+        cur.execute(f'SET ROLE "{DBUSER}";')
+        cur.execute("BEGIN;")  # démarre explicitement la transaction
+        cur.execute("SAVEPOINT sp_signup;")
+
+        # Vérifie si email existant
+        cur.execute("SELECT id FROM auth.users WHERE email = %s", (email,))
+        if cur.fetchone():
+            cur.execute("ROLLBACK TO SAVEPOINT sp_signup;")
+            raise Exception(f"Email déjà enregistré: {email}")
+
+        # Hash et insert user avec rôle viewer
+        encrypted_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+        cur.execute("""
+            INSERT INTO auth.users (email, encrypted_password)
+            VALUES (%s, %s)
+            RETURNING id;
+        """, (email, encrypted_password))
+        user_id = cur.fetchone()[0]
+
+        # Création / rattachement personne + organisation via create_account
+        cur.execute("""
+            SELECT * FROM inventory.create_account(
+                p_first_name := %s,
+                p_last_name := %s,
+                p_email := %s,
+                p_phone := %s,
+                p_organization_name := %s,
+                p_organization_address := %s,
+                p_role := 'viewer'
+            );
+        """, (first_name, last_name, email, phone, organization, address))
+        person_id, organization_id = cur.fetchone()
+
+        # Tout est OK → commit
+        cur.execute("RELEASE SAVEPOINT sp_signup;")
+        conn.commit()
+
+        # Génération du token JWT
+        now = datetime.now(timezone.utc)
+        exp = now + timedelta(hours=2)
+        claims = {
+            "sub": str(user_id),
+            "role": "viewer",
+            "app_metadata": {"role": "viewer"},
+            "email": email,
+            "aud": "viewer",
+            "iss": jwt_issuer,
+            "iat": int(now.timestamp()),
+            "exp": int(exp.timestamp())
+        }
+        token = jwt.encode(claims, JWT_SECRET, algorithm="HS256")
+        if isinstance(token, bytes):
+            token = token.decode()
+
+        return jsonify({
+            "access_token": token,
+            "token_type": "bearer",
+            "expires_in": 7200,
+            "user": {
+                "id": str(user_id),
+                "email": email,
+                "role": "viewer",
+                "first_name": first_name,
+                "last_name": last_name,
+                "person_id": person_id,
+                "organization_id": organization_id
+            }
+        }), 200
+
+    except Exception as e:
+        if conn:
+            conn.rollback()  # rollback si erreur
+        logger.exception("❌ Signup failed")
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        if conn:
+            conn.close()

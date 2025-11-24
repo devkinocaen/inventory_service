@@ -3,7 +3,6 @@ import { getRedirectByRole } from './libs/auth/roles.js';
 import { parseJwt } from './libs/auth/jwt.js';
 import { wakeUpFirstAvailable, startWakeupRoutine } from "./libs/ui/wakeup.js";
 
-console.log("Page login chargée", document.getElementById("switch-to-create"));
 
 const client = await initClient();
 
@@ -120,6 +119,7 @@ if (!dbSelect) {
 
 
   loginForm.addEventListener("submit", async (e) => {
+      if (mode !== "login") return;
       e.preventDefault();
 
       const email = document.getElementById("email")?.value.trim(); // email ou téléphone
@@ -162,7 +162,9 @@ if (!dbSelect) {
          // Stockage de la base sélectionnée dans localStorage
          if (window.ENV?.SELECTED_DB) {
              localStorage.setItem('currentDataBase', window.ENV.SELECTED_DB);
-            // console.log("💾 Base stockée dans localStorage :", window.ENV.SELECTED_DB);
+         } else {
+             alert("❌ Sélectionnez d'abord une base");
+
          }
 
         // 🌐 Connexion via le client
@@ -269,6 +271,7 @@ function updateFormMode() {
 switchToCreateBtn.addEventListener("click", (e) => {
   e.preventDefault();
   mode = "create";
+  mainSubmitBtn.textContent = "Créer un compte";
   updateFormMode();
 });
 
@@ -278,30 +281,70 @@ switchToLoginBtn.addEventListener("click", (e) => {
 
   e.preventDefault();
   mode = "login";
+  mainSubmitBtn.textContent = "Se connecter";
   updateFormMode();
 });
-
-
 // -------------------------------------------------------------
-// 📨 SUBMIT MODE CREATION — récupère les champs, ne fait rien d'autre
+// 📨 SUBMIT MODE CREATION — récupération + client.signup
 // -------------------------------------------------------------
-loginForm.addEventListener("submit", (e) => {
-  if (mode !== "create") return; // Laisser le submit normal gérer le login
+loginForm.addEventListener("submit", async (e) => {
+  if (mode !== "create") return;
 
   e.preventDefault();
 
-  // 🔍 Récupération des valeurs
+  // 🔍 Champs
   const data = {
-    prenom: document.getElementById("prenom")?.value.trim(),
-    nom: document.getElementById("nom")?.value.trim(),
-    organisation: document.getElementById("organisation")?.value.trim(),
-    address: document.getElementById("adresse")?.value.trim(),
-    telephone: document.getElementById("telephone")?.value.trim(),
-    email: document.getElementById("email")?.value.trim(),
-    base: document.getElementById("database")?.value
+    prenom: document.getElementById("prenom")?.value.trim() || "",
+    nom: document.getElementById("nom")?.value.trim() || "",
+    organisation: document.getElementById("organisation")?.value.trim() || "",
+    address: document.getElementById("adresse")?.value.trim() || "",
+    telephone: document.getElementById("telephone")?.value.trim() || "",
+    email: document.getElementById("email")?.value.trim() || "",
+    role: document.getElementById("role")?.value.trim() || "viewer",
+    password: document.getElementById("password")?.value || "",
+    passwordConfirm: document.getElementById("passwordConfirm")?.value || "",
+    base: document.getElementById("database")?.value || ""
   };
 
-  console.log("📥 Données création de compte:", data);
+  // 🔍 Vérifications obligatoires
+  if (!data.prenom || !data.nom || !data.organisation || !data.base) {
+    alert("❌ Merci de remplir tous les champs obligatoires.");
+    return;
+  }
 
-  alert("✔ Données récupérées en mode création (voir console)");
+  if (!data.password || !data.passwordConfirm) {
+    alert("❌ Merci de saisir le mot de passe et sa confirmation.");
+    return;
+  }
+
+  if (data.password !== data.passwordConfirm) {
+    alert("❌ Les mots de passe ne correspondent pas.");
+    return;
+  }
+
+  // 🗄️ Enregistre la base choisie dans le localStorage
+  localStorage.setItem("currentDataBase", data.base);
+
+  try {
+    // 🌐 Création du compte via client.signup
+    const result = await client.signUp({
+      email: data.email,
+      password: data.password,
+      firstName: data.prenom,
+      lastName: data.nom,
+      phone: data.telephone,
+      organization: data.organisation,
+      address: data.address,
+      role: data.role
+    });
+
+    console.log("✨ Signup OK :", result);
+    alert("✔ Compte créé avec succès !");
+  } catch (err) {
+    console.error("❌ Erreur signup:", err);
+
+    const msg = err?.message || err?.toString() || "Impossible de créer le compte.";
+
+    alert("❌ Erreur : " + msg);
+  }
 });

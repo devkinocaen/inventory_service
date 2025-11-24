@@ -18,28 +18,22 @@ source venv/bin/activate
 pip install -r ${FLASK_APP_DIR}/requirements.txt
 
 
-# Vérifier les variables d'environnement
-if [ -z "$DBHOST" ] || [ -z "$DBPORT" ] || [ -z "$DBNAME" ] || [ -z "$DBUSER" ] || [ -z "$DBPASSWORD" ]; then
-  echo "❌ Les variables Render ne sont pas définies."
-  exit 1
-fi
-
 # Lancer le serveur Flask
 export FLASK_PORT=5000
 python3 ${FLASK_APP_DIR}/app_flask.py &
-RENDER_PID=$!
+FLASK_PID=$!
 
-echo "✅ Serveur Render Flask démarré sur http://localhost:$FLASK_PORT"
+echo "✅ Serveur Flask démarré sur http://localhost:$FLASK_PORT"
 
 # Fonction pour arrêter le serveur Render
 cleanup_render() {
   echo "Arrêt du serveur Render Flask..."
-  kill "$RENDER_PID" 2>/dev/null
-  wait "$RENDER_PID" 2>/dev/null
+  kill "$FLASK_PID" 2>/dev/null
+  wait "$FLASK_PID" 2>/dev/null
   echo "Serveur Render arrêté."
 }
 trap cleanup_render SIGINT SIGTERM EXIT
 
 # Bloquer le script pour garder le serveur vivant
 echo "Appuyez sur Ctrl+C pour arrêter le serveur..."
-wait "$RENDER_PID"
+wait "$FLASK_PID"

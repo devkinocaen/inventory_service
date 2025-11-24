@@ -3,7 +3,7 @@ import logging
 from flask import request, jsonify
 from flask_cors import cross_origin
 from .db import get_conn
-from .auth import login as auth_login, verify as auth_verify
+from .auth import login as auth_login, verify as auth_verify, signup as auth_signup
 import flasklib.config as config
 
 logger = logging.getLogger(__name__)
@@ -14,6 +14,12 @@ def register_routes(app):
     @cross_origin(origins=config.ALLOWED_ORIGINS, supports_credentials=True)
     def login_route(database_id=None):
         return auth_login(database_id)
+
+    @app.route("/signup", methods=["POST"])
+    @app.route("/signup/<database_id>", methods=["POST"])
+    @cross_origin(origins=config.ALLOWED_ORIGINS, supports_credentials=True)
+    def signup_route(database_id=None):
+        return auth_signup(database_id)
 
     @app.route("/verify", methods=["POST"])
     def verify_route():

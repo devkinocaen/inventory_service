@@ -15,7 +15,6 @@ SECURITY DEFINER
 AS $$
 DECLARE
     v_org_id INT;
-    v_existing_ids INT[];
     v_pid INT;
     v_prole TEXT;
     v_referent_phone TEXT;
@@ -47,14 +46,14 @@ BEGIN
     LIMIT 1;
 
     IF v_org_id IS NULL THEN
-        INSERT INTO inventory.organization (name, address, referent_id)
+        INSERT INTO inventory.organization AS o (name, address, referent_id)
         VALUES (p_name, p_address, p_referent_id)
-        RETURNING organization.id INTO v_org_id;
+        RETURNING o.id INTO v_org_id;  -- <-- QUALIFIER la colonne
     ELSE
-        UPDATE inventory.organization AS organization
-        SET address = COALESCE(p_address, organization.address),
-            referent_id = COALESCE(p_referent_id, organization.referent_id)
-        WHERE organization.id = v_org_id;
+        UPDATE inventory.organization AS o
+        SET address = COALESCE(p_address, o.address),
+            referent_id = COALESCE(p_referent_id, o.referent_id)
+        WHERE o.id = v_org_id;
     END IF;
 
     ----------------------------------------------------
@@ -85,9 +84,13 @@ BEGIN
     -- 5) Retourner l’organisation
     ----------------------------------------------------
     RETURN QUERY
-    SELECT o.id, o.name::TEXT, o.address::TEXT, o.referent_id
+    SELECT o.id,
+           o.name::TEXT,
+           o.address::TEXT,
+           o.referent_id
     FROM inventory.organization AS o
     WHERE o.id = v_org_id;
+
 
 END;
 $$;
