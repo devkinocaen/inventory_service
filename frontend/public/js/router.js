@@ -58,10 +58,10 @@ function onReady(fn) {
 onReady(() => {
         
     // 🔹 Met à jour le bandeau principal selon HEADER_IMAGE_URL
-    console.log ('Mis à jour du bandeau principal selon HEADER_IMAGE_URL')
+    console.log ('Mise à jour du bandeau principal selon HEADER_IMAGE_URL')
     const bandeauImg = document.getElementById("bandeau-img"); // ou "bandeau-img" selon ton id
     if (bandeauImg) {
-      bandeauImg.src = window.ENV?.HEADER_IMAGE_URL || "./images/bandeau_costumerie.png";
+      bandeauImg.src = window.ENV?.HEADER_IMAGE_URL || "/images/bandeau_costumerie.png";
     }
     console.log ('bandeau principal', bandeauImg.src)
 
