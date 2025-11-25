@@ -35,7 +35,8 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:5000",
     "https://inventory-service.vercel.app",
     "https://inventory-service-bice.vercel.app",
-    "https://costumeriejulie.vercel.app"
+    "https://costumeriejulie.vercel.app",
+    "https://costumerie-alex.vercel.app/"
 ]
 
 
