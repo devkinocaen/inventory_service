@@ -56,6 +56,13 @@ def register_routes(app):
     def health():
         return jsonify({"status": "ok"}), 200
 
+    @app.route("/cors-test", methods=["GET"])
+    def cors_test():
+        return jsonify({
+            "status": "ok",
+            "allowed_origins": config.ALLOWED_ORIGINS
+        }), 200
+
     @app.route("/")
     def root():
         return jsonify({"status": "Auth + SQL proxy service running"}), 200
