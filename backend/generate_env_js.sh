@@ -36,4 +36,4 @@ window.ENV = {
 };
 EOF
 
-echo "✅ env-config.js généré : DB_NAME=$DB_NAME HEADER_IMAGE_URL=$HEADER_IMAGE_URL → $OUTPUT_FILE"
+echo "✅ env-config.js généré : DB_NAME=$EXPORTER_DB_NAME HEADER_IMAGE_URL=$HEADER_IMAGE_URL → $OUTPUT_FILE"
