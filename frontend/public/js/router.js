@@ -58,9 +58,9 @@ function onReady(fn) {
 onReady(() => {
         
     // 🔹 Met à jour le bandeau principal selon HEADER_IMAGE_URL
-    const bandeauImgTop = document.getElementById("bandeau-img-top"); // ou "bandeau-img" selon ton id
-    if (bandeauImgTop) {
-      bandeauImgTop.src = window.ENV?.HEADER_IMAGE_URL || "../images/bandeau_costumerie.png";
+    const bandeauImg = document.getElementById("bandeau-img"); // ou "bandeau-img" selon ton id
+    if (bandeauImg) {
+      bandeauImg.src = window.ENV?.HEADER_IMAGE_URL || "./images/bandeau_costumerie.png";
     }
 
   const tabsEl = document.getElementById('tabs');
