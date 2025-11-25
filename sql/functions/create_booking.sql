@@ -23,7 +23,37 @@ LANGUAGE plpgsql
 VOLATILE
 SECURITY DEFINER
 AS $$
+DECLARE
+    conflicted_items TEXT;
 BEGIN
+    -- Vérification des conflits pour chaque reservable du batch
+    SELECT string_agg(
+        'Reservable ' || r.id || ':' || r.name ||
+        ' dans batch ' || b.reservable_batch_id ||
+        ' (' || coalesce(bat.description,'') || ')' ||
+        ' déjà réservé du ' || b.start_date || ' au ' || b.end_date,
+        ', '
+    )
+    INTO conflicted_items
+    FROM inventory.reservable_booking b
+    JOIN inventory.reservable_batch_link rbl
+      ON rbl.batch_id = b.reservable_batch_id
+    JOIN inventory.reservable r
+      ON r.id = rbl.reservable_id
+    LEFT JOIN inventory.reservable_batch bat
+      ON bat.id = b.reservable_batch_id
+    WHERE r.id IN (
+        SELECT reservable_id
+        FROM inventory.reservable_batch_link
+        WHERE batch_id = p_reservable_batch_id
+    )
+    AND b.period && tsrange(p_start_date, p_end_date, '[]');
+
+    IF conflicted_items IS NOT NULL THEN
+        RAISE EXCEPTION 'Conflit de réservation détecté : %', conflicted_items;
+    END IF;
+
+    -- Insertion de la réservation si pas de conflit
     RETURN QUERY
     INSERT INTO inventory.reservable_booking (
         reservable_batch_id,
