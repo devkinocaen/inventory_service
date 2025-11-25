@@ -29,5 +29,5 @@ export RENDER_API_REST_URL=https://inventory-service-tz0g.onrender.com
 
 export HEADER_IMAGE_URL='./images/bandeau_costumerie_julie.png'
 #export EXPORTER_DB_NAME='COSTUMERIE_CAEN_NEON'
-#export HEADER_IMAGE_URL='./images/bandeau_costumerie_alex.png'
-#export EXPORTER_DB_NAME='COSTUMERIE_ALEX_NEON'
+export HEADER_IMAGE_URL='./images/bandeau_costumerie_alex.png'
+export EXPORTER_DB_NAME='COSTUMERIE_ALEX_NEON'
