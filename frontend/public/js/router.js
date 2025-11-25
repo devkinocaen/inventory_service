@@ -56,6 +56,12 @@ function onReady(fn) {
 
 
 onReady(() => {
+        
+    // 🔹 Met à jour le bandeau principal selon HEADER_IMAGE_URL
+    const bandeauImgTop = document.getElementById("bandeau-img-top"); // ou "bandeau-img" selon ton id
+    if (bandeauImgTop) {
+      bandeauImgTop.src = window.ENV?.HEADER_IMAGE_URL || "../images/bandeau_costumerie.png";
+    }
 
   const tabsEl = document.getElementById('tabs');
   const contentEl = document.getElementById('content');

@@ -1,7 +1,10 @@
 import { initClient } from './libs/client.js';
 import { getRedirectByRole } from './libs/auth/roles.js';
 import { parseJwt } from './libs/auth/jwt.js';
-import { wakeUpFirstAvailable, startWakeupRoutine } from "./libs/ui/wakeup.js";
+import {
+    wakeUpFirstAvailable,
+    startWakeupRoutine
+} from "./libs/ui/wakeup.js";
 import {
     fetchPersonByName,
     fetchOrganizationsByPersonId
@@ -28,6 +31,17 @@ function resetSession() {
   }
 }
 
+// 🔹 Met à jour le bandeau selon HEADER_IMAGE_URL
+const bandeauImg = document.getElementById("bandeau-img");
+if (bandeauImg) {
+  if (window.ENV?.HEADER_IMAGE_URL) {
+    bandeauImg.src = window.ENV.HEADER_IMAGE_URL;
+  } else {
+    // fallback si HEADER_IMAGE_URL non défini
+    bandeauImg.src = "./images/bandeau_costumerie.png";
+  }
+}
+
 const loginForm = document.getElementById("login-form");
 const submitBtn = loginForm?.querySelector("button[type=submit]");
 
@@ -48,41 +62,59 @@ if (!dbSelect) {
   dbSelect.innerHTML = "";
   if (defaultOption) dbSelect.appendChild(defaultOption);
 
-  // 🔹 Charger dynamiquement la liste des bases depuis le serveur Flask
   (async () => {
     try {
       const databases = await client.listDatabases(true); // DEBUG = true pour log
       if (!Array.isArray(databases)) throw new Error("Format de réponse invalide");
 
-      databases.forEach(base => {
-        const option = document.createElement("option");
-        option.value = base.baseid;
-        option.textContent = base.basename;
-        dbSelect.appendChild(option);
-      });
+      if (window.ENV?.DB_NAME) {
+        // 🔹 Vérifie que DB_NAME existe dans les bases
+        const matched = databases.find(b => b.baseid === window.ENV.DB_NAME);
+        if (matched) {
+          const option = document.createElement("option");
+          option.value = matched.baseid;
+          option.textContent = matched.basename;
+          dbSelect.appendChild(option);
 
-      console.log("✅ Bases chargées depuis le serveur :", databases);
+          dbSelect.value = matched.baseid;
+          dbSelect.disabled = true; // verrouille le select
+          window.ENV.SELECTED_DB = matched.baseid;
+
+          console.log(`🌐 Base forcée à ${matched.baseid} (${matched.basename})`);
+        } else {
+          console.warn(`⚠️ DB_NAME=${window.ENV.DB_NAME} non trouvée dans les bases disponibles`);
+        }
+      } else {
+        // 🔹 Cas classique : liste complète
+        databases.forEach(base => {
+          const option = document.createElement("option");
+          option.value = base.baseid;
+          option.textContent = base.basename;
+          dbSelect.appendChild(option);
+        });
+
+        window.ENV.SELECTED_DB = dbSelect.value;
+        console.log("🌐 Bases chargées :", databases.map(b => b.baseid));
+      }
     } catch (err) {
       console.error("❌ Impossible de charger la liste des bases :", err);
       alert("Erreur : impossible de récupérer la liste des bases disponibles.");
     }
   })();
 
-  // 🔹 Stocke la base choisie dans ENV à chaque changement
+  // 🔹 Stocke la base choisie dans ENV à chaque changement (si le select est actif)
   dbSelect.addEventListener("change", (e) => {
-    const selectedDb = e.target.value;
-    window.ENV = window.ENV || {};
-    window.ENV.SELECTED_DB = selectedDb;
-    console.log("🌐 Base sélectionnée :", selectedDb);
+    if (!dbSelect.disabled) {
+      const selectedDb = e.target.value;
+      window.ENV = window.ENV || {};
+      window.ENV.SELECTED_DB = selectedDb;
+      console.log("🌐 Base sélectionnée :", selectedDb);
+    }
   });
-
-  // 🔹 Initialiser avec la valeur par défaut
-  window.ENV = window.ENV || {};
-  window.ENV.SELECTED_DB = dbSelect.value;
-  console.log("🌐 Base initiale :", dbSelect.value);
 }
 
-   // 🌞 Réveille les services Render avant de permettre la connexion
+
+   // 🌞 Réveille les services python flask existant avant de permettre la connexion
    if (window.ENV.DB_CLIENT.includes('python_flask')) {
      // 🌞 Réveille les services avant de permettre la connexion
      (async () => {
