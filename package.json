@@ -2,6 +2,6 @@
   "name": "costumerie-frontend",
   "version": "0.0.9",
   "scripts": {
-    "build": "bash backend/generate_env_js.sh && echo 'Build frontend ici si nécessaire'"
+    "build": "bash backend/generate_env_js.sh frontend/public/js/env-config.js && echo 'DB_NAME: ${EXPORTED_DB_NAME}'"
   }
 }
