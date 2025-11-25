@@ -2,6 +2,6 @@
   "name": "costumerie-frontend",
   "version": "0.0.9",
   "scripts": {
-    "build": "bash backend/generate_env_js.sh frontend/public/js/env-config.js"
+    "build": "bash ./resources/generate_env_js.sh ./js/env-config.js"
   }
 }
