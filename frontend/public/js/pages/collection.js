@@ -609,24 +609,16 @@ function handleArrowImgZoom(e) {
 
 async function updateImgZoom() {
   if (!imgZoomOverlay || !imgZoomCurrentItem?.photos) return;
-  const img = imgZoomOverlay.querySelector('.imgzoom-img');
-  if (!img) return;
 
   const photo = imgZoomCurrentItem.photos[imgZoomCurrentIndex];
-  
-  // Si Instagram
-  if (photo.url && isInstagramUrl(photo.url)) {
-    // remplacer l'img par un blockquote Instagram
-    imgZoomOverlay.querySelector('.imgzoom-wrapper').innerHTML = '';
-    const bq = createInstagramBlockquote(photo.url);
-    bq.style.width = '100%';
-    bq.style.height = 'auto';
-    imgZoomOverlay.querySelector('.imgzoom-wrapper').appendChild(bq);
-    if (window.instgrm) window.instgrm.Embeds.process();
-  } else {
-    img.src = photo.url;
-  }
+  const wrapper = imgZoomOverlay.querySelector('.imgzoom-wrapper');
+
+  if (!wrapper) return;
+
+  // On délègue l'affichage à displayImage
+  await displayImage(wrapper, photo.url);
 }
+
 
 function openImageZoom(item, startIndex = 0) {
   if (!item?.photos?.length) return;
@@ -641,18 +633,14 @@ function openImageZoom(item, startIndex = 0) {
 
   const wrapper = document.createElement('div');
   wrapper.className = 'imgzoom-wrapper';
+  wrapper.style.width = '800px';
+  wrapper.style.height = 'auto';
+  wrapper.style.margin = '0 auto';
 
-  const img = document.createElement('img');
-  img.className = 'imgzoom-img';
-  img.style.width = '800px';
-  img.style.height = 'auto';
-  img.style.objectFit = 'contain';
-
-  wrapper.appendChild(img);
   imgZoomOverlay.appendChild(wrapper);
   document.body.appendChild(imgZoomOverlay);
 
-  updateImgZoom(); // affiche la première image
+  updateImgZoom(); // affichage de la première image via displayImage
 
   // clic à l’extérieur → fermer
   imgZoomOverlay.addEventListener('click', (e) => {
@@ -662,6 +650,7 @@ function openImageZoom(item, startIndex = 0) {
   document.addEventListener('keydown', handleEscImgZoom);
   document.addEventListener('keydown', handleArrowImgZoom);
 }
+
 
 function updateCartCount() {
   if (!cartToggle) return;
