@@ -1,67 +1,66 @@
-<div class="acc-page">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Compte — Version Compacte</title>
+</head>
+<body>
 
-  <!-- Organisation -->
-  <section class="acc-card acc-org-card">
-    <h2 class="acc-title">Organisation</h2>
-
-    <div class="acc-grid">
-      <div class="acc-field">
-        <label class="acc-label" for="acc-org-name">Nom</label>
-        <input id="acc-org-name" class="acc-input" type="text" />
-      </div>
-
-      <div class="acc-field">
-        <label class="acc-label" for="acc-org-address">Adresse</label>
-        <input id="acc-org-address" class="acc-input" type="text" />
-      </div>
-
-      <div class="acc-field">
-        <label class="acc-label" for="acc-org-referent">Référent</label>
-        <select id="acc-org-referent" class="acc-select"></select>
-      </div>
+<!-- Organisation -->
+<div class="card">
+  <h2>Organisation</h2>
+  <div class="form-grid">
+    <div>
+      <label>Nom</label>
+      <input id="orgName" type="text">
     </div>
-
-    <div class="acc-actions">
-      <button class="acc-btn acc-btn-save-org">Enregistrer organisation</button>
-      <button class="acc-btn acc-btn-delete-org">Supprimer organisation</button>
+    <div>
+      <label>Adresse</label>
+      <input id="orgAddress" type="text">
     </div>
-  </section>
-
-
-  <!-- Personnes liées -->
-  <section class="acc-card acc-person-section">
-    <h2 class="acc-title">Personnes liées</h2>
-
-    <div id="acc-person-list" class="acc-person-list"></div>
-
-    <button class="acc-btn acc-btn-add-person">Ajouter une personne</button>
-  </section>
-
-
-  <!-- Mot de passe -->
-  <section class="acc-card acc-password-card">
-    <h2 class="acc-title">Changer le mot de passe</h2>
-
-    <div class="acc-grid">
-      <div class="acc-field">
-        <label class="acc-label" for="acc-pass-current">Mot de passe actuel</label>
-        <input id="acc-pass-current" class="acc-input" type="password" />
-      </div>
-
-      <div class="acc-field">
-        <label class="acc-label" for="acc-pass-new">Nouveau mot de passe</label>
-        <input id="acc-pass-new" class="acc-input" type="password" />
-      </div>
-
-      <div class="acc-field">
-        <label class="acc-label" for="acc-pass-confirm">Confirmer le mot de passe</label>
-        <input id="acc-pass-confirm" class="acc-input" type="password" />
-      </div>
-    </div>
-
-    <div class="acc-actions">
-      <button class="acc-btn acc-btn-save-pass">Mettre à jour le mot de passe</button>
-    </div>
-  </section>
-
+  </div>
+  <button class="btn btn-save" id="saveOrgBtn">Enregistrer</button>
 </div>
+
+<!-- Référent -->
+<div class="card">
+  <h2>Personne référente</h2>
+  <div class="form-grid">
+    <div><label>Nom</label><input id="refLastName"></div>
+    <div><label>Prénom</label><input id="refFirstName"></div>
+    <div><label>Email</label><input id="refEmail" type="email"></div>
+    <div><label>Téléphone</label><input id="refPhone"></div>
+  </div>
+  <button class="btn btn-save" id="saveRefBtn">Enregistrer</button>
+</div>
+
+<!-- Personnes liées -->
+<div class="card">
+  <h2>Personnes liées</h2>
+  <div id="peopleList"></div>
+
+  <div class="form-grid" style="margin-top:15px;">
+    <div><label>Nom</label><input id="pLast"></div>
+    <div><label>Prénom</label><input id="pFirst"></div>
+    <div><label>Email</label><input id="pEmail"></div>
+    <div><label>Téléphone</label><input id="pPhone"></div>
+    <div><label>Rôle</label><input id="pRole"></div>
+  </div>
+
+  <button class="btn btn-save" id="savePersonBtn">Ajouter / Mettre à jour</button>
+</div>
+
+<!-- Mot de passe -->
+<div class="card">
+  <h2>Changer le mot de passe</h2>
+  <div class="form-grid">
+    <div><label>Mot de passe actuel</label><input type="password" id="pwdCurrent"></div>
+    <div><label>Nouveau</label><input type="password" id="pwdNew"></div>
+    <div><label>Confirmation</label><input type="password" id="pwdConfirm"></div>
+  </div>
+  <button class="btn btn-save" id="changePwdBtn">Modifier mot de passe</button>
+</div>
+
+<script type="module" src="account.js"></script>
+</body>
+</html>

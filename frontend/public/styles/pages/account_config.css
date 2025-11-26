@@ -1,102 +1,55 @@
-/* ======= PAGE ======= */
-.acc-page {
-  font-family: sans-serif;
-  padding: 20px;
-  max-width: 900px;
-  margin: auto;
+body { font-family: sans-serif; background:#f4f4f4; padding:20px; }
+h2 { margin: 10px 0 15px; font-size: 18px; }
+
+.card {
+  background:#fff; padding:15px; border-radius:10px;
+  margin-bottom:20px; box-shadow:0 2px 5px rgba(0,0,0,0.07);
 }
 
-/* ======= CARDS ======= */
-.acc-card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 18px;
-  margin-bottom: 25px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+/* ====== LAYOUT COMPACT ====== */
+.form-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+  gap:26px;
 }
 
-.acc-title {
-  margin-bottom: 15px;
-  font-size: 18px;
+label {
+  font-size:13px;
+  font-weight:600;
+  margin-bottom:4px;
+  display:block;
 }
 
-/* ======= GRID ======= */
-.acc-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
+input, select {
+  width:100%; padding:6px; border-radius:5px;
+  border:1px solid #ccc; font-size:14px;
 }
 
-/* ======= FORM FIELDS ======= */
-.acc-field {}
+/* ===== Boutons ===== */
+.btn { padding:7px 12px; font-size:13px; border:0; border-radius:5px; cursor:pointer; }
+.btn-save { background:#3a86ff; color:white; }
+.btn-delete { background:#d00000; color:white; }
+.btn-edit { background:#ffba08; }
+.btn-small { padding:4px 8px; font-size:12px; }
 
-.acc-label {
-  font-size: 13px;
-  font-weight: 600;
-  display: block;
-  margin-bottom: 4px;
+/* ===== Liste des personnes ===== */
+.person-row {
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr auto auto;
+  align-items:center;
+  gap:10px;
+  padding:8px;
+  border:1px solid #ddd;
+  background:#fafafa;
+  border-radius:6px;
+  margin-bottom:8px;
 }
 
-.acc-input,
-.acc-select {
-  width: 100%;
+/* Liseré spécifique aux inputs organisation */
+.card input#orgName,
+.card input#orgAddress {
+    border:1px solid #ddd;
   padding: 6px;
   border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-
-/* ======= PERSON LIST ======= */
-.acc-person-list {}
-
-.acc-person-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr auto;
-  gap: 10px;
-  align-items: center;
-  padding: 8px;
-  border: 1px solid #ddd;
-  background: #fafafa;
-  border-radius: 6px;
-  margin-bottom: 8px;
-}
-
-/* ======= BUTTONS ======= */
-.acc-btn {
-  padding: 7px 12px;
-  font-size: 13px;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
-}
-
-.acc-btn-save-org,
-.acc-btn-save-pass {
-  background: #3a86ff;
-  color: white;
-}
-
-.acc-btn-delete-org {
-  background: #d00000;
-  color: white;
-}
-
-.acc-btn-add-person {
-  background: #3a86ff;
-  color: white;
-  margin-top: 10px;
-}
-
-.acc-btn-remove-person {
-  background: #d00000;
-  color: white;
-  padding: 4px 8px;
-  font-size: 12px;
-}
-
-/* ======= ACTIONS ======= */
-.acc-actions {
-  margin-top: 15px;
-  display: flex;
-  gap: 10px;
+  background: #fff;
 }

@@ -1,201 +1,186 @@
-// js/ui/user_modal.js
 import { initClient } from '../libs/client.js';
-import { upsertPerson, deletePerson } from '../libs/sql/index.js';
+import { upsertPerson, deletePerson, upsertOrganization, fetchOrganizationsByPersonId } from '../libs/sql/index.js';
 
 let client;
-let modal, dialog;
-let userList, addUserBtn, cancelBtn, saveBtn;
+await initClient().then(c => client = c);
 
-let currentUserModalOpen = false;
+// Données locales
+let people = [];
+let editingId = null;
 
-// -----------------------------
-// Initialisation client et modal
-// -----------------------------
-export async function initUserModal() {
-  client = await initClient();
-  await loadUserModal();
-}
+// ====== UI ELEMENTS ======
+const pLast = document.getElementById("pLast");
+const pFirst = document.getElementById("pFirst");
+const pEmail = document.getElementById("pEmail");
+const pPhone = document.getElementById("pPhone");
+const pRole = document.getElementById("pRole");
+const peopleList = document.getElementById("peopleList");
 
-// -----------------------------
-// Charger le modal HTML
-// -----------------------------
-export async function loadUserModal() {
-  if (!document.getElementById('user-modal')) {
-    const response = await fetch(`${window.ENV.BASE_PATH}/pages/user_modal.html`);
-    if (!response.ok) throw new Error('Impossible de charger le modal user');
-    const html = await response.text();
-    const div = document.createElement('div');
-    div.innerHTML = html;
-    document.body.appendChild(div);
-  }
+const orgName = document.getElementById("orgName");
+const orgAddress = document.getElementById("orgAddress");
 
-  modal = document.getElementById('user-modal');
-  if (!modal) return;
+const refLastName = document.getElementById("refLastName");
+const refFirstName = document.getElementById("refFirstName");
+const refEmail = document.getElementById("refEmail");
+const refPhone = document.getElementById("refPhone");
 
-  dialog = modal.querySelector('.user-modal-dialog');
+const pwdCurrent = document.getElementById("pwdCurrent");
+const pwdNew = document.getElementById("pwdNew");
+const pwdConfirm = document.getElementById("pwdConfirm");
 
-  // Inputs et boutons
-  userList = dialog.querySelector('#userList');
-  addUserBtn = dialog.querySelector('.user-add-btn');
-  cancelBtn = dialog.querySelector('.user-btn-cancel');
-  saveBtn = dialog.querySelector('.user-btn-save');
-
-  // Event listeners
-  addUserBtn?.addEventListener('click', onAddUserClick);
-  cancelBtn?.addEventListener('click', closeUserModal);
-  saveBtn?.addEventListener('click', saveAllUsers);
-}
-
-// -----------------------------
-// Ouvrir / Fermer modal
-// -----------------------------
-export function openUserModal() {
-  if (!modal || !dialog) return;
-  modal.classList.remove('hidden');
-  void dialog.offsetWidth; // trigger reflow pour animation
-  dialog.classList.add('show');
-  currentUserModalOpen = true;
-
-  // on charge une ligne vide au démarrage
-  if (!userList.querySelector('.user-item')) addUserRow();
-}
-
-export function closeUserModal() {
-  if (!modal || !dialog) return;
-  dialog.classList.remove('show');
-  modal.classList.add('hidden');
-  currentUserModalOpen = false;
-}
-
-// -----------------------------
-// Handler du clic "Ajouter Utilisateur"
-function onAddUserClick() {
-  const rows = Array.from(userList.querySelectorAll('.user-item'));
-  const lastRow = rows[rows.length - 1];
-
-  if (lastRow) {
-    const fn = lastRow.querySelector('.user-firstname')?.value.trim() || '';
-    const ln = lastRow.querySelector('.user-lastname')?.value.trim() || '';
-
-    if (fn && ln) {
-      createUserFromRow(lastRow).then(() => addUserRow())
-        .catch(err => {
-          console.error('[createUserFromRow]', err);
-          addUserRow();
-        });
-      return;
-    }
-  }
-
-  addUserRow();
-}
-
-// -----------------------------
-// Ajoute une ligne de personne dans l'UI
-function addUserRow(user = {}) {
-  const div = document.createElement('div');
-  div.className = 'user-item';
-  if (user.id) div.dataset.userId = String(user.id);
-
-  div.innerHTML = `
-    <input type="text" placeholder="Nom" class="user-lastname" value="${escapeHtml(user.last_name || '')}" />
-    <input type="text" placeholder="Prénom" class="user-firstname" value="${escapeHtml(user.first_name || '')}" />
-    <input type="email" placeholder="Email" class="user-email" value="${escapeHtml(user.email || '')}" />
-    <input type="text" placeholder="Téléphone" class="user-phone" value="${escapeHtml(user.phone || '')}" />
-    <button type="button" class="user-remove-btn">✕</button>
-  `;
-
-  // remove handler
-  div.querySelector('.user-remove-btn').addEventListener('click', async () => {
-    try {
-      const fn = div.querySelector('.user-firstname')?.value.trim();
-      const ln = div.querySelector('.user-lastname')?.value.trim();
-
-      if (fn && ln) {
-        try {
-          await deletePerson(client, { first_name: fn, last_name: ln });
-        } catch (err) {
-          console.warn('[deletePerson] rpc error (ignored):', err);
-        }
-      }
-
-      div.remove();
-    } catch (err) {
-      console.error('[remove user]', err);
-    }
+// ====== RENDER ======
+function renderPeople() {
+  peopleList.innerHTML = "";
+  people.forEach(p => {
+    const row = document.createElement("div");
+    row.className = "person-row";
+    row.innerHTML = `
+      <span>${p.last}</span>
+      <span>${p.first}</span>
+      <span>${p.role || ''}</span>
+      <button class="btn btn-small btn-edit" data-id="${p.id}">✎</button>
+      <button class="btn btn-small btn-delete" data-id="${p.id}">✕</button>
+    `;
+    peopleList.appendChild(row);
   });
 
-  // blur handlers pour upsertPerson
-  const firstNameInput = div.querySelector('.user-firstname');
-  const lastNameInput = div.querySelector('.user-lastname');
-  const emailInput = div.querySelector('.user-email');
-  const phoneInput = div.querySelector('.user-phone');
+  // Event listeners edit / delete
+  peopleList.querySelectorAll(".btn-edit").forEach(btn => {
+    btn.onclick = () => editPerson(Number(btn.dataset.id));
+  });
+  peopleList.querySelectorAll(".btn-delete").forEach(btn => {
+    btn.onclick = () => removePerson(Number(btn.dataset.id));
+  });
+}
+renderPeople();
 
-  [firstNameInput, lastNameInput, emailInput, phoneInput].forEach(el => {
-    el.addEventListener('blur', async () => {
-      const first_name = firstNameInput.value.trim();
-      const last_name = lastNameInput.value.trim();
-      if (!first_name || !last_name) return;
+// ====== PERSON CRUD ======
+async function savePerson() {
+  const last = pLast.value.trim();
+  const first = pFirst.value.trim();
+  const email = pEmail.value.trim() || null;
+  const phone = pPhone.value.trim() || null;
+  const role = pRole.value.trim() || null;
 
-      try {
-        const saved = await upsertPerson(client, {
-          first_name,
-          last_name,
-          email: emailInput.value.trim() || null,
-          phone: phoneInput.value.trim() || null,
-          address: null
-        });
+  if (!first || !last) { alert("Nom + Prénom requis"); return; }
 
-        if (saved && saved.id) div.dataset.userId = String(saved.id);
-      } catch (err) {
-        console.error('[upsertPerson] failed on blur', err);
-      }
+  if (editingId) {
+    // Update
+    const idx = people.findIndex(p => p.id === editingId);
+    people[idx] = { id: editingId, last, first, email, phone, role };
+    try {
+      await upsertPerson(client, people[idx]);
+    } catch(e) { console.error(e); alert("Erreur update"); }
+    editingId = null;
+  } else {
+    // Create
+    const newPerson = { id: Date.now(), last, first, email, phone, role };
+    try {
+      const saved = await upsertPerson(client, newPerson);
+      newPerson.id = saved.id || newPerson.id;
+      people.push(newPerson);
+    } catch(e) { console.error(e); alert("Erreur création"); return; }
+  }
+
+  pLast.value = pFirst.value = pEmail.value = pPhone.value = pRole.value = "";
+  renderPeople();
+}
+
+function editPerson(id) {
+  const p = people.find(p => p.id === id);
+  if (!p) return;
+  editingId = id;
+  pLast.value = p.last;
+  pFirst.value = p.first;
+  pEmail.value = p.email || "";
+  pPhone.value = p.phone || "";
+  pRole.value = p.role || "";
+}
+
+async function removePerson(id) {
+  if (!confirm("Supprimer cette personne ?")) return;
+  try {
+    const p = people.find(p => p.id === id);
+    if (p) await deletePerson(client, { first_name: p.first, last_name: p.last });
+    people = people.filter(p => p.id !== id);
+    renderPeople();
+  } catch(e) { console.error(e); alert("Erreur suppression"); }
+}
+
+// ====== ORGANISATION / REFERENT / PASSWORD ======
+document.getElementById("saveOrgBtn").onclick = async () => {
+  try {
+    await upsertOrganization(client, {
+      id: null,
+      name: orgName.value.trim(),
+      address: orgAddress.value.trim() || null,
+      referent_id: null,
+      persons: people
     });
-  });
+    alert("Organisation enregistrée");
+  } catch(e){ console.error(e); alert("Erreur organisation"); }
+};
 
-  userList.appendChild(div);
-  firstNameInput.focus();
-}
+document.getElementById("saveRefBtn").onclick = async () => {
+  const first = refFirstName.value.trim();
+  const last = refLastName.value.trim();
+  if (!first || !last) { alert("Nom + Prénom requis"); return; }
+  try {
+    await upsertPerson(client, { first_name:first, last_name:last, email:refEmail.value.trim()||null, phone:refPhone.value.trim()||null });
+    alert("Référent sauvegardé");
+  } catch(e){ console.error(e); alert("Erreur référent"); }
+};
 
-// -----------------------------
-// Crée la personne à partir d'une ligne DOM
-async function createUserFromRow(row) {
-  const first_name = row.querySelector('.user-firstname')?.value.trim() || '';
-  const last_name = row.querySelector('.user-lastname')?.value.trim() || '';
-  const email = row.querySelector('.user-email')?.value.trim() || null;
-  const phone = row.querySelector('.user-phone')?.value.trim() || null;
+document.getElementById("changePwdBtn").onclick = () => {
+  if (pwdNew.value !== pwdConfirm.value) { alert("Confirmation incorrecte"); return; }
+  alert("TODO: change_password()");
+};
 
-  if (!first_name || !last_name) throw new Error('Prénom et nom requis');
+// Attach save person
+document.getElementById("savePersonBtn").onclick = savePerson;
 
-  const saved = await upsertPerson(client, { first_name, last_name, email, phone, address: null });
+// ====== AUTO-FILL ORGA & REFERENT depuis loggedUser ======
+async function fillOrganizationFromLoggedUser() {
+  try {
+    const raw = localStorage.getItem("loggedUser");
+    if (!raw) return;
+    const loggedUser = JSON.parse(raw);
+    const personId = loggedUser?.personId;
+    if (!personId) return;
 
-  if (saved?.id) row.dataset.userId = String(saved.id);
+    // Récupérer les organisations liées à cette personne
+    const orgs = await fetchOrganizationsByPersonId(client, personId);
+    if (!orgs || orgs.length === 0) return;
+    const org = orgs[0]; // si plusieurs, on prend la première
 
-  return saved;
-}
+    // Remplir champs organisation
+    orgName.value = org.name || "";
+    orgAddress.value = org.address || "";
 
-// -----------------------------
-// Sauvegarde manuelle de tous les users
-async function saveAllUsers() {
-  const rows = Array.from(userList.querySelectorAll('.user-item'));
-  for (const row of rows) {
-    try {
-      await createUserFromRow(row);
-    } catch (err) {
-      console.error('[saveAllUsers] failed', err);
+    // Remplir référent si présent
+    if (org.referent_id) {
+      refFirstName.value = org.referent_first_name || "";
+      refLastName.value = org.referent_last_name || "";
+      refEmail.value = org.referent_email || "";
+      refPhone.value = org.referent_phone || "";
     }
+
+    // Remplir personnes liées
+    if (Array.isArray(org.persons)) {
+      people = org.persons.map(p => ({
+        id: p.id,
+        first: p.first_name,
+        last: p.last_name,
+        email: p.email,
+        phone: p.phone,
+        role: p.role || null
+      }));
+      renderPeople();
+    }
+  } catch(e) {
+    console.error("Erreur fillOrganizationFromLoggedUser :", e);
   }
-  alert('✅ Utilisateurs sauvegardés.');
 }
 
-// -----------------------------
-// Escape HTML
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
+// Appel au chargement
+await fillOrganizationFromLoggedUser();
