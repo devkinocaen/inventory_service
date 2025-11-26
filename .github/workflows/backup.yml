@@ -52,7 +52,7 @@ jobs:
             echo "USER_EMAIL=${{ secrets.COSTUMERIE_CAEN_USER_EMAIL }}" >> $GITHUB_ENV
             echo "USER_PASSWORD=${{ secrets.COSTUMERIE_CAEN_USER_PASSWORD }}" >> $GITHUB_ENV
             echo "USER_PASSWORD is set? [$( [ -n "$USER_PASSWORD" ] && echo yes || echo no )]"
-          elseif [[ "$DB_NAME" == COSTUMERIE_ALEX* ]]; then
+          elif [[ "$DB_NAME" == COSTUMERIE_ALEX* ]]; then
             echo "USER_EMAIL=${{ secrets.COSTUMERIE_ALEX_USER_EMAIL }}" >> $GITHUB_ENV
             echo "USER_PASSWORD=${{ secrets.COSTUMERIE_ALEX_USER_PASSWORD }}" >> $GITHUB_ENV
             echo "USER_PASSWORD is set? [$( [ -n "$USER_PASSWORD" ] && echo yes || echo no )]"
