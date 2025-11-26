@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Compte — Version Compacte</title>
+
+<style>
+  body { font-family: sans-serif; background:#f4f4f4; padding:20px; }
+  h2 { margin: 10px 0 15px; font-size: 18px; }
+  .card {
+    background:#fff; padding:15px; border-radius:10px;
+    margin-bottom:20px; box-shadow:0 2px 5px rgba(0,0,0,0.07);
+  }
+
+  /* ====== LAYOUT COMPACT ====== */
+  .form-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+    gap:26px;             /* <-- plus d'espace entre champs */
+  }
+
+  label {
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:4px;    /* <-- petit espace entre label et input */
+    display:block;
+  }
+
+  input, select {
+    width:100%; padding:6px; border-radius:5px;
+    border:1px solid #ccc; font-size:14px;
+  }
+
+  /* ===== Boutons ===== */
+  .btn { padding:7px 12px; font-size:13px; border:0; border-radius:5px; cursor:pointer; }
+  .btn-save { background:#3a86ff; color:white; }
+  .btn-delete { background:#d00000; color:white; }
+  .btn-edit { background:#ffba08; }
+  .btn-small { padding:4px 8px; font-size:12px; }
+
+  /* ===== Liste des personnes ===== */
+  .person-row {
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr auto auto;
+    align-items:center;
+    gap:10px;
+    padding:8px;
+    border:1px solid #ddd;
+    background:#fafafa;
+    border-radius:6px;
+    margin-bottom:8px;
+  }
+</style>
+
+</head>
+<body>
+
+<h1>Gestion du compte (Compact)</h1>
+
+<!-- =========================
+     ORGANISATION
+========================= -->
+<div class="card">
+  <h2>Organisation</h2>
+  <div class="form-grid">
+    <div>
+      <label>Nom</label>
+      <input id="orgName" type="text">
+    </div>
+    <div>
+      <label>Adresse</label>
+      <input id="orgAddress" type="text">
+    </div>
+  </div>
+  <button class="btn btn-save" onclick="saveOrganization()">Enregistrer</button>
+</div>
+
+<!-- =========================
+     REFERENT
+========================= -->
+<div class="card">
+  <h2>Personne référente</h2>
+  <div class="form-grid">
+    <div><label>Nom</label><input id="refLastName"></div>
+    <div><label>Prénom</label><input id="refFirstName"></div>
+    <div><label>Email</label><input id="refEmail" type="email"></div>
+    <div><label>Téléphone</label><input id="refPhone"></div>
+  </div>
+  <button class="btn btn-save" onclick="saveReferent()">Enregistrer</button>
+</div>
+
+<!-- =========================
+     PERSONNES LIÉES
+========================= -->
+<div class="card">
+  <h2>Personnes liées</h2>
+
+  <!-- Liste -->
+  <div id="peopleList"></div>
+
+  <!-- Ajout / édition -->
+  <div class="form-grid" style="margin-top:15px;">
+    <div><label>Nom</label><input id="pLast"></div>
+    <div><label>Prénom</label><input id="pFirst"></div>
+    <div><label>Email</label><input id="pEmail"></div>
+    <div><label>Téléphone</label><input id="pPhone"></div>
+    <div><label>Rôle</label><input id="pRole"></div>
+  </div>
+
+  <button class="btn btn-save" onclick="savePerson()">Ajouter / Mettre à jour</button>
+</div>
+
+<!-- =========================
+     MOT DE PASSE
+========================= -->
+<div class="card">
+  <h2>Changer le mot de passe</h2>
+  <div class="form-grid">
+    <div><label>Mot de passe actuel</label><input type="password" id="pwdCurrent"></div>
+    <div><label>Nouveau</label><input type="password" id="pwdNew"></div>
+    <div><label>Confirmation</label><input type="password" id="pwdConfirm"></div>
+  </div>
+  <button class="btn btn-save" onclick="changePassword()">Modifier mot de passe</button>
+</div>
+
+
+<script>
+/* ===============================
+   Données locales (mock)
+================================*/
+let people = [
+  {id:1, last:"Martin", first:"Julie", email:"julie@test.com", phone:"0611223344", role:"Assistante"},
+  {id:2, last:"Durand", first:"Luc", email:"luc@test.com", phone:"0677889900", role:"Chargé projet"}
+];
+let editingId = null;
+
+/* ===============================
+   Refresh UI
+================================*/
+function renderPeople() {
+  const container = document.getElementById("peopleList");
+  container.innerHTML = "";
+
+  people.forEach(p => {
+    const row = document.createElement("div");
+    row.className = "person-row";
+    row.innerHTML = `
+      <span>${p.last}</span>
+      <span>${p.first}</span>
+      <span>${p.role}</span>
+      <button class="btn btn-small btn-edit" onclick="editPerson(${p.id})">✎</button>
+      <button class="btn btn-small btn-delete" onclick="deletePerson(${p.id})">✕</button>
+    `;
+    container.appendChild(row);
+  });
+}
+renderPeople();
+
+/* ===============================
+   CRUD PERSONNES
+================================*/
+function savePerson() {
+  const last = pLast.value.trim();
+  const first = pFirst.value.trim();
+  const email = pEmail.value.trim();
+  const phone = pPhone.value.trim();
+  const role = pRole.value.trim();
+
+  if (editingId) {
+    const idx = people.findIndex(p => p.id === editingId);
+    people[idx] = {id: editingId, last, first, email, phone, role};
+    editingId = null;
+  } else {
+    people.push({id: Date.now(), last, first, email, phone, role});
+  }
+
+  pLast.value = pFirst.value = pEmail.value = pPhone.value = pRole.value = "";
+  renderPeople();
+}
+
+function editPerson(id) {
+  const p = people.find(p => p.id === id);
+  editingId = id;
+
+  pLast.value = p.last;
+  pFirst.value = p.first;
+  pEmail.value = p.email;
+  pPhone.value = p.phone;
+  pRole.value = p.role;
+}
+
+function deletePerson(id) {
+  if (!confirm("Supprimer cette personne ?")) return;
+  people = people.filter(p => p.id !== id);
+  renderPeople();
+}
+
+/* ===============================
+   Organisation & référent
+================================*/
+function saveOrganization() {
+  alert("TODO: upsert_organization()");
+}
+function saveReferent() {
+  alert("TODO: upsert_person() référent");
+}
+
+/* ===============================
+   Mot de passe
+================================*/
+function changePassword() {
+  if (pwdNew.value !== pwdConfirm.value) {
+    alert("Mot de passe: confirmation incorrecte");
+    return;
+  }
+  alert("TODO: change_password()");
+}
+</script>
+
+</body>
+</html>

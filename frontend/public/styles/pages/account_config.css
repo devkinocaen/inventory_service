@@ -1,0 +1,102 @@
+/* ======= PAGE ======= */
+.acc-page {
+  font-family: sans-serif;
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+/* ======= CARDS ======= */
+.acc-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+}
+
+.acc-title {
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+/* ======= GRID ======= */
+.acc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+/* ======= FORM FIELDS ======= */
+.acc-field {}
+
+.acc-label {
+  font-size: 13px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.acc-input,
+.acc-select {
+  width: 100%;
+  padding: 6px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* ======= PERSON LIST ======= */
+.acc-person-list {}
+
+.acc-person-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+/* ======= BUTTONS ======= */
+.acc-btn {
+  padding: 7px 12px;
+  font-size: 13px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.acc-btn-save-org,
+.acc-btn-save-pass {
+  background: #3a86ff;
+  color: white;
+}
+
+.acc-btn-delete-org {
+  background: #d00000;
+  color: white;
+}
+
+.acc-btn-add-person {
+  background: #3a86ff;
+  color: white;
+  margin-top: 10px;
+}
+
+.acc-btn-remove-person {
+  background: #d00000;
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* ======= ACTIONS ======= */
+.acc-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}

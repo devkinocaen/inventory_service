@@ -33,6 +33,22 @@
     ]
   },
   {
+    "file": "$BASE_PATH/pages/account_config.html",
+    "title": "Mon compte",
+    "user": "viewer,dev",
+    "scripts": [
+      "../js/pages/account_config.js"
+    ]
+  },
+  {
+    "file": "$BASE_PATH/pages/account_booking_config.html",
+    "title": "Mes réservations",
+    "user": "viewer,dev",
+    "scripts": [
+      "../js/pages/account_booking_config.js"
+    ]
+  },
+  {
     "file": "$BASE_PATH/pages/config.html",
     "title": "Configuration",
     "user": "admin,dev",

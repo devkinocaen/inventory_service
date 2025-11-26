@@ -9,3 +9,5 @@ venv
 *bkp.*
 __pycache__
 .DS_Store
+
+apis.txt
