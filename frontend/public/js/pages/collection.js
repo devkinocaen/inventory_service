@@ -335,28 +335,30 @@ export async function init() {
 /**
  * Afficher une image (URL ou Instagram)
  */
-async function displayImage(container, url) {
+async function displayImage(container, url, options = {}) {
+  const { width = '100%' } = options; // largeur paramétrable, défaut 100%
   container.innerHTML = '';
+
+  // Placeholder
   const placeholder = document.createElement('img');
   placeholder.src = 'https://placehold.co/70x70?text=+';
-  placeholder.style.width = '100%';
-  placeholder.style.height = '100%';
+  placeholder.style.width = width;
+  placeholder.style.height = 'auto';
   placeholder.style.objectFit = 'cover';
   container.appendChild(placeholder);
 
   if (!url) return;
 
   try {
-   // loadingOverlay?.classList.remove('hidden');
-
+    // Instagram
     if (isInstagramUrl(url)) {
       container.innerHTML = '';
       const bq = createInstagramBlockquote(url);
       bq.classList.add('photo-instagram-preview');
 
       const wrapper = document.createElement('div');
-      wrapper.style.width = '300px';
-      wrapper.style.height = '300px';
+      wrapper.style.width = width;
+      wrapper.style.height = 'auto';
       wrapper.style.overflow = 'hidden';
       wrapper.style.margin = '0 auto';
       wrapper.style.position = 'relative';
@@ -372,18 +374,18 @@ async function displayImage(container, url) {
       return;
     }
 
+    // Image normale
     const { url: displayUrl } = await getDisplayableImageUrl(url, { client: client , withPreview: true });
     if (displayUrl) {
       container.innerHTML = '';
       const imgEl = document.createElement('img');
       imgEl.src = displayUrl;
-      imgEl.style.width = '100%';
-      imgEl.style.height = '100%';
-      imgEl.style.objectFit = 'cover';
+      imgEl.style.width = width;   // largeur paramétrable
+      imgEl.style.height = 'auto'; // conserve le ratio
+      imgEl.style.objectFit = 'contain';
       container.appendChild(imgEl);
 
       const linkWrapper = document.createElement('a');
-    //  linkWrapper.href = url;
       linkWrapper.target = '_blank';
       container.replaceChild(linkWrapper, imgEl);
       linkWrapper.appendChild(imgEl);
@@ -393,8 +395,6 @@ async function displayImage(container, url) {
     console.error('[displayImage] Erreur :', err);
     container.innerHTML = '';
     container.appendChild(placeholder);
-  } finally {
-   // loadingOverlay?.classList.add('hidden');
   }
 }
 
@@ -616,7 +616,7 @@ async function updateImgZoom() {
   if (!wrapper) return;
 
   // On délègue l'affichage à displayImage
-  await displayImage(wrapper, photo.url);
+  await displayImage(wrapper, photo.url, { width: '800px' });
 }
 
 
