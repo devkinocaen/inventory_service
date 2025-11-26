@@ -18,17 +18,19 @@ const peopleList = document.getElementById("peopleList");
 
 const orgName = document.getElementById("orgName");
 const orgAddress = document.getElementById("orgAddress");
+const saveOrgBtn = document.getElementById("saveOrgBtn");
 
 const refLastName = document.getElementById("refLastName");
 const refFirstName = document.getElementById("refFirstName");
 const refEmail = document.getElementById("refEmail");
 const refPhone = document.getElementById("refPhone");
+const saveRefBtn = document.getElementById("saveRefBtn");
 
 const pwdCurrent = document.getElementById("pwdCurrent");
 const pwdNew = document.getElementById("pwdNew");
 const pwdConfirm = document.getElementById("pwdConfirm");
 
-// ====== RENDER ======
+// ====== RENDER PEOPLE ======
 function renderPeople() {
   peopleList.innerHTML = "";
   people.forEach(p => {
@@ -44,7 +46,6 @@ function renderPeople() {
     peopleList.appendChild(row);
   });
 
-  // Event listeners edit / delete
   peopleList.querySelectorAll(".btn-edit").forEach(btn => {
     btn.onclick = () => editPerson(Number(btn.dataset.id));
   });
@@ -65,7 +66,6 @@ async function savePerson() {
   if (!first || !last) { alert("Nom + Prénom requis"); return; }
 
   if (editingId) {
-    // Update
     const idx = people.findIndex(p => p.id === editingId);
     people[idx] = { id: editingId, last, first, email, phone, role };
     try {
@@ -73,7 +73,6 @@ async function savePerson() {
     } catch(e) { console.error(e); alert("Erreur update"); }
     editingId = null;
   } else {
-    // Create
     const newPerson = { id: Date.now(), last, first, email, phone, role };
     try {
       const saved = await upsertPerson(client, newPerson);
@@ -107,8 +106,18 @@ async function removePerson(id) {
   } catch(e) { console.error(e); alert("Erreur suppression"); }
 }
 
-// ====== ORGANISATION / REFERENT / PASSWORD ======
-document.getElementById("saveOrgBtn").onclick = async () => {
+// ====== ORGANISATION ======
+// désactiver bouton tant que nom/adresse pas modifiés
+saveOrgBtn.disabled = true;
+
+function checkOrgEdited() {
+  const edited = orgName.value.trim() !== "" || orgAddress.value.trim() !== "";
+  saveOrgBtn.disabled = !edited;
+}
+orgName.addEventListener("input", checkOrgEdited);
+orgAddress.addEventListener("input", checkOrgEdited);
+
+saveOrgBtn.onclick = async () => {
   try {
     await upsertOrganization(client, {
       id: null,
@@ -118,28 +127,46 @@ document.getElementById("saveOrgBtn").onclick = async () => {
       persons: people
     });
     alert("Organisation enregistrée");
+    saveOrgBtn.disabled = true;
   } catch(e){ console.error(e); alert("Erreur organisation"); }
 };
 
-document.getElementById("saveRefBtn").onclick = async () => {
+// ====== REFERENT ======
+saveRefBtn.disabled = true;
+
+function checkRefEdited() {
+  const edited = refFirstName.value.trim() !== "" || refLastName.value.trim() !== "";
+  saveRefBtn.disabled = !edited;
+}
+refFirstName.addEventListener("input", checkRefEdited);
+refLastName.addEventListener("input", checkRefEdited);
+
+saveRefBtn.onclick = async () => {
   const first = refFirstName.value.trim();
   const last = refLastName.value.trim();
   if (!first || !last) { alert("Nom + Prénom requis"); return; }
   try {
-    await upsertPerson(client, { first_name:first, last_name:last, email:refEmail.value.trim()||null, phone:refPhone.value.trim()||null });
+    await upsertPerson(client, {
+      first_name: first,
+      last_name: last,
+      email: refEmail.value.trim() || null,
+      phone: refPhone.value.trim() || null
+    });
     alert("Référent sauvegardé");
+    saveRefBtn.disabled = true;
   } catch(e){ console.error(e); alert("Erreur référent"); }
 };
 
+// ====== PASSWORD ======
 document.getElementById("changePwdBtn").onclick = () => {
   if (pwdNew.value !== pwdConfirm.value) { alert("Confirmation incorrecte"); return; }
   alert("TODO: change_password()");
 };
 
-// Attach save person
+// ====== SAVE PERSON ======
 document.getElementById("savePersonBtn").onclick = savePerson;
 
-// ====== AUTO-FILL ORGA & REFERENT depuis loggedUser ======
+// ====== AUTO-FILL FROM LOGGEDUSER ======
 async function fillOrganizationFromLoggedUser() {
   try {
     const raw = localStorage.getItem("loggedUser");
@@ -148,24 +175,22 @@ async function fillOrganizationFromLoggedUser() {
     const personId = loggedUser?.personId;
     if (!personId) return;
 
-    // Récupérer les organisations liées à cette personne
     const orgs = await fetchOrganizationsByPersonId(client, personId);
     if (!orgs || orgs.length === 0) return;
-    const org = orgs[0]; // si plusieurs, on prend la première
+    const org = orgs[0];
 
-    // Remplir champs organisation
     orgName.value = org.name || "";
     orgAddress.value = org.address || "";
+    checkOrgEdited(); // met à jour bouton
 
-    // Remplir référent si présent
     if (org.referent_id) {
       refFirstName.value = org.referent_first_name || "";
       refLastName.value = org.referent_last_name || "";
       refEmail.value = org.referent_email || "";
       refPhone.value = org.referent_phone || "";
+      checkRefEdited();
     }
 
-    // Remplir personnes liées
     if (Array.isArray(org.persons)) {
       people = org.persons.map(p => ({
         id: p.id,
@@ -182,5 +207,4 @@ async function fillOrganizationFromLoggedUser() {
   }
 }
 
-// Appel au chargement
 await fillOrganizationFromLoggedUser();
