@@ -2,44 +2,57 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Compte — Version Compacte</title>
+<title>Compte — Compact</title>
+<link rel="stylesheet" href="account.css">
 </head>
 <body>
 
-<!-- Organisation -->
+<!-- ========== ORGANISATION ========== -->
 <div class="card">
-  <h2>Organisation</h2>
+
+  <div class="section-title">Organisation</div>
+
   <div class="form-grid">
+    <div>
+      <label>Organisation</label>
+      <select id="organizationSelect" class="org-select"></select>
+    </div>
+
     <div>
       <label>Nom</label>
       <input id="orgName" type="text">
     </div>
+
     <div>
       <label>Adresse</label>
       <input id="orgAddress" type="text">
     </div>
   </div>
+
   <button class="btn btn-save" id="saveOrgBtn">Enregistrer</button>
 </div>
 
-<!-- Référent -->
+<!-- ========== REFERENT ========== -->
 <div class="card">
-  <h2>Personne référente</h2>
+  <div class="section-title">Personne référente</div>
+
   <div class="form-grid">
     <div><label>Nom</label><input id="refLastName"></div>
     <div><label>Prénom</label><input id="refFirstName"></div>
     <div><label>Email</label><input id="refEmail" type="email"></div>
     <div><label>Téléphone</label><input id="refPhone"></div>
   </div>
+
   <button class="btn btn-save" id="saveRefBtn">Enregistrer</button>
 </div>
 
-<!-- Personnes liées -->
+<!-- ========== PERSONNES LIÉES ========== -->
 <div class="card">
-  <h2>Personnes liées</h2>
+  <div class="section-title">Personnes liées</div>
+
   <div id="peopleList"></div>
 
-  <div class="form-grid" style="margin-top:15px;">
+  <div class="form-grid" style="margin-top:10px;">
     <div><label>Nom</label><input id="pLast"></div>
     <div><label>Prénom</label><input id="pFirst"></div>
     <div><label>Email</label><input id="pEmail"></div>
@@ -50,15 +63,17 @@
   <button class="btn btn-save" id="savePersonBtn">Ajouter / Mettre à jour</button>
 </div>
 
-<!-- Mot de passe -->
+<!-- ========== MOT DE PASSE ========== -->
 <div class="card">
-  <h2>Changer le mot de passe</h2>
+  <div class="section-title">Changer le mot de passe</div>
+
   <div class="form-grid">
-    <div><label>Mot de passe actuel</label><input type="password" id="pwdCurrent"></div>
+    <div><label>Actuel</label><input type="password" id="pwdCurrent"></div>
     <div><label>Nouveau</label><input type="password" id="pwdNew"></div>
     <div><label>Confirmation</label><input type="password" id="pwdConfirm"></div>
   </div>
-  <button class="btn btn-save" id="changePwdBtn">Modifier mot de passe</button>
+
+  <button class="btn btn-save" id="changePwdBtn">Modifier</button>
 </div>
 
 <script type="module" src="account.js"></script>

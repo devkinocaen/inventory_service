@@ -1,12 +1,29 @@
-body { font-family: sans-serif; background:#f4f4f4; padding:20px; }
-h2 { margin: 10px 0 15px; font-size: 18px; }
-
-.card {
-  background:#fff; padding:15px; border-radius:10px;
-  margin-bottom:20px; box-shadow:0 2px 5px rgba(0,0,0,0.07);
+body {
+  font-family: sans-serif;
+  background:#f4f4f4;
+  padding:20px;
 }
 
-/* ====== LAYOUT COMPACT ====== */
+/* Titres dans une box */
+.section-title {
+  background:#eee;
+  padding:6px 10px;
+  border-radius:6px;
+  font-size:15px;
+  font-weight:600;
+  margin-bottom:12px;
+}
+
+/* Card */
+.card {
+  background:#fff;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:20px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.07);
+}
+
+/* ===== Formulaire compact ===== */
 .form-grid {
   display:grid;
   grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
@@ -21,21 +38,30 @@ label {
 }
 
 input, select {
-  width:100%; padding:6px; border-radius:5px;
-  border:1px solid #ccc; font-size:14px;
+  width:100%;
+  padding:6px;
+  border-radius:5px;
+  border:1px solid #ccc;
+  font-size:14px;
 }
 
-/* ===== Boutons ===== */
-.btn { padding:7px 12px; font-size:13px; border:0; border-radius:5px; cursor:pointer; }
+/* Boutons */
+.btn {
+  padding:7px 12px;
+  font-size:13px;
+  border:0;
+  border-radius:5px;
+  cursor:pointer;
+}
 .btn-save { background:#3a86ff; color:white; }
 .btn-delete { background:#d00000; color:white; }
 .btn-edit { background:#ffba08; }
 .btn-small { padding:4px 8px; font-size:12px; }
 
-/* ===== Liste des personnes ===== */
+/* Personnes liées */
 .person-row {
   display:grid;
-  grid-template-columns: 1fr 1fr 1fr auto auto;
+  grid-template-columns: 1fr 1fr 1fr auto;
   align-items:center;
   gap:10px;
   padding:8px;
@@ -45,11 +71,18 @@ input, select {
   margin-bottom:8px;
 }
 
-/* Liseré spécifique aux inputs organisation */
-.card input#orgName,
-.card input#orgAddress {
-    border:1px solid #ddd;
-  padding: 6px;
-  border-radius: 5px;
-  background: #fff;
+.person-delete-btn {
+  background:#d00000;
+  color:#fff;
+  border:0;
+  border-radius:4px;
+  padding:3px 7px;
+  cursor:pointer;
+  font-size:12px;
+}
+
+/* Liseré organisation */
+input#orgName, input#orgAddress {
+  border:1px solid #ddd;
+  background:#fff;
 }
