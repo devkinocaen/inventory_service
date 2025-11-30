@@ -58,28 +58,44 @@ input, select {
 .btn-edit { background:#ffba08; }
 .btn-small { padding:4px 8px; font-size:12px; }
 
-/* Personnes liées */
 .person-row {
-  display:grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
-  align-items:center;
-  gap:10px;
-  padding:8px;
-  border:1px solid #ddd;
-  background:#fafafa;
-  border-radius:6px;
-  margin-bottom:8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+  color: #333;
 }
 
-.person-delete-btn {
-  background:#d00000;
-  color:#fff;
-  border:0;
-  border-radius:4px;
-  padding:3px 7px;
-  cursor:pointer;
-  font-size:12px;
+.person-info {
+  flex: 1; /* prend tout l’espace disponible */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 12px;
+  font-size: 16px;       /* plus grand que 14px */
+  font-weight: 500;      /* un peu plus visible */
+  color: #222;           /* texte légèrement plus contrasté */
 }
+
+
+.person-remove-btn {
+  background: #e74c3c; /* rouge vif */
+  color: white;
+  border: none;
+  border-radius: 4px; /* coins légèrement arrondis */
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.person-remove-btn:hover {
+  background: #c0392b; /* rouge un peu plus foncé au survol */
+}
+
 
 /* Liseré organisation */
 input#orgName, input#orgAddress {

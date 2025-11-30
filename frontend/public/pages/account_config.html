@@ -33,17 +33,18 @@
 </div>
 
 <!-- ========== REFERENT ========== -->
-<div class="card">
-  <div class="section-title">Personne référente</div>
+<div class="referent-section">
+  <label for="refSelect">Référent :</label>
+  <select id="refSelect"></select>
 
-  <div class="form-grid">
-    <div><label>Nom</label><input id="refLastName"></div>
-    <div><label>Prénom</label><input id="refFirstName"></div>
-    <div><label>Email</label><input id="refEmail" type="email"></div>
-    <div><label>Téléphone</label><input id="refPhone"></div>
+  <div class="referent-fields">
+    <input type="text" id="refFirstName" placeholder="Prénom" readonly>
+    <input type="text" id="refLastName" placeholder="Nom" readonly>
+    <input type="email" id="refEmail" placeholder="Email" readonly>
+    <input type="tel" id="refPhone" placeholder="Téléphone" readonly>
   </div>
 
-  <button class="btn btn-save" id="saveRefBtn">Enregistrer</button>
+  <button id="saveRefBtn">Mettre à jour le référent</button>
 </div>
 
 <!-- ========== PERSONNES LIÉES ========== -->
