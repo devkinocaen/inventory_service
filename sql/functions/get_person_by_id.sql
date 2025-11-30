@@ -9,8 +9,13 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, first_name, last_name, address, email, phone
+    SELECT person.id,
+    person.first_name::TEXT,
+    person.last_name::TEXT,
+    person.address::TEXT,
+    person.email::TEXT,
+    person.phone::TEXT
     FROM inventory.person
-    WHERE id = p_id;
+    WHERE person.id = p_id;
 END;
 $$ LANGUAGE plpgsql STABLE;

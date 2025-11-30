@@ -11,15 +11,6 @@ VALUES ('Costumerie', '0.1.0')
 ON CONFLICT DO NOTHING;
 
 -- ===========================================
--- Organisations par défaut
--- ===========================================
-INSERT INTO inventory.organization (name)
-VALUES
-  ('Kino Caen'),
-  ('Amavada')
-ON CONFLICT (name) DO NOTHING;
-
--- ===========================================
 -- Lieux de stockage
 -- ===========================================
 INSERT INTO inventory.storage_location (name, address)

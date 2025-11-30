@@ -45,7 +45,8 @@ CREATE TEMP TABLE persons_temp_raw (
     first_name text,
     last_name text,
     email text,
-    phone text
+    phone text,
+    address text
 );
 
 \copy persons_temp_raw FROM '$CSV_PERSON_FILE' CSV HEADER;

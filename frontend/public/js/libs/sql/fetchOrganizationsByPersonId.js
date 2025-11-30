@@ -19,13 +19,15 @@ export async function fetchOrganizationsByPersonId(client, personId) {
 
       console.log ('fetchOrganizationsByPersonId', personId, data)
     // Retourne la liste ou tableau vide
+      console.log ('data', data)
     return data.map(row => ({
-      id: row.organization_id,
-      name: row.organization_name,
-      address: row.organization_address,
+      id: row.id,
+      name: row.name,
+      address: row.address,
       referent_id: row.referent_id,
       referent_first_name: row.referent_first_name,
-      referent_last_name: row.referent_last_name
+      referent_last_name: row.referent_last_name,
+      persons: row.persons
     }));
 
   } catch (err) {

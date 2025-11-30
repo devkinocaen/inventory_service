@@ -3,6 +3,7 @@ import {
   fetchOrganizations,
   fetchOrganizationsByPersonId,
   upsertOrganization,
+  fetchPersonById,
   upsertPerson,
   deletePerson
 } from '../libs/sql/index.js';
@@ -14,22 +15,27 @@ let client = null;
 let personId = null;
 let organizations = [];
 
-const orgSelect = document.getElementById('organization');
+// -----------------------------
+// DOM elements
+// -----------------------------
+const orgSelect = document.getElementById('organizationSelect'); // FIX
 const saveOrgBtn = document.getElementById('saveOrgBtn');
 const saveRefBtn = document.getElementById('saveRefBtn');
 const savePersonBtn = document.getElementById('savePersonBtn');
 const peopleList = document.getElementById('peopleList');
 const changePwdBtn = document.getElementById('changePwdBtn');
 
-// Inputs
+// Organisation
 const orgName = document.getElementById('orgName');
 const orgAddress = document.getElementById('orgAddress');
 
+// Référent
 const refLast = document.getElementById('refLastName');
 const refFirst = document.getElementById('refFirstName');
 const refEmail = document.getElementById('refEmail');
 const refPhone = document.getElementById('refPhone');
 
+// Personne liée
 const pLast = document.getElementById('pLast');
 const pFirst = document.getElementById('pFirst');
 const pEmail = document.getElementById('pEmail');
@@ -57,7 +63,6 @@ const pRole = document.getElementById('pRole');
 
 // -----------------------------------------------------
 // Charger organisations
-// Option 3 : dépend de personId
 // -----------------------------------------------------
 async function loadOrganizations() {
   try {
@@ -69,21 +74,27 @@ async function loadOrganizations() {
       labelField: 'name',
       placeholder: '-- Choisir une organisation --'
     });
+      
+      console.log('personId', personId)
+      console.log('organizations', organizations)
 
+    // Auto-sélection première organisation
     if (organizations.length > 0) {
       orgSelect.value = organizations[0].id;
-      loadOrganizationDetails();
+        console.log ('orgSelect', orgSelect.value)
+      await loadOrganizationDetails();
     }
+
   } catch (err) {
-    console.error("Erreur organisations :", err);
+    console.error("Erreur lors du chargement des organisations :", err);
   }
 }
 
 
 // -----------------------------------------------------
-// Charger détails orga
+// Charger détails organisation
 // -----------------------------------------------------
-function loadOrganizationDetails() {
+async function loadOrganizationDetails() {
   const orgId = parseInt(orgSelect.value);
   const org = organizations.find(o => o.id === orgId);
 
@@ -91,14 +102,21 @@ function loadOrganizationDetails() {
 
   orgName.value = org.name ?? '';
   orgAddress.value = org.address ?? '';
+    
+    console.log ("org", org)
+    
+    const referent  = await fetchPersonById(client, org.referent_id);
+    
+    console.log ("referent", referent)
 
-  // Référent
-  refLast.value = org.referent_last_name ?? '';
-  refFirst.value = org.referent_first_name ?? '';
-  refEmail.value = org.referent_email ?? '';
-  refPhone.value = org.referent_phone ?? '';
 
-  // Personnes liées
+  // Gestion du référent (selon format renvoyé par fetchOrganizationsByPersonId)
+  refLast.value  = referent.last_name  ?? '';
+  refFirst.value = referent.first_name ?? '';
+  refEmail.value = referent.email      ?? '';
+  refPhone.value = referent.phone      ?? '';
+
+  // Liste des personnes liées
   renderPeople(org.persons || []);
 }
 
@@ -124,7 +142,6 @@ function renderPeople(list) {
 
     row.appendChild(info);
     row.appendChild(remove);
-
     peopleList.appendChild(row);
   });
 }
@@ -150,12 +167,23 @@ async function removePerson(id) {
 // -----------------------------------------------------
 async function saveOrganization() {
   const orgId = parseInt(orgSelect.value);
+  const org = organizations.find(o => o.id === orgId);
+
+  const referent = (org.persons || []).find(p => p.id === org.referent_id);
+
+  if (!referent || !referent.phone) {
+    return alert("Le référent doit avoir un téléphone.");
+  }
 
   try {
     await upsertOrganization(client, {
-      id: orgId,
       name: orgName.value.trim(),
-      address: orgAddress.value.trim()
+      address: orgAddress.value.trim(),
+      referent_id: org.referent_id,
+      persons: (org.persons || []).map(p => ({
+        id: p.id,
+        role: p.role || null
+      }))
     });
 
     alert("Organisation enregistrée");
@@ -173,22 +201,37 @@ async function saveRef() {
   const orgId = parseInt(orgSelect.value);
 
   try {
+    // 1. Upsert du référent seul (sans organisation ni rôle)
+    const referent = await upsertPerson(client, {
+      first_name: refFirst.value.trim(),
+      last_name: refLast.value.trim(),
+      email: refEmail.value.trim(),
+      phone: refPhone.value.trim()
+    });
+
+    // 2. Récupère l'organisation courante pour reconstruire persons[]
+    const org = organizations.find(o => o.id === orgId);
+    const persons = (org.persons || []).map(p => ({
+      id: p.id,
+      role: p.role || null
+    }));
+
+    // 3. Upsert organisation avec son référent
     await upsertOrganization(client, {
-      id: orgId,
-      referent: {
-        first_name: refFirst.value.trim(),
-        last_name: refLast.value.trim(),
-        email: refEmail.value.trim(),
-        phone: refPhone.value.trim()
-      }
+      name: orgName.value.trim(),
+      address: orgAddress.value.trim(),
+      referent_id: referent.id,
+      persons
     });
 
     alert("Référent mis à jour");
     await loadOrganizations();
+
   } catch (err) {
     alert("Erreur : " + formatServerError(err.message));
   }
 }
+
 
 
 // -----------------------------------------------------
@@ -198,22 +241,56 @@ async function savePerson() {
   const orgId = parseInt(orgSelect.value);
 
   try {
-    await upsertPerson(client, {
-      organization_id: orgId,
+    // 1. Upsert de la personne seule
+    const person = await upsertPerson(client, {
       first_name: pFirst.value.trim(),
       last_name: pLast.value.trim(),
       email: pEmail.value.trim(),
-      phone: pPhone.value.trim(),
-      role: pRole.value.trim()
+      phone: pPhone.value.trim()
+    });
+
+    // 2. On doit ajouter/mettre à jour cette personne dans l'organisation
+    const org = organizations.find(o => o.id === orgId);
+
+    // Base actuelle
+    let persons = (org.persons || []).map(p => ({
+      id: p.id,
+      role: p.role || null
+    }));
+
+    // 3. Mise à jour ou ajout du rôle dans la liste persons[]
+    const role = pRole.value.trim() || null;
+    const existing = persons.find(p => p.id === person.id);
+
+    if (existing) {
+      existing.role = role;
+    } else {
+      persons.push({ id: person.id, role });
+    }
+
+    // 4. Upsert organisation mise à jour
+    await upsertOrganization(client, {
+      name: orgName.value.trim(),
+      address: orgAddress.value.trim(),
+      referent_id: org.referent_id, // conserver le même référent
+      persons
     });
 
     alert("Personne enregistrée");
-    pFirst.value = pLast.value = pEmail.value = pPhone.value = pRole.value = '';
+
+    pFirst.value = '';
+    pLast.value = '';
+    pEmail.value = '';
+    pPhone.value = '';
+    pRole.value = '';
+
     await loadOrganizations();
+
   } catch (err) {
     alert("Erreur : " + formatServerError(err.message));
   }
 }
+
 
 
 // -----------------------------------------------------
@@ -232,7 +309,7 @@ async function changePassword() {
 
 // -----------------------------------------------------
 function bindEvents() {
-  orgSelect.addEventListener('change', loadOrganizationDetails);
+  orgSelect.addEventListener('change', () => loadOrganizationDetails());
   saveOrgBtn.addEventListener('click', saveOrganization);
   saveRefBtn.addEventListener('click', saveRef);
   savePersonBtn.addEventListener('click', savePerson);

@@ -27,13 +27,16 @@ BEGIN
             first_name,
             last_name,
             email,
-            phone
+            phone,
+            address
         )
         VALUES (
             trim(r.first_name),
             trim(r.last_name),
             NULLIF(trim(r.email), ''),
-            NULLIF(trim(r.phone), '')
+            NULLIF(trim(r.phone), ''),
+            NULLIF(trim(r.address), '')
+
         )
         ON CONFLICT (first_name, last_name) DO NOTHING;
 

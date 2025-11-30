@@ -2,48 +2,48 @@ CREATE OR REPLACE FUNCTION inventory.get_organizations_by_person_id(
     p_person_id INT
 )
 RETURNS TABLE (
-    organization_id INT,
-    organization_name TEXT,
-    organization_address TEXT,
+    id INT,
+    name TEXT,
+    address TEXT,
     referent_id INT,
     referent_first_name TEXT,
     referent_last_name TEXT,
-    person_role TEXT
+    referent_phone TEXT,
+    persons JSONB
 )
- LANGUAGE plpgsql STABLE
- SECURITY DEFINER
- AS $$
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
 BEGIN
-    -- 🔹 Organisations où la personne est référent
     RETURN QUERY
     SELECT
-        o.id::int,
-        o.name::text,
-        o.address::text,
-        o.referent_id::int,
-        r.first_name::text,
-        r.last_name::text,
-        NULL::text
+        o.id,
+        o.name::TEXT,
+        o.address::TEXT,
+        o.referent_id,
+        pr.first_name::TEXT AS referent_first_name,
+        pr.last_name::TEXT AS referent_last_name,
+        pr.phone::TEXT AS referent_phone,
+        COALESCE(
+            JSONB_AGG(
+                JSONB_BUILD_OBJECT(
+                    'id', p.id,
+                    'first_name', p.first_name::TEXT,
+                    'last_name', p.last_name::TEXT,
+                    'email', p.email::TEXT,
+                    'phone', p.phone::TEXT,
+                    'role', op.role::TEXT
+                )
+                ORDER BY p.first_name, p.last_name
+            ) FILTER (WHERE p.id IS NOT NULL),
+            '[]'::JSONB
+        ) AS persons
     FROM inventory.organization o
-    LEFT JOIN inventory.person r ON o.referent_id = r.id
-    WHERE o.referent_id = p_person_id
-    ORDER BY o.name;
-
-    -- 🔹 Organisations où la personne est membre via organization_person
-    RETURN QUERY
-    SELECT
-        o.id::int,
-        o.name::text,
-        o.address::text,
-        o.referent_id::int,
-        r.first_name::text,
-        r.last_name::text,
-        op.role::text
-    FROM inventory.organization_person op
-    JOIN inventory.organization o ON op.organization_id = o.id
-    LEFT JOIN inventory.person r ON o.referent_id = r.id
-    WHERE op.person_id = p_person_id
-      AND o.referent_id <> p_person_id
+    LEFT JOIN inventory.person pr ON pr.id = o.referent_id
+    LEFT JOIN inventory.organization_person op ON op.organization_id = o.id
+    LEFT JOIN inventory.person p ON p.id = op.person_id
+    WHERE o.referent_id = p_person_id OR op.person_id = p_person_id
+    GROUP BY o.id, o.name, o.referent_id, pr.first_name, pr.last_name, pr.phone, pr.address
     ORDER BY o.name;
 END;
 $$;

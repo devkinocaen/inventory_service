@@ -1,6 +1,22 @@
-first_name,last_name,email,phone
-Alice,Durand,alice.durand@example.com,0612345678
-Marc,Leroy,marc.leroy@example.com,0623456789
-Sophie,Moreau,sophie.moreau@example.com,0634567890
-Romain,Petit,romain.petit@example.com,0645678901
-Claire,Martin,claire.martin@example.com,0656789012
+first_name,last_name,email,phone,address
+Alice,Durand,alice.durand@example.com,0612345678,"12 rue des Fleurs, Paris"
+Nicolas,Bellaiche,nicolas.bellaiche@ign.fr,0612345678,"12 rue des Fleurs, Paris"
+Marc,Leroy,marc.leroy@example.com,0623456789,"5 avenue Victor Hugo, Lyon"
+Sophie,Moreau,sophie.moreau@example.com,0634567890,"8 boulevard Saint-Michel, Paris"
+Romain,Petit,romain.petit@example.com,0645678901,"21 rue de la République, Marseille"
+Claire,Martin,claire.martin@example.com,0656789012,"14 avenue Jean Jaurès, Lille"
+Julien,Robert,julien.robert@example.com,0667890123,"9 rue des Acacias, Toulouse"
+Emma,Richard,emma.richard@example.com,0678901234,"7 rue du Moulin, Nantes"
+Lucas,Simon,lucas.simon@example.com,0689012345,"3 boulevard Voltaire, Bordeaux"
+Camille,Michel,camille.michel@example.com,0690123456,"11 place de la Gare, Strasbourg"
+Nathan,Garcia,nathan.garcia@example.com,0611122233,"2 rue du Pont, Montpellier"
+Léa,Bernard,lea.bernard@example.com,0622233344,"16 avenue des Champs, Nice"
+Thomas,Fabre,thomas.fabre@example.com,0633344455,"18 rue Lafayette, Rennes"
+Chloé,Roussel,chloe.roussel@example.com,0644455566,"20 rue de l'Église, Dijon"
+Antoine,Marchand,antoine.marchand@example.com,0655566677,"4 rue des Lilas, Grenoble"
+Julie,Guillaume,julie.guillaume@example.com,0666677788,"10 avenue de la Liberté, Orléans"
+Hugo,Leclerc,hugo.leclerc@example.com,0677788899,"6 boulevard du Général, Reims"
+Manon,Brun,manon.brun@example.com,0688899900,"15 rue du Marché, Tours"
+Alexandre,Henry,alexandre.henry@example.com,0612344321,"9 place Saint-Pierre, Clermont-Ferrand"
+Sarah,Colin,sarah.colin@example.com,0623455432,"12 rue des Roses, Amiens"
+Maxime,Fontaine,maxime.fontaine@example.com,0634566543,"3 avenue Victor Hugo, Metz"

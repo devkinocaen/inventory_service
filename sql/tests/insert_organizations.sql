@@ -5,6 +5,8 @@ DECLARE
     v_person_id INT;
     roles TEXT[] := ARRAY['assistant','technicien','costumier','real'];
     n INT;
+    n_persons INT;
+    selected_ids INT[];
 BEGIN
     -- Vérification table temporaire CSV
     IF NOT EXISTS (
@@ -45,13 +47,33 @@ BEGIN
         )
         ON CONFLICT (name) DO NOTHING;
 
-        -- Associer 0 à 3 autres personnes avec rôle aléatoire
-        FOR n IN 1..(floor(random()*4)::int) LOOP
+        -- Ajouter le référent dans organization_person avec rôle 'referent'
+        INSERT INTO inventory.organization_person (
+            organization_id,
+            person_id,
+            role
+        )
+        VALUES (
+            (SELECT id FROM inventory.organization WHERE name = trim(r.name) LIMIT 1),
+            v_referent_id,
+            'referent'
+        )
+        ON CONFLICT (organization_id, person_id) DO NOTHING;
+
+        -- Nombre de personnes liées aléatoire (0 à 4)
+        n_persons := floor(random() * 5)::int;
+        selected_ids := ARRAY[v_referent_id]; -- éviter de reprendre le référent
+
+        FOR n IN 1..n_persons LOOP
             SELECT id INTO v_person_id
             FROM inventory.person
-            WHERE id <> v_referent_id
+            WHERE id <> ALL(selected_ids)
             ORDER BY random()
             LIMIT 1;
+
+            EXIT WHEN v_person_id IS NULL; -- plus de personnes disponibles
+
+            selected_ids := selected_ids || v_person_id;
 
             INSERT INTO inventory.organization_person (
                 organization_id,
