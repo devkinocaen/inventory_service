@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Mes Réservations</title>
+<style>
+  body {
+    font-family: sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  .booking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .booking-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .booking-batch,
+  .booking-dates,
+  .booking-items,
+  .booking-person {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+  }
+
+  .booking-batch {
+    font-weight: bold;
+    min-width: 150px;
+  }
+
+  .booking-dates {
+    min-width: 200px;
+  }
+
+  .booking-items {
+    flex: 1;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .booking-item {
+    background: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .booking-item img {
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    object-fit: cover;
+  }
+
+  .booking-person img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .booking-actions button {
+    padding: 6px 12px;
+    font-size: 13px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background: #d00000;
+    color: white;
+  }
+</style>
+</head>
+<body>
+
+<h1>Mes Réservations</h1>
+<div class="booking-list" id="bookingList"></div>
+
+<script>
+  // =============================
+  // Exemple de données simulées
+  // =============================
+  const reservations = [
+    {
+      id: 1,
+      batch: { id: 101, description: "Lot théâtre 2025" },
+      booking_person: { name: "Julie Martin", photo: "https://placehold.co/40x40?text=JM" },
+      start_date: "2025-12-02 14:00",
+      end_date: "2025-12-02 18:00",
+      items: [
+        { name: "Robe longue", photo: "https://placehold.co/30x30?text=RL" },
+        { name: "Chapeau bleu", photo: "https://placehold.co/30x30?text=CB" }
+      ]
+    },
+    {
+      id: 2,
+      batch: { id: 102, description: "Lot carnaval" },
+      booking_person: { name: "Alex Dupont", photo: "https://placehold.co/40x40?text=AD" },
+      start_date: "2025-12-05 09:30",
+      end_date: "2025-12-05 12:30",
+      items: [
+        { name: "Veste cuir", photo: "https://placehold.co/30x30?text=VC" },
+        { name: "Sac à main", photo: "https://placehold.co/30x30?text=SM" }
+      ]
+    }
+  ];
+
+  // =============================
+  // Affichage
+  // =============================
+  const bookingList = document.getElementById("bookingList");
+
+  function renderBookings(list) {
+    bookingList.innerHTML = "";
+    list.forEach(b => {
+      const card = document.createElement("div");
+      card.className = "booking-card";
+      card.innerHTML = `
+        <div class="booking-batch">${b.batch.description}</div>
+        <div class="booking-dates">📅 ${b.start_date} → ${b.end_date}</div>
+        <div class="booking-items">
+          ${b.items.map(i => `<div class="booking-item"><img src="${i.photo}" alt="${i.name}">${i.name}</div>`).join('')}
+        </div>
+        <div class="booking-person">
+          👤 <img src="${b.booking_person.photo}" alt="${b.booking_person.name}"> ${b.booking_person.name}
+        </div>
+        <div class="booking-actions">
+          <button onclick="cancelBooking(${b.id})">Annuler</button>
+        </div>
+      `;
+      bookingList.appendChild(card);
+    });
+  }
+
+  function cancelBooking(id) {
+    alert("Annulation réservation " + id);
+    // ici appeler l'API pour annuler la réservation
+  }
+
+  renderBookings(reservations);
+</script>
+
+</body>
+</html>
