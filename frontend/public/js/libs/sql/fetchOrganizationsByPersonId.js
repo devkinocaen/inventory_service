@@ -17,7 +17,6 @@ export async function fetchOrganizationsByPersonId(client, personId) {
       return [];
     }
 
-      console.log ('fetchOrganizationsByPersonId', personId, data)
     // Retourne la liste ou tableau vide
 
   return data.map(row => ({

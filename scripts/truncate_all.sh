@@ -19,6 +19,7 @@ DB_CLIENT="neon"
 # ===========================================
 TABLES=(
   reservable_booking
+  reservable_batch
   reservable_style_link
   reservable
   reservable_subcategory

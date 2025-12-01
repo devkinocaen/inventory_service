@@ -29,6 +29,18 @@ export function clearStatusMsg(statusMsg) {
 }
 
 
+// -----------------------------
+// Helpers
+// -----------------------------
+export function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
 
 export function formatDateTime(isoString) {
   const date = new Date(isoString);

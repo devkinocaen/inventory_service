@@ -239,3 +239,33 @@
     color: #666;
     cursor: not-allowed;
 }
+.booking-items-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.booking-item {
+  min-width: 80px;
+  flex: 0 0 auto;
+  text-align: center;
+}
+
+.booking-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 5px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* Masquer scrollbar mais scrollable */
+.booking-items-container::-webkit-scrollbar {
+  display: none;
+}
+.booking-items-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

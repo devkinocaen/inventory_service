@@ -6,7 +6,7 @@ window.ENV = {
 
   // Variables spécifiques à chaque site Vercel
   DB_NAME: "",
-  HEADER_IMAGE_URL: "./images/bandeau_costumerie_julie.png",
+  HEADER_IMAGE_URL: "/images/bandeau_costumerie_julie.png",
 
   // URLs API déjà présentes dans ta version
   API_REST_URLS: [
