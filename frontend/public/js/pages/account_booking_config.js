@@ -90,7 +90,7 @@ export async function renderBookings(bookings) {
     // Events
     card.querySelector('.btn-details')?.addEventListener('click', (e) => {
       const id = Number(e.currentTarget.dataset.id);
-      if (id) openBatchModal(id, () => refreshBookings());
+      if (id) openBatchModal(id, () => refreshBookings(), 'viewer');
     });
 
     card.querySelector('.btn-delete')?.addEventListener('click', async (e) => {

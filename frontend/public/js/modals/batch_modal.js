@@ -9,6 +9,9 @@ import {
 import { populateSelect } from '../libs/ui/populateSelect.js';
 import { formatServerError } from '../libs/helpers.js';
 
+
+let currentMode = 'edit'; // ← nouvelle variable globale pour le mode ('edit' ou 'viewer')
+
 let client;
 let modal, dialog, cancelBtn, saveBtn, addBtn;
 let currentBatch = null;
@@ -39,6 +42,11 @@ export async function loadBatchModal() {
     saveBtn   = dialog.querySelector('#batch-save');
     addBtn    = dialog.querySelector('#add-reservable');
 
+ const batchAddSection = document.getElementById('batch-add-section');
+    if (batchAddSection && currentMode === 'viewer') {
+      batchAddSection.style.display = 'none';
+    }
+    
     bindBatchEvents();
 }
 
@@ -111,22 +119,21 @@ function setupAvailableSearch() {
 /* -------------------------------------------------------
    Ouverture du modal
 ------------------------------------------------------- */
-export async function openBatchModal(bookingId, onClose) {
+export async function openBatchModal(bookingId, onClose, mode = 'edit') {
     if (!client) client = await initClient();
     currentModalCallback = onClose;
+    currentMode = mode; // ← on stocke le mode globalement
 
     await initBatchModal();
     
     // Récupérer le booking
     const bookingData = await fetchBookingById(client, bookingId);
-    currentBooking=bookingData.booking
+    currentBooking = bookingData.booking;
     if (!currentBooking) return alert('Booking introuvable');
 
-    
     currentBatch = bookingData.batch?.id
-    ? await fetchBatchById(client, bookingData.batch.id)
-    : { description: '', reservables: [] };
-
+        ? await fetchBatchById(client, bookingData.batch.id)
+        : { description: '', reservables: [] };
 
     if (!currentBatch.reservables) currentBatch.reservables = [];
 
@@ -136,20 +143,29 @@ export async function openBatchModal(bookingId, onClose) {
     dialog.querySelector('#batch-start-date').value = currentBooking.start_date?.substring(0,16) || '';
     dialog.querySelector('#batch-end-date').value = currentBooking.end_date?.substring(0,16) || '';
 
-    console.log ('currentBooking.start_date?.substring(0,16)', currentBooking.start_date?.substring(0,16))
-    
-    renderBatchItems();
+    renderBatchItems(mode);
 
-    // Afficher overlay + dialogue avec animation
+    // Activer / désactiver éléments selon le mode
+    if (mode === 'viewer') {
+        addBtn.style.display = 'none';
+        dialog.querySelector('#batch-start-date').disabled = true;
+        dialog.querySelector('#batch-end-date').disabled = true;
+    } else {
+        addBtn.style.display = 'inline-block';
+        dialog.querySelector('#batch-start-date').disabled = false;
+        dialog.querySelector('#batch-end-date').disabled = false;
+    }
+
+    // Afficher overlay + dialogue
     modal.classList.remove('hidden');
     modal.classList.add('show');
-    dialog.classList.add('show'); // <-- important pour scale/opacity
+    dialog.classList.add('show');
 
-    // Permettre de fermer en cliquant sur l'overlay (hors dialogue)
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeBatchModal();
     }, { once: true });
 }
+
 
 /* -------------------------------------------------------
    Fermeture
@@ -176,7 +192,7 @@ export function closeBatchModal() {
 /* -------------------------------------------------------
    Rendu tableau des items
 ------------------------------------------------------- */
-function renderBatchItems(onClose) {
+function renderBatchItems() {
     const tbody = dialog.querySelector('#batch-tbody');
     tbody.innerHTML = '';
 
@@ -185,59 +201,55 @@ function renderBatchItems(onClose) {
     currentBatch.reservables.forEach(item => {
         const tr = document.createElement('tr');
 
-        // Nom + taille
         const nameTd = document.createElement('td');
         nameTd.textContent = item.name;
 
         const sizeTd = document.createElement('td');
         sizeTd.textContent = item.size || '-';
 
-        // Colonne action dynamique
         const actionTd = document.createElement('td');
         const actionBtn = document.createElement('button');
         actionBtn.classList.add('batch-item-action');
 
-        // Déterminer l'état initial et la classe CSS
-        if (item.is_in_stock === false) {
-            actionBtn.textContent = 'Rentrer';
-            actionBtn.disabled = false;
-            actionBtn.classList.add('rentrer');
-        } else if (item.is_in_stock === true && item.status === 'disponible') {
-            actionBtn.textContent = 'Sortir';
-            actionBtn.disabled = false;
-            actionBtn.classList.add('sortir');
-        } else {
-            actionBtn.textContent = 'Indisponible';
+        if (currentMode === 'viewer') {
+            actionBtn.textContent = item.is_in_stock ? 'Sortir' : 'Rentrer';
             actionBtn.disabled = true;
-            actionBtn.classList.add('indisponible');
-        }
-
-        // Listener pour basculer l'état
-        actionBtn.addEventListener('click', async () => {
-            if (actionBtn.disabled) return;
-
-            // Toggle is_in_stock
-            const isCurrentlyRentrer = actionBtn.textContent === 'Rentrer';
-            item.is_in_stock = isCurrentlyRentrer;
-
-            // Mettre à jour le texte et la classe CSS
-            if (item.is_in_stock) {
+        } else {
+            if (item.is_in_stock === false) {
+                actionBtn.textContent = 'Rentrer';
+                actionBtn.disabled = false;
+                actionBtn.classList.add('rentrer');
+            } else if (item.is_in_stock === true && item.status === 'disponible') {
                 actionBtn.textContent = 'Sortir';
-                actionBtn.classList.remove('rentrer');
+                actionBtn.disabled = false;
                 actionBtn.classList.add('sortir');
             } else {
-                actionBtn.textContent = 'Rentrer';
-                actionBtn.classList.remove('sortir');
-                actionBtn.classList.add('rentrer');
+                actionBtn.textContent = 'Indisponible';
+                actionBtn.disabled = true;
+                actionBtn.classList.add('indisponible');
             }
 
-            // Ici tu peux appeler la fonction backend pour sauvegarder
-            await updateReservable(client, { id: item.id, is_in_stock: item.is_in_stock });
-        });
+            actionBtn.addEventListener('click', async () => {
+                if (actionBtn.disabled) return;
+                const isCurrentlyRentrer = actionBtn.textContent === 'Rentrer';
+                item.is_in_stock = isCurrentlyRentrer;
+
+                if (item.is_in_stock) {
+                    actionBtn.textContent = 'Sortir';
+                    actionBtn.classList.remove('rentrer');
+                    actionBtn.classList.add('sortir');
+                } else {
+                    actionBtn.textContent = 'Rentrer';
+                    actionBtn.classList.remove('sortir');
+                    actionBtn.classList.add('rentrer');
+                }
+
+                await updateReservable(client, { id: item.id, is_in_stock: item.is_in_stock });
+            });
+        }
 
         actionTd.appendChild(actionBtn);
 
-        // Colonne supprimer
         const deleteTd = document.createElement('td');
         const deleteBtn = document.createElement('button');
         deleteBtn.type = 'button';
@@ -245,11 +257,10 @@ function renderBatchItems(onClose) {
         deleteBtn.addEventListener('click', e => {
             e.stopPropagation();
             currentBatch.reservables = currentBatch.reservables.filter(i => i.id !== item.id);
-            renderBatchItems();
+            renderBatchItems(); // utilise currentMode
         });
         deleteTd.appendChild(deleteBtn);
 
-        // Assemblage de la ligne
         tr.appendChild(nameTd);
         tr.appendChild(sizeTd);
         tr.appendChild(actionTd);
@@ -257,6 +268,9 @@ function renderBatchItems(onClose) {
 
         tbody.appendChild(tr);
     });
+
+    const descInput = dialog.querySelector('#batch-description');
+    if (descInput) descInput.disabled = false; // renommage toujours possible
 }
 
 
@@ -264,6 +278,8 @@ function renderBatchItems(onClose) {
    Ajouter un item depuis le select
 ------------------------------------------------------- */
 function addSelectedReservable() {
+    if (currentMode === 'viewer') return; // interdit l'ajout
+
     const select = dialog.querySelector('#available-reservables');
     const id = Number(select.value);
     if (!id) return;
@@ -274,10 +290,9 @@ function addSelectedReservable() {
     if (!currentBatch.reservables.some(i => i.id === id)) {
         currentBatch.reservables.push(reservable);
         renderBatchItems();
-        
-        console.log ('currentBatch apres addSelectedReservable', currentBatch)
     }
 }
+
 
 /* -------------------------------------------------------
    Sauvegarde

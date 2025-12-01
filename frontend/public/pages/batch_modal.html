@@ -1,6 +1,6 @@
 <div id="batch-modal" class="batch-modal-overlay hidden" tabindex="-1">
   <div class="batch-modal-dialog">
-    <h2 class="batch-modal-title">Lots</h2>
+    <h2 class="batch-modal-title">Contenu du lot</h2>
 
     <!-- ID et description -->
     <div class="batch-form-row">
@@ -33,12 +33,15 @@
     </table>
 
     <!-- Ajout d’items -->
-    <h3 class="batch-add-title">Ajouter des items</h3>
-    <div class="batch-add-container">
-      <input type="text" id="available-search" placeholder="Rechercher..." class="batch-add-search">
-      <select id="available-reservables" size="5" class="batch-add-select"></select>
-      <button id="add-reservable" class="batch-add-btn">➕ Ajouter</button>
+    <div id="batch-add-section">
+      <h3 class="batch-add-title">Ajouter des items</h3>
+      <div class="batch-add-container">
+        <input type="text" id="available-search" placeholder="Rechercher..." class="batch-add-search">
+        <select id="available-reservables" size="5" class="batch-add-select"></select>
+        <button id="add-reservable" class="batch-add-btn">➕ Ajouter</button>
+      </div>
     </div>
+
 
     <!-- Actions -->
     <div class="batch-modal-actions">
