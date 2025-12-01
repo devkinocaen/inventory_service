@@ -1,4 +1,3 @@
--- insert_reservable_bookings.sql
 DO $$
 DECLARE
   r RECORD;
@@ -8,6 +7,10 @@ DECLARE
   nb INT;
   br_id INT;
   renter_id INT;
+  persons INT[];
+  booking_person INT;
+  pickup_person INT;
+  return_person INT;
 BEGIN
   -- Pour chaque batch existant
   FOR r IN SELECT id AS batch_id FROM inventory.reservable_batch LOOP
@@ -25,6 +28,23 @@ BEGIN
       FROM inventory.organization
       ORDER BY random()
       LIMIT 1;
+
+      -- Récupérer toutes les personnes liées à l'organisation
+      SELECT array_agg(person_id) INTO persons
+      FROM inventory.organization_person
+      WHERE organization_id = renter_id;
+
+      -- Si pas de personne, utiliser le référent de l'organisation
+      IF persons IS NULL OR array_length(persons,1) = 0 THEN
+        SELECT referent_id INTO persons
+        FROM inventory.organization
+        WHERE id = renter_id;
+      END IF;
+
+      -- Choisir aléatoirement booking, pickup et return
+      booking_person := persons[1 + floor(random()*array_length(persons,1))::int];
+      pickup_person  := persons[1 + floor(random()*array_length(persons,1))::int];
+      return_person  := persons[1 + floor(random()*array_length(persons,1))::int];
 
       -- Créneaux aléatoires dans les 30 prochains jours, 2 à 8h de durée
       slot_start := now()
@@ -46,13 +66,25 @@ BEGIN
 
       -- Créer une réservation pour le batch
       INSERT INTO inventory.reservable_booking (
-        reservable_batch_id, renter_organization_id, booking_reference_id, start_date, end_date
+        reservable_batch_id,
+        renter_organization_id,
+        booking_reference_id,
+        start_date,
+        end_date,
+        booking_person_id,
+        pickup_person_id,
+        return_person_id,
+        booked_at
       ) VALUES (
         r.batch_id,
         renter_id,
         br_id,
         slot_start,
-        slot_end
+        slot_end,
+        booking_person,
+        pickup_person,
+        return_person,
+        now()
       )
       ON CONFLICT DO NOTHING;
 

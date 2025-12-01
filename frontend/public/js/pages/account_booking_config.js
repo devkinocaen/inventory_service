@@ -6,6 +6,7 @@ import { formatServerError, formatDateTime, escapeHtml } from '../libs/helpers.j
 let client;
 let currentBookings = [];
 
+
 /* ---------------- Render bookings ---------------- */
 export async function renderBookings(bookings) {
   const container = document.getElementById('bookingList');
@@ -17,21 +18,23 @@ export async function renderBookings(bookings) {
   for (const b of currentBookings) {
     const card = document.createElement('div');
     card.className = 'booking-card';
-
     const lotName = b.batch_description?.trim() || `Lot #${b.reservable_batch_id ?? b.booking_id ?? 'N/A'}`;
     const orgName = b.renter_name || '—';
     const startDate = formatDateTime(b.start_date);
     const endDate = formatDateTime(b.end_date);
-
-    // Carrousel des items
-    const itemsHtml = (Array.isArray(b.reservables) && b.reservables.length)
+    const bookedAt = formatDateTime(b.booked_at);
+    const bookingPersonName =  b.booking_person_name;
+ 
+    // Carrousel des items : max 5
+    const items = Array.isArray(b.reservables) ? b.reservables.slice(0, 10) : [];
+    const itemsHtml = items.length
       ? `<div class="booking-items-container">
-          ${b.reservables.map(r => {
+          ${items.map(r => {
             const photos = Array.isArray(r.photos) && r.photos.length ? r.photos : [{
               url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
-                `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60">
-                   <rect width="60" height="60" fill="#ddd"/>
-                   <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="10">No Image</text>
+                `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+                   <rect width="80" height="80" fill="#ddd"/>
+                   <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="12">No Image</text>
                  </svg>`
               )
             }];
@@ -46,12 +49,22 @@ export async function renderBookings(bookings) {
       : '<div>Aucun objet</div>';
 
     card.innerHTML = `
-      <div class="booking-header">${escapeHtml(lotName)}</div>
-      <div class="booking-dates">Du ${escapeHtml(startDate)} au ${escapeHtml(endDate)}</div>
-      ${itemsHtml}
-      <div class="booking-actions">
-        <button class="btn-details" data-id="${b.booking_id}">Voir détails</button>
-        <button class="btn-delete" data-id="${b.booking_id}">Supprimer</button>
+      <div class="booking-info">
+        <div class="batch-name">${escapeHtml(lotName)}</div>
+        ${itemsHtml}
+      </div>
+
+      <div class="booking-reserved">
+        <div>Réservé par : ${escapeHtml(bookingPersonName)}</div>
+        <div>Le : ${escapeHtml(bookedAt)}</div>
+      </div>
+
+      <div class="booking-right">
+        <div class="booking-dates">Du ${escapeHtml(startDate)} au ${escapeHtml(endDate)}</div>
+        <div class="booking-actions">
+          <button class="btn-details" data-id="${b.booking_id}">Voir détails</button>
+          <button class="btn-delete" data-id="${b.booking_id}">Supprimer</button>
+        </div>
       </div>
     `;
 
@@ -96,6 +109,7 @@ export async function renderBookings(bookings) {
     container.appendChild(card);
   }
 }
+
 
 /* ---------------- Refresh ---------------- */
 export async function refreshBookings(filters = {}) {

@@ -50,7 +50,9 @@ BEGIN
             'booking_reference_id', booking_rec.booking_reference_id,
             'booking_reference_name', booking_rec.booking_reference_name,
             'start_date', booking_rec.start_date,
-            'end_date', booking_rec.end_date
+            'end_date', booking_rec.end_date,
+            'booked_at', booking_rec.booked_at
+
         ),
         'batch', CASE
                     WHEN batch_rec.id IS NOT NULL THEN

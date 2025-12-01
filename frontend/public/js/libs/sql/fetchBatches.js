@@ -1,6 +1,6 @@
 // js/api/fetchBatches.js
 export async function fetchBatches(client) {
-  const { data, error } = await client.rpc('list_batches', {});
+  const { data, error } = await client.rpc('get_batches', {});
   if (error) {
     console.error('[fetchBatches] Erreur serveur :', error);
     return [];

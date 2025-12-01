@@ -214,6 +214,9 @@ CREATE TABLE inventory.reservable_booking (
     -- Période de réservation
     start_date TIMESTAMP NOT NULL,
     end_date   TIMESTAMP NOT NULL,
+    
+    -- Date de création de la réservation
+    booked_at TIMESTAMP NOT NULL DEFAULT now(),
 
     -- Période temporelle (calculée)
     period tsrange GENERATED ALWAYS AS (tsrange(start_date, end_date, '[]')) STORED,

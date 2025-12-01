@@ -15,7 +15,7 @@ export async function fetchBookings(client, params = {}) {
     p_subcategory_id = null
   } = params;
 
-  const { data, error } = await client.rpc('list_bookings', {
+  const { data, error } = await client.rpc('get_bookings', {
     p_start,
     p_end,
     p_organization_id,
@@ -36,8 +36,11 @@ export async function fetchBookings(client, params = {}) {
     renter_organization_id: row.renter_organization_id,
     renter_name: row.renter_name,
     booking_reference_id: row.booking_reference_id,
+    booking_person_id: row.booking_person_id,
+    booking_person_name: row.booking_person_name,
     start_date: row.start_date,
     end_date: row.end_date,
+    booked_at: row.booked_at,
     reservables: row.reservables || []
   }));
 }
