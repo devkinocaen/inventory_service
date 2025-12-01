@@ -35,31 +35,35 @@
 <!-- ========== REFERENT ========== -->
 <div class="referent-section card">
   <label for="refSelect">Référent :</label>
-  <select id="refSelect"></select>
 
   <div class="referent-line">
+
     <div>
-      <label for="refFirstName">Prénom</label>
-      <input type="text" id="refFirstName" placeholder="Prénom" readonly>
+      <select id="refSelect"></select>
     </div>
-    <div>
-      <label for="refLastName">Nom</label>
-      <input type="text" id="refLastName" placeholder="Nom" readonly>
-    </div>
+
     <div>
       <label for="refEmail">Email</label>
-      <input type="email" id="refEmail" placeholder="Email" readonly>
+      <input type="email" id="refEmail" readonly>
     </div>
+
     <div>
       <label for="refPhone">Téléphone</label>
-      <input type="tel" id="refPhone" placeholder="Téléphone" readonly>
+      <input type="tel" id="refPhone" readonly>
     </div>
+
+    <!-- <div>
+      <label for="refAddress">Adresse</label>
+      <input type="text" id="refAddress" readonly>
+    </div> -->
+
   </div>
 
-  <button id="saveRefBtn" class="btn btn-save btn-small" style="margin-top:10px;">
+  <button id="saveRefBtn" class="btn btn-update-green btn-small">
     Mettre à jour le référent
   </button>
 </div>
+
 
 
 <!-- ========== PERSONNES LIÉES ========== -->

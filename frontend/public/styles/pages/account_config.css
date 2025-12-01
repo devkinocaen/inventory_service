@@ -127,36 +127,36 @@ input#orgAddress {
   background: #fff;
 }
 
-
-/* Référent sur une seule ligne */
+/* ===== Référent : tout sur une ligne ===== */
 .referent-line {
   display: flex;
   gap: 20px;
+  align-items: flex-start;
   flex-wrap: wrap;
-  align-items: center;
-  margin-bottom: 12px;
+  margin-top: 10px;
+}
+
+.referent-line > div {
+  flex: 1;
+  min-width: 150px;
 }
 
 .referent-line label {
-  display: block;
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 4px;
 }
 
-.referent-line input {
-  flex: 1;
-  min-width: 150px;
-  padding: 7px 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  background: #fff;
+.referent-section #refSelect {
+  max-width: 260px;
+  min-width: 180px;
 }
 
-/* Sélecteur référent avec largeur raisonnable */
-.referent-section select#refSelect {
-  max-width: 300px;
-  width: 100%;
-  margin-bottom: 10px;
+/* Bouton Mettre à jour à droite */
+.btn-update-green {
+  background: #2ecc71;
+  color: white;
+}
+.btn-update-green:hover {
+  background: #27ae60;
 }

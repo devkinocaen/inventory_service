@@ -32,7 +32,7 @@ BEGIN
     FROM inventory.person AS p
     WHERE p.id = p_referent_id;
 
-    IF v_referent_phone IS NULL THEN
+    IF v_referent_phone IS NULL OR v_referent_phone = '' THEN
         RAISE EXCEPTION 'Le référent doit avoir un numéro de téléphone';
     END IF;
 

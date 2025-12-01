@@ -31,8 +31,6 @@ const orgName = document.getElementById('orgName');
 const orgAddress = document.getElementById('orgAddress');
 
 // Référent
-const refLast = document.getElementById('refLastName');
-const refFirst = document.getElementById('refFirstName');
 const refEmail = document.getElementById('refEmail');
 const refPhone = document.getElementById('refPhone');
 
@@ -57,6 +55,11 @@ const pRole = document.getElementById('pRole');
   }
 
   await loadOrganizations();
+ pFirst.value = '';
+ pLast.value = '';
+ pEmail.value = '';
+ pPhone.value = '';
+ pRole.value = '';
   bindEvents();
 })();
 
@@ -89,10 +92,9 @@ function updateReferentFields(personId, org) {
   const person = (org.persons || []).find(p => p.id == personId);
   if (!person) return;
 
-  refFirst.value = person.first_name ?? '';
-  refLast.value  = person.last_name ?? '';
   refEmail.value = person.email ?? '';
   refPhone.value = person.phone ?? '';
+//  refAddress.value = person.address ?? '';
 }
 
 // -----------------------------------------------------
@@ -142,7 +144,7 @@ console.log ("*** org", org)
 // -----------------------------------------------------
 function renderPeople(list) {
   peopleList.innerHTML = '';
-console.log ("list", list)
+
   list.forEach(person => {
     const row = document.createElement('div');
     row.className = 'person-row-card';
@@ -154,18 +156,36 @@ console.log ("list", list)
 
     row.innerHTML = `
       <div class="form-grid">
-        <div><label>Nom</label><input class="pl-last" value="${person.last_name ?? ''}"></div>
-        <div><label>Prénom</label><input class="pl-first" value="${person.first_name ?? ''}"></div>
-        <div><label>Email</label><input class="pl-email" value="${person.email ?? ''}"></div>
-        <div><label>Téléphone</label><input class="pl-phone" value="${person.phone ?? ''}"></div>
-        <div><label>Rôle</label><input class="pl-role" value="${person.role ?? ''}"></div>
+        <div>
+          <label>Nom</label>
+          <input class="pl-last" value="${person.last_name ?? ''}">
+        </div>
+        <div>
+          <label>Prénom</label>
+          <input class="pl-first" value="${person.first_name ?? ''}">
+        </div>
+        <div>
+          <label>Email</label>
+          <input class="pl-email" value="${person.email ?? ''}">
+        </div>
+        <div>
+          <label>Téléphone</label>
+          <input class="pl-phone" value="${person.phone ?? ''}">
+        </div>
+        <div>
+          <label>Rôle</label>
+          <input class="pl-role" value="${person.role ?? ''}">
+        </div>
       </div>
-      <div style="margin-top:8px; display:flex; gap:8px;">
-        <button class="btn btn-save btn-small pl-update">Mettre à jour</button>
-        <button class="btn btn-danger btn-small pl-remove">Supprimer</button>
+
+      <div class="pl-actions">
+        <button class="btn btn-update-green btn-small pl-update">Mettre à jour</button>
+        <button class="btn btn-delete btn-small pl-remove">Supprimer</button>
       </div>
+
     `;
 
+    // --- UPDATE ---
     row.querySelector('.pl-update').onclick = async () => {
       const updated = {
         id: person.id,
@@ -179,11 +199,15 @@ console.log ("list", list)
       await saveExistingPerson(updated);
     };
 
-    row.querySelector('.pl-remove').onclick = () => detachPerson(person.id);
+    // --- DELETE ---
+    row.querySelector('.pl-remove').onclick = async () => {
+      await removePersonFromOrganization(person.id);
+    };
 
     peopleList.appendChild(row);
   });
 }
+
 
 // -----------------------------------------------------
 // MAJ personne existante
@@ -286,14 +310,23 @@ async function saveRef() {
   if (!newReferentId) return alert("Référent invalide");
 
   try {
+    // Identifier l'ancien référent
+    const oldReferentId = org.referent_id;
+
+    // Construire la nouvelle liste des personnes
+    let persons = (org.persons || []).map(p => ({ id: p.id, role: p.role || null }));
+
+    // Si l'ancien référent existe et n'est pas déjà dans la liste, l'ajouter comme personne liée
+    if (oldReferentId && oldReferentId !== newReferentId && !persons.find(p => p.id === oldReferentId)) {
+      persons.push({ id: oldReferentId, role: null });
+    }
+
+    // Mise à jour de l'organisation
     await upsertOrganization(client, {
       name: orgName.value.trim(),
       address: orgAddress.value.trim(),
       referent_id: newReferentId,
-      persons: (org.persons || []).map(p => ({
-        id: p.id,
-        role: p.role || null
-      }))
+      persons
     });
 
     alert("Référent mis à jour");
@@ -302,6 +335,7 @@ async function saveRef() {
     alert("Erreur : " + formatServerError(err.message));
   }
 }
+
 
 // -----------------------------------------------------
 // Ajouter / MAJ personne liée
@@ -347,6 +381,12 @@ async function savePerson() {
     pRole.value = '';
 
     await loadOrganizations();
+      
+      // 🔄 Recharger l'organisation courante pour mettre à jour le select du référent
+      const updatedOrg = organizations.find(o => o.id === orgId);
+      const newRef = await fetchPersonById(client, updatedOrg.referent_id);
+      populateReferentSelect(updatedOrg, newRef);
+
 
   } catch (err) {
     alert("Erreur : " + formatServerError(err.message));
