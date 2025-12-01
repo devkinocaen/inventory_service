@@ -5,38 +5,46 @@
 <title>Mes Réservations</title>
 <style>
   body {
-    font-family: sans-serif;
-    background: #f4f4f4;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f0f2f5;
     margin: 0;
     padding: 20px;
   }
 
   h1 {
-    font-size: 20px;
-    margin-bottom: 15px;
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
   }
 
   .booking-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
   }
 
   .booking-card {
     background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-    padding: 12px;
+    border-radius: 12px;
+    padding: 15px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     flex-wrap: wrap;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .booking-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
   }
 
   .booking-batch,
   .booking-dates,
   .booking-items,
-  .booking-person {
+  .booking-person,
+  .booking-reserve-date {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -45,51 +53,69 @@
 
   .booking-batch {
     font-weight: bold;
+    color: #0055a5;
     min-width: 150px;
   }
 
   .booking-dates {
     min-width: 200px;
+    color: #555;
+  }
+
+  .booking-reserve-date {
+    color: #888;
+    font-size: 13px;
+    min-width: 140px;
   }
 
   .booking-items {
     flex: 1;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
   }
 
   .booking-item {
-    background: #f0f0f0;
-    padding: 4px 8px;
-    border-radius: 6px;
+    background: #e8f0fe;
+    padding: 6px 10px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
   }
 
   .booking-item img {
-    width: 30px;
-    height: 30px;
-    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
     object-fit: cover;
+    border: 1px solid #ccc;
   }
 
   .booking-person img {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     object-fit: cover;
+    border: 1px solid #ccc;
   }
 
   .booking-actions button {
-    padding: 6px 12px;
+    padding: 6px 14px;
     font-size: 13px;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
-    background: #d00000;
+    background: #d63636;
     color: white;
+    transition: background 0.2s;
   }
+
+  .booking-actions button:hover {
+    background: #b32424;
+  }
+
 </style>
 </head>
 <body>
@@ -105,23 +131,26 @@
     {
       id: 1,
       batch: { id: 101, description: "Lot théâtre 2025" },
-      booking_person: { name: "Julie Martin", photo: "https://placehold.co/40x40?text=JM" },
+      booking_person: { name: "Julie Martin", photo: "https://i.pravatar.cc/40?img=5" },
       start_date: "2025-12-02 14:00",
       end_date: "2025-12-02 18:00",
+      reservation_date: "2025-11-28 10:15",
       items: [
-        { name: "Robe longue", photo: "https://placehold.co/30x30?text=RL" },
-        { name: "Chapeau bleu", photo: "https://placehold.co/30x30?text=CB" }
+        { name: "Robe longue", photo: "https://placeimg.com/36/36/fashion" },
+        { name: "Chapeau bleu", photo: "https://placeimg.com/36/36/fashion" }
       ]
     },
     {
       id: 2,
       batch: { id: 102, description: "Lot carnaval" },
-      booking_person: { name: "Alex Dupont", photo: "https://placehold.co/40x40?text=AD" },
+      booking_person: { name: "Alex Dupont", photo: "https://i.pravatar.cc/40?img=12" },
       start_date: "2025-12-05 09:30",
       end_date: "2025-12-05 12:30",
+      reservation_date: "2025-11-29 14:45",
       items: [
-        { name: "Veste cuir", photo: "https://placehold.co/30x30?text=VC" },
-        { name: "Sac à main", photo: "https://placehold.co/30x30?text=SM" }
+        { name: "Veste cuir", photo: "https://placeimg.com/36/36/fashion" },
+        { name: "Sac à main", photo: "https://placeimg.com/36/36/fashion" },
+        { name: "Lunettes", photo: "https://placeimg.com/36/36/fashion" }
       ]
     }
   ];
@@ -139,6 +168,7 @@
       card.innerHTML = `
         <div class="booking-batch">${b.batch.description}</div>
         <div class="booking-dates">📅 ${b.start_date} → ${b.end_date}</div>
+        <div class="booking-reserve-date">📝 Réservé le ${b.reservation_date}</div>
         <div class="booking-items">
           ${b.items.map(i => `<div class="booking-item"><img src="${i.photo}" alt="${i.name}">${i.name}</div>`).join('')}
         </div>
