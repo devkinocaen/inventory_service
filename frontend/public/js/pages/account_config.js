@@ -84,6 +84,7 @@ async function loadOrganizations() {
   }
 }
 
+// -----------------------------------------------------
 function updateReferentFields(personId, org) {
   const person = (org.persons || []).find(p => p.id == personId);
   if (!person) return;
@@ -94,16 +95,13 @@ function updateReferentFields(personId, org) {
   refPhone.value = person.phone ?? '';
 }
 
-function populateReferentSelect(org) {
+// -----------------------------------------------------
+function populateReferentSelect(org, ref) {
   const refSelect = document.getElementById('refSelect');
   refSelect.innerHTML = '';
 
   const personsMap = new Map();
-
-  if (org.referent_id) {
-    const ref = org.persons?.find(p => p.id === org.referent_id);
-    if (ref) personsMap.set(ref.id, ref);
-  }
+  if (ref) personsMap.set(ref.id, ref);
 
   (org.persons || []).forEach(p => personsMap.set(p.id, p));
 
@@ -131,9 +129,12 @@ async function loadOrganizationDetails() {
 
   orgName.value = org.name ?? '';
   orgAddress.value = org.address ?? '';
+console.log ("*** org", org)
+  const ref = await fetchPersonById(client, org.referent_id)
+    console.log ("*** ref", ref)
 
   renderPeople(org.persons || []);
-  populateReferentSelect(org);
+  populateReferentSelect(org, ref);
 }
 
 // -----------------------------------------------------
@@ -141,7 +142,7 @@ async function loadOrganizationDetails() {
 // -----------------------------------------------------
 function renderPeople(list) {
   peopleList.innerHTML = '';
-
+console.log ("list", list)
   list.forEach(person => {
     const row = document.createElement('div');
     row.className = 'person-row-card';
