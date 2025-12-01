@@ -213,10 +213,12 @@ async function onEditClick(e) {
   const bookingId = Number(e.currentTarget.dataset.id);
   if (!bookingId) return console.warn('booking id missing for edit');
 
+    
+    
   try {
     openBatchModal(bookingId, () => {
         refreshTable();
-    });
+    }, 'edit');
   } catch (err) {
     console.error('Erreur ouverture modal batch :', err);
     alert('Impossible d’ouvrir la modal batch.');
