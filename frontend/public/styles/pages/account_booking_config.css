@@ -1,6 +1,6 @@
 .booking-card {
   display: grid;
-  grid-template-columns: 1fr auto auto; /* batch+carousel | dates | actions */
+  grid-template-columns: 1fr auto; /* gauche : batch+carousel | droite : dates+actions */
   align-items: center;
   background: #fff;
   border-radius: 8px;
@@ -12,6 +12,7 @@
   gap: 10px;
 }
 
+/* Colonne gauche : batch + carousel */
 .booking-info {
   display: flex;
   flex-direction: column;
@@ -47,26 +48,28 @@
 .booking-items-container::-webkit-scrollbar { display: none; }
 .booking-items-container { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Dates à droite */
-.booking-dates {
+/* Colonne droite : dates + actions */
+.booking-right {
   display: flex;
   flex-direction: column;
-  justify-content: center; /* centre verticalement dans la ligne */
+  justify-content: center;
+  align-items: flex-end; /* tout à droite */
+  gap: 6px;
+}
+
+.booking-dates {
   text-align: right;
-  min-width: 100px; /* pour uniformiser la colonne */
   font-size: 12px;
   color: #555;
 }
 
-/* Boutons actions */
+/* Actions */
 .booking-actions {
   display: flex;
   flex-direction: column;
   gap: 4px;
   justify-content: center;
 }
-
-
 
 .booking-actions button {
   padding: 4px 8px;

@@ -1,30 +1,10 @@
 import { fetchBookings, deleteBooking } from '../libs/sql/index.js';
 import { initClient } from '../libs/client.js';
 import { openBatchModal } from '../modals/batch_modal.js';
-import { formatServerError, formatDateTime } from '../libs/helpers.js';
+import { formatServerError, formatDateTime, escapeHtml } from '../libs/helpers.js';
 
 let client;
 let currentBookings = [];
-
-/* ---------------- Helpers ---------------- */
-function escapeHtml(str) {
-  if (str == null) return '';
-  return String(str)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
-function formatDateForDisplay(d) {
-  if (!d) return '';
-  try {
-    return formatDateTime ? formatDateTime(d) : new Date(d).toLocaleString();
-  } catch {
-    return String(d);
-  }
-}
 
 /* ---------------- Render bookings ---------------- */
 export async function renderBookings(bookings) {
@@ -40,31 +20,59 @@ export async function renderBookings(bookings) {
 
     const lotName = b.batch_description?.trim() || `Lot #${b.reservable_batch_id ?? b.booking_id ?? 'N/A'}`;
     const orgName = b.renter_name || '—';
-    const startDate = formatDateForDisplay(b.start_date);
-    const endDate = formatDateForDisplay(b.end_date);
+    const startDate = formatDateTime(b.start_date);
+    const endDate = formatDateTime(b.end_date);
 
     // Carrousel des items
     const itemsHtml = (Array.isArray(b.reservables) && b.reservables.length)
       ? `<div class="booking-items-container">
-          ${b.reservables.map(r => `
-            <div class="booking-item">
-              <img src="${escapeHtml(r.photo || '')}" alt="${escapeHtml(r.name || '')}">
-              <span>${escapeHtml(r.name || '')}</span>
-            </div>
-          `).join('')}
+          ${b.reservables.map(r => {
+            const photos = Array.isArray(r.photos) && r.photos.length ? r.photos : [{
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+                `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60">
+                   <rect width="60" height="60" fill="#ddd"/>
+                   <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="10">No Image</text>
+                 </svg>`
+              )
+            }];
+            return `
+              <div class="booking-item">
+                <img src="${escapeHtml(photos[0].url)}" alt="${escapeHtml(r.name || '')}" data-photos='${JSON.stringify(photos)}'>
+                <span>${escapeHtml(r.name || '')}</span>
+              </div>
+            `;
+          }).join('')}
         </div>`
       : '<div>Aucun objet</div>';
 
     card.innerHTML = `
       <div class="booking-header">${escapeHtml(lotName)}</div>
-      <div>du ${escapeHtml(startDate)}</div>
-      <div>au ${escapeHtml(endDate)}</div>
+      <div class="booking-dates">Du ${escapeHtml(startDate)} au ${escapeHtml(endDate)}</div>
       ${itemsHtml}
       <div class="booking-actions">
         <button class="btn-details" data-id="${b.booking_id}">Voir détails</button>
         <button class="btn-delete" data-id="${b.booking_id}">Supprimer</button>
       </div>
     `;
+
+    // Hover pour faire défiler les images
+    card.querySelectorAll('.booking-item img').forEach(imgEl => {
+      let idx = 0, interval;
+      const photos = JSON.parse(imgEl.dataset.photos || '[]');
+
+      imgEl.addEventListener('mouseenter', () => {
+        if (photos.length <= 1) return;
+        interval = setInterval(() => {
+          idx = (idx + 1) % photos.length;
+          imgEl.src = photos[idx].url;
+        }, 1000);
+      });
+      imgEl.addEventListener('mouseleave', () => {
+        clearInterval(interval);
+        idx = 0;
+        imgEl.src = photos[0]?.url || imgEl.src;
+      });
+    });
 
     // Events
     card.querySelector('.btn-details')?.addEventListener('click', (e) => {
