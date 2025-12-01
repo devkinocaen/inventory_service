@@ -28,10 +28,9 @@
     border-radius: 12px;
     padding: 15px;
     display: flex;
-    align-items: center;
-    gap: 15px;
+    flex-direction: column;
+    gap: 10px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    flex-wrap: wrap;
     transition: transform 0.2s, box-shadow 0.2s;
   }
 
@@ -42,55 +41,26 @@
 
   .booking-batch,
   .booking-dates,
-  .booking-items,
-  .booking-person,
-  .booking-reserve-date {
+  .booking-reserve-date,
+  .booking-person {
+    font-size: 14px;
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 14px;
   }
 
   .booking-batch {
     font-weight: bold;
     color: #0055a5;
-    min-width: 150px;
   }
 
   .booking-dates {
-    min-width: 200px;
     color: #555;
   }
 
   .booking-reserve-date {
     color: #888;
     font-size: 13px;
-    min-width: 140px;
-  }
-
-  .booking-items {
-    flex: 1;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .booking-item {
-    background: #e8f0fe;
-    padding: 6px 10px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 500;
-  }
-
-  .booking-item img {
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
-    object-fit: cover;
-    border: 1px solid #ccc;
   }
 
   .booking-person img {
@@ -101,18 +71,65 @@
     border: 1px solid #ccc;
   }
 
+  .booking-items-container {
+    overflow-x: auto;
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+  }
+
+  .booking-item {
+    flex: 0 0 120px; /* largeur fixe pour 4 visibles approx */
+    background: #e8f0fe;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    cursor: grab;
+  }
+
+  .booking-item img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #ccc;
+    margin-bottom: 6px;
+  }
+
+  .booking-actions {
+    display: flex;
+    gap: 8px;
+  }
+
   .booking-actions button {
     padding: 6px 14px;
     font-size: 13px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    background: #d63636;
-    color: white;
     transition: background 0.2s;
   }
 
-  .booking-actions button:hover {
+  .booking-actions button:first-child {
+    background: #007bff;
+    color: #fff;
+  }
+
+  .booking-actions button:first-child:hover {
+    background: #0056b3;
+  }
+
+  .booking-actions button:last-child {
+    background: #d63636;
+    color: #fff;
+  }
+
+  .booking-actions button:last-child:hover {
     background: #b32424;
   }
 
@@ -124,71 +141,78 @@
 <div class="booking-list" id="bookingList"></div>
 
 <script>
-  // =============================
-  // Exemple de données simulées
-  // =============================
-  const reservations = [
-    {
-      id: 1,
-      batch: { id: 101, description: "Lot théâtre 2025" },
-      booking_person: { name: "Julie Martin", photo: "https://i.pravatar.cc/40?img=5" },
-      start_date: "2025-12-02 14:00",
-      end_date: "2025-12-02 18:00",
-      reservation_date: "2025-11-28 10:15",
-      items: [
-        { name: "Robe longue", photo: "https://placeimg.com/36/36/fashion" },
-        { name: "Chapeau bleu", photo: "https://placeimg.com/36/36/fashion" }
-      ]
-    },
-    {
-      id: 2,
-      batch: { id: 102, description: "Lot carnaval" },
-      booking_person: { name: "Alex Dupont", photo: "https://i.pravatar.cc/40?img=12" },
-      start_date: "2025-12-05 09:30",
-      end_date: "2025-12-05 12:30",
-      reservation_date: "2025-11-29 14:45",
-      items: [
-        { name: "Veste cuir", photo: "https://placeimg.com/36/36/fashion" },
-        { name: "Sac à main", photo: "https://placeimg.com/36/36/fashion" },
-        { name: "Lunettes", photo: "https://placeimg.com/36/36/fashion" }
-      ]
-    }
-  ];
-
-  // =============================
-  // Affichage
-  // =============================
-  const bookingList = document.getElementById("bookingList");
-
-  function renderBookings(list) {
-    bookingList.innerHTML = "";
-    list.forEach(b => {
-      const card = document.createElement("div");
-      card.className = "booking-card";
-      card.innerHTML = `
-        <div class="booking-batch">${b.batch.description}</div>
-        <div class="booking-dates">📅 ${b.start_date} → ${b.end_date}</div>
-        <div class="booking-reserve-date">📝 Réservé le ${b.reservation_date}</div>
-        <div class="booking-items">
-          ${b.items.map(i => `<div class="booking-item"><img src="${i.photo}" alt="${i.name}">${i.name}</div>`).join('')}
-        </div>
-        <div class="booking-person">
-          👤 <img src="${b.booking_person.photo}" alt="${b.booking_person.name}"> ${b.booking_person.name}
-        </div>
-        <div class="booking-actions">
-          <button onclick="cancelBooking(${b.id})">Annuler</button>
-        </div>
-      `;
-      bookingList.appendChild(card);
-    });
+const reservations = [
+  {
+    id: 1,
+    batch: { id: 101, description: "Lot théâtre 2025" },
+    booking_person: { name: "Julie Martin", photo: "https://i.pravatar.cc/40?img=5" },
+    start_date: "2025-12-02 14:00",
+    end_date: "2025-12-02 18:00",
+    reservation_date: "2025-11-28 10:15",
+    items: [
+      { name: "Robe longue", photo: "https://placeimg.com/60/60/fashion" },
+      { name: "Chapeau bleu", photo: "https://placeimg.com/60/60/fashion" },
+      { name: "Écharpe rouge", photo: "https://placeimg.com/60/60/fashion" },
+      { name: "Gants", photo: "https://placeimg.com/60/60/fashion" },
+      { name: "Sac à main", photo: "https://placeimg.com/60/60/fashion" }
+    ]
+  },
+  {
+    id: 2,
+    batch: { id: 102, description: "Lot carnaval" },
+    booking_person: { name: "Alex Dupont", photo: "https://i.pravatar.cc/40?img=12" },
+    start_date: "2025-12-05 09:30",
+    end_date: "2025-12-05 12:30",
+    reservation_date: "2025-11-29 14:45",
+    items: [
+      { name: "Veste cuir", photo: "https://placeimg.com/60/60/fashion" },
+      { name: "Lunettes", photo: "https://placeimg.com/60/60/fashion" },
+      { name: "Chapeau vert", photo: "https://placeimg.com/60/60/fashion" },
+      { name: "Cape rouge", photo: "https://placeimg.com/60/60/fashion" }
+    ]
   }
+];
 
-  function cancelBooking(id) {
-    alert("Annulation réservation " + id);
-    // ici appeler l'API pour annuler la réservation
-  }
+const bookingList = document.getElementById("bookingList");
 
-  renderBookings(reservations);
+function renderBookings(list) {
+  bookingList.innerHTML = "";
+  list.forEach(b => {
+    const card = document.createElement("div");
+    card.className = "booking-card";
+    card.innerHTML = `
+      <div class="booking-batch">${b.batch.description}</div>
+      <div class="booking-dates">📅 ${b.start_date} → ${b.end_date}</div>
+      <div class="booking-reserve-date">📝 Réservé le ${b.reservation_date}</div>
+      <div class="booking-items-container">
+        ${b.items.map(i => `
+          <div class="booking-item">
+            <img src="${i.photo}" alt="${i.name}">
+            ${i.name}
+          </div>
+        `).join('')}
+      </div>
+      <div class="booking-person">
+        👤 <img src="${b.booking_person.photo}" alt="${b.booking_person.name}"> ${b.booking_person.name}
+      </div>
+      <div class="booking-actions">
+        <button onclick="viewDetails(${b.id})">Voir détails</button>
+        <button onclick="cancelBooking(${b.id})">Annuler</button>
+      </div>
+    `;
+    bookingList.appendChild(card);
+  });
+}
+
+function cancelBooking(id) {
+  alert("Annulation réservation " + id);
+}
+
+function viewDetails(id) {
+  alert("Détails réservation " + id);
+}
+
+renderBookings(reservations);
 </script>
 
 </body>
