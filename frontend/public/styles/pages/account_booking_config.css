@@ -1,0 +1,93 @@
+.booking-card {
+  display: grid;
+  grid-template-columns: 1fr auto auto; /* batch+carousel | dates | actions */
+  align-items: center;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-size: 13px;
+  line-height: 1.2;
+  gap: 10px;
+}
+
+.booking-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.booking-info .batch-name {
+  font-weight: bold;
+}
+
+.booking-items-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.booking-item {
+  min-width: 50px;
+  flex: 0 0 auto;
+  text-align: center;
+}
+
+.booking-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.booking-items-container::-webkit-scrollbar { display: none; }
+.booking-items-container { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Dates à droite */
+.booking-dates {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* centre verticalement dans la ligne */
+  text-align: right;
+  min-width: 100px; /* pour uniformiser la colonne */
+  font-size: 12px;
+  color: #555;
+}
+
+/* Boutons actions */
+.booking-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+
+
+
+.booking-actions button {
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background-color: #007BFF; /* bleu visible */
+  color: #fff; /* texte blanc */
+  transition: background-color 0.2s;
+}
+
+.booking-actions button:hover {
+  background-color: #0056b3; /* bleu plus foncé au hover */
+}
+
+.booking-actions .btn-delete {
+  background-color: #dc3545; /* rouge */
+  color: #fff;
+}
+
+.booking-actions .btn-delete:hover {
+  background-color: #a71d2a; /* rouge plus foncé */
+}
