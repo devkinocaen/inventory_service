@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Compte — Compact</title>
-<link rel="stylesheet" href="account.css">
+<link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 
@@ -33,36 +33,77 @@
 </div>
 
 <!-- ========== REFERENT ========== -->
-<div class="referent-section">
+<div class="referent-section card">
   <label for="refSelect">Référent :</label>
   <select id="refSelect"></select>
 
-  <div class="referent-fields">
-    <input type="text" id="refFirstName" placeholder="Prénom" readonly>
-    <input type="text" id="refLastName" placeholder="Nom" readonly>
-    <input type="email" id="refEmail" placeholder="Email" readonly>
-    <input type="tel" id="refPhone" placeholder="Téléphone" readonly>
+  <div class="referent-line">
+    <div>
+      <label for="refFirstName">Prénom</label>
+      <input type="text" id="refFirstName" placeholder="Prénom" readonly>
+    </div>
+    <div>
+      <label for="refLastName">Nom</label>
+      <input type="text" id="refLastName" placeholder="Nom" readonly>
+    </div>
+    <div>
+      <label for="refEmail">Email</label>
+      <input type="email" id="refEmail" placeholder="Email" readonly>
+    </div>
+    <div>
+      <label for="refPhone">Téléphone</label>
+      <input type="tel" id="refPhone" placeholder="Téléphone" readonly>
+    </div>
   </div>
 
-  <button id="saveRefBtn">Mettre à jour le référent</button>
+  <button id="saveRefBtn" class="btn btn-save btn-small" style="margin-top:10px;">
+    Mettre à jour le référent
+  </button>
 </div>
+
 
 <!-- ========== PERSONNES LIÉES ========== -->
 <div class="card">
   <div class="section-title">Personnes liées</div>
 
-  <div id="peopleList"></div>
+  <!-- Liste des personnes : 1 ligne = 1 personne -->
+  <div id="peopleList" class="people-list"></div>
 
-  <div class="form-grid" style="margin-top:10px;">
-    <div><label>Nom</label><input id="pLast"></div>
-    <div><label>Prénom</label><input id="pFirst"></div>
-    <div><label>Email</label><input id="pEmail"></div>
-    <div><label>Téléphone</label><input id="pPhone"></div>
-    <div><label>Rôle</label><input id="pRole"></div>
+  <!-- Formulaire d'ajout / mise à jour -->
+  <input type="hidden" id="pId">
+
+  <div class="form-grid" style="margin-top:15px;">
+    <div>
+      <label>Nom</label>
+      <input id="pLast">
+    </div>
+
+    <div>
+      <label>Prénom</label>
+      <input id="pFirst">
+    </div>
+
+    <div>
+      <label>Email</label>
+      <input id="pEmail">
+    </div>
+
+    <div>
+      <label>Téléphone</label>
+      <input id="pPhone">
+    </div>
+
+    <div>
+      <label>Rôle</label>
+      <input id="pRole">
+    </div>
   </div>
 
-  <button class="btn btn-save" id="savePersonBtn">Ajouter / Mettre à jour</button>
+  <button class="btn btn-save" id="savePersonBtn" style="margin-top:10px;">
+    Ajouter
+  </button>
 </div>
+
 
 <!-- ========== MOT DE PASSE ========== -->
 <div class="card">

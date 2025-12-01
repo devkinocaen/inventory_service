@@ -1,63 +1,73 @@
 body {
   font-family: sans-serif;
-  background:#f4f4f4;
-  padding:20px;
+  background: #f4f4f4;
+  padding: 20px;
 }
 
 /* Titres dans une box */
 .section-title {
-  background:#eee;
-  padding:6px 10px;
-  border-radius:6px;
-  font-size:15px;
-  font-weight:600;
-  margin-bottom:12px;
+  background: #eee;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
 }
 
 /* Card */
 .card {
-  background:#fff;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:20px;
-  box-shadow:0 2px 5px rgba(0,0,0,0.07);
+  background: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.07);
 }
 
 /* ===== Formulaire compact ===== */
 .form-grid {
-  display:grid;
+  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
-  gap:26px;
+  gap: 26px;
 }
 
 label {
-  font-size:13px;
-  font-weight:600;
-  margin-bottom:4px;
-  display:block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: block;
 }
 
 input, select {
-  width:100%;
-  padding:6px;
-  border-radius:5px;
-  border:1px solid #ccc;
-  font-size:14px;
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background: #fff;
 }
 
 /* Boutons */
 .btn {
-  padding:7px 12px;
-  font-size:13px;
-  border:0;
-  border-radius:5px;
-  cursor:pointer;
+  padding: 7px 12px;
+  font-size: 13px;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.15s;
 }
-.btn-save { background:#3a86ff; color:white; }
-.btn-delete { background:#d00000; color:white; }
-.btn-edit { background:#ffba08; }
-.btn-small { padding:4px 8px; font-size:12px; }
 
+.btn-save { background: #3a86ff; color: white; }
+.btn-save:hover { background: #1f6fe8; }
+
+.btn-delete { background: #d00000; color: white; }
+.btn-delete:hover { background: #a40000; }
+
+.btn-edit { background: #ffba08; color: #333; }
+.btn-edit:hover { background: #e0a200; }
+
+.btn-small { padding: 4px 8px; font-size: 12px; }
+
+/* ===== Personnes liées ===== */
 .person-row {
   display: flex;
   align-items: center;
@@ -65,40 +75,88 @@ input, select {
   padding: 8px 12px;
   border-bottom: 1px solid #eee;
   font-size: 14px;
-  color: #333;
 }
 
 .person-info {
-  flex: 1; /* prend tout l’espace disponible */
+  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-right: 12px;
-  font-size: 16px;       /* plus grand que 14px */
-  font-weight: 500;      /* un peu plus visible */
-  color: #222;           /* texte légèrement plus contrasté */
+  font-size: 16px;
+  font-weight: 500;
+  color: #222;
 }
 
-
+/* Bouton suppression */
 .person-remove-btn {
-  background: #e74c3c; /* rouge vif */
+  background: #e74c3c;
   color: white;
   border: none;
-  border-radius: 4px; /* coins légèrement arrondis */
-  padding: 4px 10px;
+  border-radius: 5px;
+  padding: 6px 10px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
   transition: background 0.2s;
 }
-
 .person-remove-btn:hover {
-  background: #c0392b; /* rouge un peu plus foncé au survol */
+  background: #c0392b;
+}
+
+/* Bouton edit */
+.person-edit-btn {
+  background: #ffba08;
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 6px;
+  transition: background 0.2s;
+}
+.person-edit-btn:hover {
+  background: #e0a200;
+}
+
+/* Liseré organisation */
+input#orgName,
+input#orgAddress {
+  border: 1px solid #ddd;
+  background: #fff;
 }
 
 
-/* Liseré organisation */
-input#orgName, input#orgAddress {
-  border:1px solid #ddd;
-  background:#fff;
+/* Référent sur une seule ligne */
+.referent-line {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.referent-line label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.referent-line input {
+  flex: 1;
+  min-width: 150px;
+  padding: 7px 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background: #fff;
+}
+
+/* Sélecteur référent avec largeur raisonnable */
+.referent-section select#refSelect {
+  max-width: 300px;
+  width: 100%;
+  margin-bottom: 10px;
 }
