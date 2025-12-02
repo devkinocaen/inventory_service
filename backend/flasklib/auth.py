@@ -71,9 +71,9 @@ def login(database_id=None):
             logger.info("user found for email: %s, with role: %s", email, user_role)
 
         else:
-            logger.info("No advanced user found for email: %s, checking participants for basic role viewer...", email)
+            logger.info("No user found for email: %s", email)
             cur.close()
-            return jsonify({"error": "Viewer login disabled"}), 403
+            return jsonify({"error": "No user found with this email"}), 403
 
         cur.close()
 
@@ -187,8 +187,6 @@ def check_get_function_prototype_exists(conn):
 def signup(database_id=None):
     data = request.get_json(force=True) or {}
     db_config = get_db_config(database_id.upper() if database_id else "")
-    auth_role = db_config.get("auth_role", "authenticated")
-    jwt_audience = auth_role
     jwt_issuer = db_config.get("issuer", "https://fallback.issuer")
     DBUSER = db_config.get("user")
 
@@ -199,8 +197,7 @@ def signup(database_id=None):
     phone = data.get("phone")
     address = data.get("address")
     organization = data.get("organization")
-    role = data.get("role")
-    logger.info("signup data %s", json.dumps(data))
+    role = data.get("role") or "viewer"
 
     if not email or not password:
         return jsonify({"error": "Email and password required"}), 400
@@ -212,75 +209,31 @@ def signup(database_id=None):
         conn = get_conn(database_id)
         cur = conn.cursor()
         cur.execute(f'SET ROLE "{DBUSER}";')
-        cur.execute("BEGIN;")  # démarre explicitement la transaction
+        cur.execute("BEGIN;")
         cur.execute("SAVEPOINT sp_signup;")
 
-        # Vérifie si email existant
-        cur.execute("SELECT id FROM auth.users WHERE email = %s", (email,))
-        if cur.fetchone():
-            cur.execute("ROLLBACK TO SAVEPOINT sp_signup;")
-            raise Exception(f"Email déjà enregistré: {email}")
-
-        # Hash et insert user avec rôle viewer
-        encrypted_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-
         cur.execute("""
-            INSERT INTO auth.users (email, encrypted_password, role)
-            VALUES (%s, %s, %s)
-            RETURNING id;
-        """, (
-            email,
-            encrypted_password,
-            "viewer"
-        ))
+            SELECT person_id, organization_id, created_user_id
+            FROM inventory.create_account(
+                %s::text, %s::text, %s::text, %s::text, %s::text, %s::text, %s::text, %s::text
+            )
+        """, (first_name, last_name, email, phone, organization, address, role, password))
 
-        user_id = cur.fetchone()[0]
+        person_id, organization_id, created_user_id = cur.fetchone()
 
 
-        # Mettre à jour user_profiles avec raw_user_meta_data = {"app_metadata": {"role": p_role}}
-        cur.execute("""
-            UPDATE auth.user_profiles
-            SET raw_user_meta_data = %s
-            WHERE user_id = %s;
-        """, (
-            json.dumps({"app_metadata": {
-                    "role": "viewer",
-                    "first_name": first_name,
-                    "last_name": last_name
-                }
-            }),
-            user_id
-        ))
-                
-        # Création / rattachement personne + organisation via create_account
-        cur.execute("""
-            SELECT * FROM inventory.create_account(
-                p_first_name := %s,
-                p_last_name := %s,
-                p_email := %s,
-                p_phone := %s,
-                p_organization_name := %s,
-                p_organization_address := %s,
-                p_role := %s
-            );
-        """, (first_name, last_name, email, phone, organization, address, role))
-
-        person_id, organization_id = cur.fetchone()
-
-
-        # Tout est OK → commit
         cur.execute("RELEASE SAVEPOINT sp_signup;")
         conn.commit()
 
-        # Génération du token JWT
+        # 🔹 Génération du JWT
         now = datetime.now(timezone.utc)
         exp = now + timedelta(hours=2)
         claims = {
-            "sub": str(user_id),
-            "role": "viewer",
-            "app_metadata": {"role": "viewer"},
+            "sub": str(created_user_id),
+            "role": role,
+            "app_metadata": {"role": role, "first_name": first_name, "last_name": last_name},
             "email": email,
-            "aud": "viewer",
+            "aud": role,
             "iss": jwt_issuer,
             "iat": int(now.timestamp()),
             "exp": int(exp.timestamp())
@@ -294,9 +247,9 @@ def signup(database_id=None):
             "token_type": "bearer",
             "expires_in": 7200,
             "user": {
-                "id": str(user_id),
+                "id": str(created_user_id),
                 "email": email,
-                "role": "viewer",
+                "role": role,
                 "first_name": first_name,
                 "last_name": last_name,
                 "person_id": person_id,
@@ -306,10 +259,11 @@ def signup(database_id=None):
 
     except Exception as e:
         if conn:
-            conn.rollback()  # rollback si erreur
+            conn.rollback()
         logger.exception("❌ Signup failed")
         return jsonify({"error": str(e)}), 500
 
     finally:
         if conn:
             conn.close()
+

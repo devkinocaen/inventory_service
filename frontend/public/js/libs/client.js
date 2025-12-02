@@ -158,7 +158,7 @@ token: null, // JWT stocké après login
               role,
             }),
           });
-console.log ('res', res)
+
           let data;
           try {
             data = await res.json(); // essaie de parser JSON
