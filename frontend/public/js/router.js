@@ -69,6 +69,8 @@ onReady(() => {
   const contentEl = document.getElementById('content');
 
   const user = JSON.parse(localStorage.getItem("loggedUser"));
+    console.log ('user', user)
+    
   const db = localStorage.getItem('currentDataBase');
   const userRole = user.role || '';
 

@@ -13,6 +13,7 @@ export { upsertOrganization } from './upsertOrganization.js';
 export { deleteOrganization } from './deleteOrganization.js';
 
 export { fetchPersonById } from './fetchPersonById.js';
+export { fetchPersonByEmail } from './fetchPersonByEmail.js';
 export { fetchPersonByName } from './fetchPersonByName.js';
 export { upsertPerson } from './upsertPerson.js';
 export { deletePerson } from './deletePerson.js';

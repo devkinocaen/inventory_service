@@ -7,6 +7,7 @@ import {
 } from "./libs/ui/wakeup.js";
 import {
     fetchPersonByName,
+    fetchPersonByEmail,
     fetchOrganizationsByPersonId
 } from './libs/sql/index.js'
 
@@ -211,22 +212,28 @@ if (!dbSelect) {
           return;
         }
 
-         const claims = parseJwt(accessToken);
-         const role = claims?.app_metadata?.role || 'anon';
-        // console.log ('claims?.app_metadata', claims?.app_metadata)
-         const firstName = claims?.first_name || claims?.app_metadata?.first_name || '';
-         const lastName  = claims?.last_name  || claims?.app_metadata?.last_name  || '';
-   
+        const claims = parseJwt(accessToken);
+        const role = claims?.app_metadata?.role || 'anon';
+        const userEmail = claims?.email || '';
+        let firstName = ''
+        let lastName = ''
         // stocke le person_id par défaut
         let personId = null;
-
+          console.log ('claims', claims)
+          console.log ('userEmail', userEmail)
         if (client) {
-            const person = await fetchPersonByName(client, firstName, lastName); // si fetchPersonByName est async
-             console.log(firstName, lastName, person)
+            const person = await fetchPersonByEmail(client, userEmail);
             if (person && !isNaN(Number(person.id))) {
                 personId = person.id;
+                firstName = person.first_name;
+                lastName = person.last_name;
+                console.log("utilisateur identifié: ", firstName, lastName, person)
+            } else {
+                console.log("utilisateur NON identifié: ")
             }
-         }
+        } else {
+            console.log("client NON initailisé ")
+        }
      
           
          // 🔹 Stockage local isolé
