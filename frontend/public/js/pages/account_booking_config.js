@@ -2,12 +2,48 @@ import { fetchBookings, deleteBooking } from '../libs/sql/index.js';
 import { initClient } from '../libs/client.js';
 import { openBatchModal } from '../modals/batch_modal.js';
 import { formatServerError, formatDateTime, escapeHtml } from '../libs/helpers.js';
+import {
+    getDisplayableImageUrl,
+    isInstagramUrl,
+    createInstagramBlockquote,
+    displayImage
+} from '../libs/image_utils.js';
 
 let client;
 let currentBookings = [];
 
+// ---------------- Hover pour faire défiler les images ----------------
+function setupBookingItemHover(photoContainer, photos) {
+  let idx = 0;
+  let intervalId = null;
 
-/* ---------------- Render bookings ---------------- */
+  const showPhoto = () => {
+    displayImage(client, photoContainer, photos[idx].url, { width: '80px' });
+  };
+
+  showPhoto();
+
+  if (photos.length > 1) {
+    photoContainer.onmouseenter = () => {
+      if (intervalId) clearInterval(intervalId);
+      intervalId = setInterval(() => {
+        idx = (idx + 1) % photos.length;
+        showPhoto();
+      }, 1500);
+    };
+
+    photoContainer.onmouseleave = () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+      idx = 0;
+      showPhoto();
+    };
+  }
+}
+
+// ---------------- Render bookings ----------------
 export async function renderBookings(bookings) {
   const container = document.getElementById('bookingList');
   if (!container) return;
@@ -18,14 +54,14 @@ export async function renderBookings(bookings) {
   for (const b of currentBookings) {
     const card = document.createElement('div');
     card.className = 'booking-card';
+
     const lotName = b.batch_description?.trim() || `Lot #${b.reservable_batch_id ?? b.booking_id ?? 'N/A'}`;
-    const orgName = b.renter_name || '—';
+    const bookingPersonName = b.booking_person_name;
     const startDate = formatDateTime(b.start_date);
     const endDate = formatDateTime(b.end_date);
     const bookedAt = formatDateTime(b.booked_at);
-    const bookingPersonName =  b.booking_person_name;
- 
-    // Carrousel des items : max 5
+
+    // Carrousel des items : max 10
     const items = Array.isArray(b.reservables) ? b.reservables.slice(0, 10) : [];
     const itemsHtml = items.length
       ? `<div class="booking-items-container">
@@ -40,7 +76,8 @@ export async function renderBookings(bookings) {
             }];
             return `
               <div class="booking-item">
-                <img src="${escapeHtml(photos[0].url)}" alt="${escapeHtml(r.name || '')}" data-photos='${JSON.stringify(photos)}'>
+                <div class="booking-item-photo" style="width:80px; height:80px; overflow:hidden;"
+                     data-photos='${JSON.stringify(photos)}'></div>
                 <span>${escapeHtml(r.name || '')}</span>
               </div>
             `;
@@ -68,26 +105,13 @@ export async function renderBookings(bookings) {
       </div>
     `;
 
-    // Hover pour faire défiler les images
-    card.querySelectorAll('.booking-item img').forEach(imgEl => {
-      let idx = 0, interval;
-      const photos = JSON.parse(imgEl.dataset.photos || '[]');
-
-      imgEl.addEventListener('mouseenter', () => {
-        if (photos.length <= 1) return;
-        interval = setInterval(() => {
-          idx = (idx + 1) % photos.length;
-          imgEl.src = photos[idx].url;
-        }, 1000);
-      });
-      imgEl.addEventListener('mouseleave', () => {
-        clearInterval(interval);
-        idx = 0;
-        imgEl.src = photos[0]?.url || imgEl.src;
-      });
+    // Initialisation du hover sur chaque photo
+    card.querySelectorAll('.booking-item-photo').forEach(photoContainer => {
+      const photos = JSON.parse(photoContainer.dataset.photos || '[]');
+      if (photos.length) setupBookingItemHover(photoContainer, photos);
     });
 
-    // Events
+    // Boutons détails et suppression
     card.querySelector('.btn-details')?.addEventListener('click', (e) => {
       const id = Number(e.currentTarget.dataset.id);
       if (id) openBatchModal(id, () => refreshBookings(), 'viewer');
@@ -110,8 +134,7 @@ export async function renderBookings(bookings) {
   }
 }
 
-
-/* ---------------- Refresh ---------------- */
+// ---------------- Refresh ----------------
 export async function refreshBookings(filters = {}) {
   try {
     const bookings = await fetchBookings(client, filters);
@@ -121,7 +144,7 @@ export async function refreshBookings(filters = {}) {
   }
 }
 
-/* ---------------- Init ---------------- */
+// ---------------- Init ----------------
 export async function init() {
   try {
     client = await initClient();

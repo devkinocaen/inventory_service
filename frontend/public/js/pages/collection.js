@@ -15,7 +15,8 @@ import { formatServerError } from '../libs/helpers.js';
 import {
     getDisplayableImageUrl,
     isInstagramUrl,
-    createInstagramBlockquote
+    createInstagramBlockquote,
+    displayImage
 } from '../libs/image_utils.js';
 
 let client;
@@ -332,71 +333,6 @@ export async function init() {
   updateCartCount();
 }
 
-/**
- * Afficher une image (URL ou Instagram)
- */
-async function displayImage(container, url, options = {}) {
-  const { width = '100%' } = options; // largeur paramétrable, défaut 100%
-  container.innerHTML = '';
-
-  // Placeholder
-  const placeholder = document.createElement('img');
-  placeholder.src = 'https://placehold.co/70x70?text=+';
-  placeholder.style.width = width;
-  placeholder.style.height = 'auto';
-  placeholder.style.objectFit = 'cover';
-  container.appendChild(placeholder);
-
-  if (!url) return;
-
-  try {
-    // Instagram
-    if (isInstagramUrl(url)) {
-      container.innerHTML = '';
-      const bq = createInstagramBlockquote(url);
-      bq.classList.add('photo-instagram-preview');
-
-      const wrapper = document.createElement('div');
-      wrapper.style.width = width;
-      wrapper.style.height = 'auto';
-      wrapper.style.overflow = 'hidden';
-      wrapper.style.margin = '0 auto';
-      wrapper.style.position = 'relative';
-
-      bq.style.width = '100%';
-      bq.style.height = 'auto';
-      bq.style.transform = 'scale(0.5) translateY(-55px)';
-      bq.style.transformOrigin = 'center';
-      wrapper.appendChild(bq);
-      container.appendChild(wrapper);
-
-      if (window.instgrm) window.instgrm.Embeds.process();
-      return;
-    }
-
-    // Image normale
-    const { url: displayUrl } = await getDisplayableImageUrl(url, { client: client , withPreview: true });
-    if (displayUrl) {
-      container.innerHTML = '';
-      const imgEl = document.createElement('img');
-      imgEl.src = displayUrl;
-      imgEl.style.width = width;   // largeur paramétrable
-      imgEl.style.height = 'auto'; // conserve le ratio
-      imgEl.style.objectFit = 'contain';
-      container.appendChild(imgEl);
-
-      const linkWrapper = document.createElement('a');
-      linkWrapper.target = '_blank';
-      container.replaceChild(linkWrapper, imgEl);
-      linkWrapper.appendChild(imgEl);
-    }
-
-  } catch (err) {
-    console.error('[displayImage] Erreur :', err);
-    container.innerHTML = '';
-    container.appendChild(placeholder);
-  }
-}
 
 /**
  * Affichage d'une photo dans la collection
@@ -417,7 +353,7 @@ async function renderItemPhoto(item, container) {
   let intervalId = null;
 
   const showPhoto = async (photo) => {
-    await displayImage(container, photo.url);
+    await displayImage(client, container, photo.url);
   };
 
   await showPhoto(item.photos[currentIndex]);
@@ -509,7 +445,7 @@ async function openZoom(item) {
         const cell = document.createElement('div');
         cell.className = 'zoom-carousel-cell';
 
-        await displayImage(cell, photo.url); // OK car dans for...of
+        await displayImage(client, cell, photo.url); // OK car dans for...of
 
         cell.addEventListener('click', () => openImageZoom(item, index));
 
@@ -616,7 +552,7 @@ async function updateImgZoom() {
   if (!wrapper) return;
 
   // On délègue l'affichage à displayImage
-  await displayImage(wrapper, photo.url, { width: '800px' });
+  await displayImage(client, wrapper, photo.url, { width: '800px' });
 }
 
 
