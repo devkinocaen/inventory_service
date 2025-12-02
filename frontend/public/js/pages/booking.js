@@ -18,6 +18,7 @@ import { openBatchModal } from '../modals/batch_modal.js';
 // -----------------------------
 let client; // initialisé dans init()
 let currentBookings = []; // liste locale des bookings affichés
+let batchStatusesMap = new Map(); // batch_id → 'in_stock' | 'out' | 'mixed'
 
 // -----------------------------
 // Helpers d'affichage
@@ -59,19 +60,18 @@ async function renderBookingTable(bookings) {
   for (const b of bookings) {
     const tr = document.createElement('tr');
 
-    const lotName = b.batch_description && b.batch_description.trim()
+    const lotName = b.batch_description?.trim()
       ? b.batch_description
-      : `Lot #${b.reservable_batch_id ?? b.booking_id ?? 'N/A'}`;
+      : `Lot #${b.reservable_batch_id ?? 'N/A'}`;
 
     const orgName = b.renter_name || '—';
     const startDate = formatDateForCell(b.start_date);
     const endDate = formatDateForCell(b.end_date);
+    const itemsList = (b.reservables || [])
+      .map(r => r.name || r.label || '')
+      .filter(Boolean)
+      .join(', ');
 
-    const itemsList = (Array.isArray(b.reservables) && b.reservables.length)
-      ? b.reservables.map(r => r.name || r.label || '').filter(Boolean).join(', ')
-      : '';
-
-    // --- Colonnes fixes ---
     tr.innerHTML = `
       <td class="lot" data-id="${b.reservable_batch_id}">${escapeHtml(lotName)}</td>
       <td class="org" data-id="${b.renter_organization_id ?? ''}">${escapeHtml(orgName)}</td>
@@ -81,30 +81,28 @@ async function renderBookingTable(bookings) {
       <td class="end" data-id="${b.booking_id}">
         <input type="datetime-local" value="${b.end_date ? b.end_date.substring(0,16) : ''}" />
       </td>
-      <td class="items" data-id="${b.booking_id}">${escapeHtml(itemsList)}</td>
+      <td class="items">${escapeHtml(itemsList)}</td>
     `;
 
-    // --- Bouton check-in / check-out ---
+    // --- Bouton check stock ---
     const tdBtn = document.createElement('td');
     const btnCheck = document.createElement('button');
     btnCheck.className = 'btn-check-stock';
     btnCheck.dataset.batchId = b.reservable_batch_id;
 
-    try {
-      const stockStatus = await isBatchInStock(client, b.reservable_batch_id);
-      if (stockStatus === true) {
-        btnCheck.textContent = 'Sortir';
-        btnCheck.disabled = false;
-      } else if (stockStatus === false) {
-        btnCheck.textContent = 'Rentrer';
-        btnCheck.disabled = false;
-      } else {
-        btnCheck.textContent = 'Indéterminé';
-        btnCheck.disabled = true;
-      }
-    } catch (err) {
-      console.error('Erreur récupération stock batch:', err);
-      btnCheck.textContent = 'Erreur';
+    const status = batchStatusesMap.get(Number(b.reservable_batch_id));
+
+    if (status === 'in_stock') {
+      btnCheck.textContent = 'Sortir';
+      btnCheck.disabled = false;
+    } else if (status === 'out') {
+      btnCheck.textContent = 'Rentrer';
+      btnCheck.disabled = false;
+    } else if (status === 'mixed') {
+      btnCheck.textContent = 'Indéterminé';
+      btnCheck.disabled = true;
+    } else {
+      btnCheck.textContent = '—';
       btnCheck.disabled = true;
     }
 
@@ -112,7 +110,7 @@ async function renderBookingTable(bookings) {
     tdBtn.appendChild(btnCheck);
     tr.appendChild(tdBtn);
 
-    // --- Boutons edit/delete ---
+    // --- Boutons edit / delete ---
     const tdEdit = document.createElement('td');
     const btnEdit = document.createElement('button');
     btnEdit.className = 'btn-edit booking-btn';
@@ -130,29 +128,6 @@ async function renderBookingTable(bookings) {
     btnDelete.addEventListener('click', onDeleteClick);
     tdDelete.appendChild(btnDelete);
     tr.appendChild(tdDelete);
-
-    // --- Inputs start / end ---
-    tr.querySelector('.start input')?.addEventListener('change', async (e) => {
-      const newVal = e.target.value;
-      try {
-        await updateBooking(client, { id: b.booking_id, start_date: newVal });
-        b.start_date = newVal;
-      } catch (err) {
-        alert('Erreur mise à jour date de début : ' + formatServerError(err));
-        e.target.value = b.start_date ? b.start_date.substring(0,16) : '';
-      }
-    });
-
-    tr.querySelector('.end input')?.addEventListener('change', async (e) => {
-      const newVal = e.target.value;
-      try {
-        await updateBooking(client, { id: b.booking_id, end_date: newVal });
-        b.end_date = newVal;
-      } catch (err) {
-        alert('Erreur mise à jour date de fin : ' + formatServerError(err));
-        e.target.value = b.end_date ? b.end_date.substring(0,16) : '';
-      }
-    });
 
     tbody.appendChild(tr);
   }
@@ -255,11 +230,17 @@ async function onDeleteClick(e) {
 async function refreshTable(filters = {}) {
   try {
     const bookings = await fetchBookings(client, filters);
-    await renderBookingTable(bookings); // ← await ajouté
+
+    // 🔥 Nouveau : récupération d’un seul coup
+    const statuses = await fetchBatchStatuses(client);
+    batchStatusesMap = new Map(statuses.map(s => [Number(s.batch_id), s.status]));
+
+    await renderBookingTable(bookings);
   } catch (err) {
     console.error('[bookings] Erreur fetchBookings:', formatServerError(err));
   }
 }
+
 
 // -----------------------------
 // Check-in / Check-out
@@ -270,16 +251,16 @@ async function onCheckStockClick(e) {
   if (!batchId) return;
 
   try {
-    const stockStatus = await isBatchInStock(client, batchId);
+      const stockStatus = batchStatusesMap.get(batchId);
 
-    if (stockStatus === true) {
+      if (stockStatus === 'in_stock') {
       if (confirm("Tous les objets sont en stock. Voulez-vous les sortir ?")) {
         await setBatchInStock(client, batchId, false);
         alert('Batch sorti du stock.');
           await updateCheckButtonLabel(btn, batchId);
 
       }
-    } else if (stockStatus === false) {
+    } else if (stockStatus === 'out') {
       if (confirm("Tous les objets sont sortis. Voulez-vous les rentrer ?")) {
         await setBatchInStock(client, batchId, true);
         alert('Batch rentré dans le stock.');
@@ -290,7 +271,10 @@ async function onCheckStockClick(e) {
     }
 
 //    await refreshTable();
+      const statuses = await fetchBatchStatuses(client);
+      batchStatusesMap = new Map(statuses.map(s => [Number(s.batch_id), s.status]));
       await refreshAllCheckButtons();
+
 
   } catch (err) {
     console.error('Erreur check-in/check-out:', err);
@@ -329,23 +313,20 @@ export async function init() {
 }
 
 
-async function updateCheckButtonLabel(btn, batchId) {
-  try {
-    const stockStatus = await isBatchInStock(client, batchId);
+function updateCheckButtonLabel(btn, batchId) {
+  const status = batchStatusesMap.get(batchId);
 
-    if (stockStatus === true) {
-      btn.textContent = 'Sortir';
-      btn.disabled = false;
-    } else if (stockStatus === false) {
-      btn.textContent = 'Rentrer';
-      btn.disabled = false;
-    } else {
-      btn.textContent = 'Indéterminé';
-      btn.disabled = true;
-    }
-  } catch (err) {
-    console.error('Erreur récupération stock batch:', err);
-    btn.textContent = 'Erreur';
+  if (status === 'in_stock') {
+    btn.textContent = 'Sortir';
+    btn.disabled = false;
+  } else if (status === 'out') {
+    btn.textContent = 'Rentrer';
+    btn.disabled = false;
+  } else if (status === 'mixed') {
+    btn.textContent = 'Indéterminé';
+    btn.disabled = true;
+  } else {
+    btn.textContent = '—';
     btn.disabled = true;
   }
 }
@@ -354,25 +335,24 @@ async function updateCheckButtonLabel(btn, batchId) {
 // Met à jour uniquement tous les boutons Check-in/Check-out
 async function refreshAllCheckButtons() {
   const buttons = document.querySelectorAll('.btn-check-stock');
+
   for (const btn of buttons) {
     const batchId = Number(btn.dataset.batchId);
     if (!batchId) continue;
 
-    try {
-      const stockStatus = await isBatchInStock(client, batchId);
-      if (stockStatus === true) {
-        btn.textContent = 'Sortir';
-        btn.disabled = false;
-      } else if (stockStatus === false) {
-        btn.textContent = 'Rentrer';
-        btn.disabled = false;
-      } else {
-        btn.textContent = 'Indéterminé';
-        btn.disabled = true;
-      }
-    } catch (err) {
-      console.error('Erreur récupération stock batch:', err);
-      btn.textContent = 'Erreur';
+    const status = batchStatusesMap.get(batchId);
+
+    if (status === 'in_stock') {
+      btn.textContent = 'Sortir';
+      btn.disabled = false;
+    } else if (status === 'out') {
+      btn.textContent = 'Rentrer';
+      btn.disabled = false;
+    } else if (status === 'mixed') {
+      btn.textContent = 'Indéterminé';
+      btn.disabled = true;
+    } else {
+      btn.textContent = '—';
       btn.disabled = true;
     }
   }
