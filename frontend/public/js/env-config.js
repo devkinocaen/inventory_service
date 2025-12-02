@@ -1,6 +1,6 @@
 window.ENV = {
   APP_NAME: "Costumerie",
-  APP_VERSION: "ManagingAccount",
+  APP_VERSION: "0.0.11",
   DB_CLIENT: "",
   BASE_PATH: "",
 
