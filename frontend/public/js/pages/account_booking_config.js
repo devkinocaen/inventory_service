@@ -68,7 +68,7 @@ export async function renderBookings(bookings) {
   for (const b of currentBookings) {
     const card = document.createElement('div');
     card.className = 'booking-card';
-console.log ('b', b)
+ 
     const lotName = b.batch_description?.trim() || `Lot #${b.reservable_batch_id ?? b.booking_id ?? 'N/A'}`;
     const bookingPersonName = b.booking_person_name;
     const renterName = b.renter_name;

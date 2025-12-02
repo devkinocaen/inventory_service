@@ -21,10 +21,10 @@ DECLARE
     v_exists BOOLEAN;
 BEGIN
     -- Vérification des champs obligatoires
-    IF p_first_name IS NULL OR LENGTH(TRIM(p_first_name)) = 0 THEN
+    IF p_first_name IS NULL OR LENGTH(TRIM(p_first_name::text)) = 0 THEN
         RAISE EXCEPTION 'Le prénom ne peut pas être vide';
     END IF;
-    IF p_last_name IS NULL OR LENGTH(TRIM(p_last_name)) = 0 THEN
+    IF p_last_name IS NULL OR LENGTH(TRIM(p_last_name::text)) = 0 THEN
         RAISE EXCEPTION 'Le nom ne peut pas être vide';
     END IF;
 
@@ -32,8 +32,20 @@ BEGIN
     IF p_id IS NULL THEN
         RETURN QUERY
         INSERT INTO inventory.person (first_name, last_name, email, phone, address)
-        VALUES (p_first_name, p_last_name, p_email, p_phone, p_address)
-        RETURNING id, first_name, last_name, email, phone, address;
+        VALUES (
+            p_first_name::text,
+            p_last_name::text,
+            p_email::text,
+            p_phone::text,
+            p_address::text
+        )
+        RETURNING
+            id,
+            first_name::text,
+            last_name::text,
+            email::text,
+            phone::text,
+            address::text;
 
         RETURN;
     END IF;
@@ -52,13 +64,19 @@ BEGIN
     RETURN QUERY
     UPDATE inventory.person
     SET
-        first_name = p_first_name,
-        last_name  = p_last_name,
-        email      = COALESCE(p_email, email),
-        phone      = COALESCE(p_phone, phone),
-        address    = COALESCE(p_address, address)
+        first_name = p_first_name::text,
+        last_name  = p_last_name::text,
+        email      = COALESCE(p_email::text, email),
+        phone      = COALESCE(p_phone::text, phone),
+        address    = COALESCE(p_address::text, address)
     WHERE id = p_id
-    RETURNING id, first_name, last_name, email, phone, address;
+    RETURNING
+        id,
+        first_name::text,
+        last_name::text,
+        email::text,
+        phone::text,
+        address::text;
 
 END;
 $$;
