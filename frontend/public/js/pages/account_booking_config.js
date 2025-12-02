@@ -183,7 +183,7 @@ export async function init() {
 
     // Définir les filtres courants
     currentFilters = {
-      p_organization_ids: orgIds.length ? orgIds : null
+      p_organization_ids: orgIds?.length ? orgIds : null
     };
 
     // Charger les bookings avec filtres par défaut
