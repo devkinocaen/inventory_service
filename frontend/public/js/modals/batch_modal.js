@@ -4,6 +4,7 @@ import {
     fetchBatchById,
     fetchReservables,
     updateBatch,
+    updateBooking,
     updateReservable
 } from '../libs/sql/index.js';
 import { populateSelect } from '../libs/ui/populateSelect.js';
@@ -192,8 +193,8 @@ export function closeBatchModal(withCallback = true) {
         currentBooking = null;
 
         if (currentModalCallback && withCallback) {
-            currentModalCallback(); // <-- appel du callback
-            currentModalCallback = null; // on le réinitialise
+            currentModalCallback();
+            currentModalCallback = null;
         }
     }, 250);
 }
@@ -303,6 +304,10 @@ function addSelectedReservable() {
     }
 }
 
+function formatLocalForInput(date) {
+    const pad = n => n.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 
 /* -------------------------------------------------------
    Sauvegarde
@@ -313,19 +318,53 @@ async function saveBatch(e) {
 
     const description = dialog.querySelector('#batch-description').value.trim();
 
+    // Validation des dates
+    const dates = validateBatchDates();
+    if (!dates) return; // dates invalides, on stoppe
+
     try {
-        const saved = await updateBatch(client, {
+        const savedBatch = await updateBatch(client, {
             id: currentBatch.id,
             description,
             reservables: currentBatch.reservables
         });
+        
+        const savedBooking = await updateBooking(client, {
+            id: currentBooking.id,
+            start_date: formatLocalForInput(dates.startDate),
+            end_date: formatLocalForInput(dates.endDate),
+        });
 
-        console.log('Batch enregistré', saved);
-       // alert('✅ Batch enregistré avec succès.');
+        
+        console.log('Batch enregistré', savedBatch);
         closeBatchModal();
 
     } catch (err) {
         console.error('[updateBatch]', err);
         alert(`❌ Impossible d’enregistrer :\n\n${formatServerError(err.message)}`);
     }
+}
+
+
+
+function validateBatchDates() {
+    const startInput = dialog.querySelector('#batch-start-date');
+    const endInput   = dialog.querySelector('#batch-end-date');
+
+    if (!startInput || !endInput) return false;
+
+    const startDate = new Date(startInput.value);
+    const endDate   = new Date(endInput.value);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        alert('Dates invalides');
+        return false;
+    }
+
+    if (endDate < startDate) {
+        alert('La date de fin doit être après la date de début');
+        return false;
+    }
+
+    return { startDate, endDate };
 }

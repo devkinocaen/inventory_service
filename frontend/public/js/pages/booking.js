@@ -134,7 +134,59 @@ async function renderBookingTable(bookings) {
 
   initSortableColumns('#bookings_table');
   setupBookingLookupFilter();
+  bindBookingDateInputs();
 }
+
+// -----------------------------
+// Écouteurs pour inputs start/end
+// -----------------------------
+function bindBookingDateInputs() {
+  const tbody = document.querySelector('#bookings_table tbody');
+  if (!tbody) return;
+
+  // Start date
+  tbody.querySelectorAll('td.start input[type="datetime-local"]').forEach(input => {
+    input.removeEventListener('change', onBookingDateChange);
+    input.addEventListener('change', onBookingDateChange);
+  });
+
+  // End date
+  tbody.querySelectorAll('td.end input[type="datetime-local"]').forEach(input => {
+    input.removeEventListener('change', onBookingDateChange);
+    input.addEventListener('change', onBookingDateChange);
+  });
+}
+
+// -----------------------------
+// Handler date change
+// -----------------------------
+async function onBookingDateChange(e) {
+  const input = e.currentTarget;
+  const cell = input.closest('td');
+  if (!cell) return;
+
+  const bookingId = Number(cell.dataset.id);
+  if (!bookingId) return console.warn('Booking ID manquant pour update');
+
+  const startInput = cell.parentElement.querySelector('td.start input[type="datetime-local"]');
+  const endInput   = cell.parentElement.querySelector('td.end input[type="datetime-local"]');
+
+  const startDate = startInput?.value || null;
+  const endDate   = endInput?.value || null;
+
+  try {
+    await updateBooking(client, {
+      id: bookingId,
+      start_date: startDate,
+      end_date: endDate
+    });
+    console.log(`[Booking ${bookingId}] Dates mises à jour : ${startDate} → ${endDate}`);
+  } catch (err) {
+    console.error('[onBookingDateChange] Erreur updateBooking :', err);
+    alert('Erreur lors de la mise à jour des dates. Consultez la console.');
+  }
+}
+
 
 
 // -----------------------------
@@ -189,17 +241,17 @@ async function onEditClick(e) {
   const bookingId = Number(e.currentTarget.dataset.id);
   if (!bookingId) return console.warn('booking id missing for edit');
 
-    
-    
   try {
-    openBatchModal(bookingId, () => {
-        refreshTable();
+    openBatchModal(bookingId, async () => {
+        // on refait un fetch complet des bookings pour récupérer les nouvelles dates
+        await refreshTable();
     }, 'edit');
   } catch (err) {
     console.error('Erreur ouverture modal batch :', err);
     alert('Impossible d’ouvrir la modal batch.');
   }
 }
+
 
 
 async function onDeleteClick(e) {

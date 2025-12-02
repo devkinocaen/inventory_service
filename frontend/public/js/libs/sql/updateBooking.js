@@ -30,6 +30,8 @@ SELECT * FROM inventory.update_booking(
     p_end: end_date,
     p_organization_id: organization_id
   };
+    
+    console.log('param updateBookings', params)
 
   const { data, error } = await client.rpc('update_booking', params);
 
