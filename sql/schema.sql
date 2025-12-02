@@ -38,7 +38,8 @@ CREATE TABLE inventory.person (
     address VARCHAR(150),
     email VARCHAR(150),
     phone VARCHAR(30),
-    UNIQUE (first_name, last_name)
+    UNIQUE (first_name, last_name),
+    UNIQUE (email)
 );
 
 CREATE TABLE inventory.organization (

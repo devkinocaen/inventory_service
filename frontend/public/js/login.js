@@ -1,6 +1,7 @@
 import { initClient } from './libs/client.js';
 import { getRedirectByRole } from './libs/auth/roles.js';
 import { parseJwt } from './libs/auth/jwt.js';
+
 import {
     wakeUpFirstAvailable,
     startWakeupRoutine
@@ -10,6 +11,10 @@ import {
     fetchPersonByEmail,
     fetchOrganizationsByPersonId
 } from './libs/sql/index.js'
+
+import  {
+    formatServerError
+} from './libs/helpers.js'
 
 const client = await initClient();
 
@@ -219,21 +224,32 @@ if (!dbSelect) {
         let lastName = ''
         // stocke le person_id par défaut
         let personId = null;
-          console.log ('claims', claims)
-          console.log ('userEmail', userEmail)
+        console.log ('claims', claims)
+        console.log ('userEmail', userEmail)
+                             
         if (client) {
+          try {
             const person = await fetchPersonByEmail(client, userEmail);
+console.log ("person", person, 'from mail: ', userEmail)
             if (person && !isNaN(Number(person.id))) {
-                personId = person.id;
-                firstName = person.first_name;
-                lastName = person.last_name;
-                console.log("utilisateur identifié: ", firstName, lastName, person)
+              personId = person.id;
+              firstName = person.first_name;
+              lastName = person.last_name;
+
+              console.log("utilisateur identifié:", firstName, lastName, person);
             } else {
-                console.log("utilisateur NON identifié: ")
+              console.log("utilisateur NON identifié (aucune correspondance)");
             }
+
+          } catch (err) {
+            alert('Erreur lors de la suppression : ' + formatServerError(err));
+            console.error(err);
+          }
+
         } else {
-            console.log("client NON initailisé ")
+          console.log("client NON initialisé");
         }
+
      
           
          // 🔹 Stockage local isolé
