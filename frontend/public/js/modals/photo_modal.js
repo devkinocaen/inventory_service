@@ -58,6 +58,16 @@ export async function openPhotoModal(client, reservableId, reservableName, onFin
   title.textContent = `📷 Photos de l’objet : ${reservableName}`;
   modal.classList.add('show');
   modal.classList.remove('hidden');
+    
+    
+    // 🔹 Ajouter écouteur ESCAPE
+    const escListener = (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        document.removeEventListener('keydown', escListener);
+      }
+    };
+    document.addEventListener('keydown', escListener);
 
   try {
     // 🔹 Récupérer le reservable avec ses photos via le wrapper

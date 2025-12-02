@@ -66,6 +66,15 @@ export async function loadOrgModal() {
     if (id) selectOrganization(id);
     else resetModal();
   });
+    
+    // 🔹 Ajouter écouteur ESCAPE
+    const escListener = (e) => {
+      if (e.key === 'Escape') {
+         document.removeEventListener('keydown', escListener);
+        closeOrgModal();
+      }
+    };
+    document.addEventListener('keydown', escListener);
 
   await loadOrganizations();
 }
@@ -449,7 +458,6 @@ async function saveOrganization() {
 
     alert('✅ Organisation enregistrée avec succès.');
 
-   // closeOrgModal();
   } catch (err) {
     console.error('[upsertOrganization]', err);
     alert(`❌ Impossible d’enregistrer :\n\n${err.message}`);
@@ -478,7 +486,6 @@ async function confirmDeleteOrganization() {
       orgSelect.value = '';
     }
 
- //   closeOrgModal();
   } catch (err) {
     console.error('[deleteOrganization]', err);
     alert('Erreur lors de la suppression de l’organisation');

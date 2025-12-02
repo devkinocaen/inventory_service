@@ -243,6 +243,15 @@ export async function openReservableModal(reservableId, onSave = null) {
             }
         }
     }
+    
+    // 🔹 Ajouter écouteur ESCAPE
+    const escListener = (e) => {
+      if (e.key === 'Escape') {
+        document.removeEventListener('keydown', escListener);
+        closeReservableModal();
+      }
+    };
+    document.addEventListener('keydown', escListener);
 
     renderStyleChips();
     modal.classList.remove('hidden');

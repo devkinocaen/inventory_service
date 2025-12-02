@@ -69,6 +69,7 @@ export async function loadBookingModal() {
     if (!modal.dataset.escBound) {
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+          document.removeEventListener('keydown', escListener);
           closeBookingModal();
         }
       });

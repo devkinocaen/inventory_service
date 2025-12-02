@@ -56,7 +56,7 @@ export async function loadBatchModal() {
 function bindBatchEvents() {
     if (cancelBtn && !cancelBtn.dataset.bound) {
         cancelBtn.dataset.bound = 'true';
-        cancelBtn.addEventListener('click', closeBatchModal);
+        cancelBtn.addEventListener('click', () => closeBatchModal(false));
     }
 
     if (saveBtn && !saveBtn.dataset.bound) {
@@ -161,6 +161,16 @@ export async function openBatchModal(bookingId, onClose, mode = 'edit') {
     modal.classList.add('show');
     dialog.classList.add('show');
 
+    // 🔹 Ajouter écouteur ESCAPE
+    const escListener = (e) => {
+      if (e.key === 'Escape') {
+          document.removeEventListener('keydown', escListener);
+          closeBatchModal(false);
+      }
+    };
+    document.addEventListener('keydown', escListener);
+    
+    
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeBatchModal();
     }, { once: true });
@@ -170,7 +180,7 @@ export async function openBatchModal(bookingId, onClose, mode = 'edit') {
 /* -------------------------------------------------------
    Fermeture
 ------------------------------------------------------- */
-export function closeBatchModal() {
+export function closeBatchModal(withCallback = true) {
     if (!modal) return;
 
     dialog.classList.remove('show');
@@ -181,7 +191,7 @@ export function closeBatchModal() {
         currentBatch = null;
         currentBooking = null;
 
-        if (currentModalCallback) {
+        if (currentModalCallback && withCallback) {
             currentModalCallback(); // <-- appel du callback
             currentModalCallback = null; // on le réinitialise
         }
