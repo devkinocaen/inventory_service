@@ -5,7 +5,8 @@ import {
   updateBooking,
   deleteBooking,
   isBatchInStock,
-  setBatchInStock
+  setBatchInStock,
+  fetchBatchStatuses
 } from '../libs/sql/index.js';
 
 import { formatServerError, formatDateTime } from '../libs/helpers.js';

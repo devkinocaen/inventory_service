@@ -64,6 +64,8 @@ export { createBatch } from './createBatch.js';
 export { updateBatch } from './updateBatch.js';
 export { isBatchInStock } from './isBatchInStock.js';
 export { setBatchInStock } from './setBatchInStock.js';
+export { fetchBatchStatuses } from './fetchBatchStatuses.js';
+
 
 // ==========================
 // LIEUX DE STOCKAGE

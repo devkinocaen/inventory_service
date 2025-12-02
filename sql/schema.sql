@@ -23,7 +23,9 @@ CREATE TYPE inventory.reservable_quality AS ENUM (
     'neuf', 'bon état', 'abîmé', 'très abîmé', 'inutilisable'
 );
 
-
+CREATE TYPE inventory.reservable_batch_status AS ENUM (
+    'in_stock', 'out', 'mixed'
+);
 
 -- ===========================
 -- Personnes et Organisations
