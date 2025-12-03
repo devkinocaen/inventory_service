@@ -415,7 +415,7 @@ export function createInstagramBlockquote(url) {
  * Afficher une image (URL ou Instagram)
  */
 export async function displayImage(client, container, url, options = {}) {
-  const { width = '100%' } = options; // largeur paramétrable, défaut 100%
+    const { width = '100%', withPreview = true } = options; // <-- ajout withPreview
   container.innerHTML = '';
 
   // Placeholder
@@ -454,7 +454,7 @@ export async function displayImage(client, container, url, options = {}) {
     }
 
     // Image normale
-    const { url: displayUrl } = await getDisplayableImageUrl(url, { client: client , withPreview: true });
+      const { url: displayUrl } = await getDisplayableImageUrl(url, { client, withPreview });
     if (displayUrl) {
       container.innerHTML = '';
       const imgEl = document.createElement('img');

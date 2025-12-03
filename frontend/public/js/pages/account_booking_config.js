@@ -32,7 +32,7 @@ function setupBookingItemHover(photoContainer, photos) {
   let intervalId = null;
 
   const showPhoto = () => {
-    displayImage(client, photoContainer, photos[idx].url, { width: '80px' });
+    displayImage(client, photoContainer, photos[idx].url, { width: '80px', withPreview: true });
   };
 
   showPhoto();

@@ -571,7 +571,7 @@ async function updateImgZoom() {
   if (!wrapper) return;
 
   // On délègue l'affichage à displayImage
-  await displayImage(client, wrapper, photo.url, { width: '800px' });
+  await displayImage(client, wrapper, photo.url, { width: '800px', withPreview: false });
 }
 
 
