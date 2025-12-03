@@ -60,38 +60,59 @@ async function renderBookingTable(bookings) {
   for (const b of bookings) {
     const tr = document.createElement('tr');
 
-    const lotName = b.batch_description?.trim()
-      ? b.batch_description
-      : `Lot #${b.reservable_batch_id ?? 'N/A'}`;
+    // Lot
+    const tdLot = document.createElement('td');
+    tdLot.className = 'lot';
+    tdLot.dataset.id = b.reservable_batch_id ?? '';
+    tdLot.textContent = b.batch_description?.trim() || `Lot #${b.reservable_batch_id ?? 'N/A'}`;
+    tr.appendChild(tdLot);
 
-    const orgName = b.renter_name || '—';
-    const startDate = formatDateForCell(b.start_date);
-    const endDate = formatDateForCell(b.end_date);
-    const itemsList = (b.reservables || [])
+    // Organisation
+    const tdOrg = document.createElement('td');
+    tdOrg.className = 'org';
+    tdOrg.dataset.id = b.renter_organization_id ?? '';
+    tdOrg.textContent = b.renter_name || '—';
+    tr.appendChild(tdOrg);
+
+    // Start date
+    const tdStart = document.createElement('td');
+    tdStart.className = 'start';
+    tdStart.dataset.id = b.booking_id;
+    const inputStart = document.createElement('input');
+    inputStart.type = 'datetime-local';
+    inputStart.id = `start_${b.booking_id}`;
+    inputStart.dataset.bookingId = b.booking_id;
+    inputStart.value = b.start_date ? b.start_date.substring(0,16) : '';
+    tdStart.appendChild(inputStart);
+    tr.appendChild(tdStart);
+
+    // End date
+    const tdEnd = document.createElement('td');
+    tdEnd.className = 'end';
+    tdEnd.dataset.id = b.booking_id;
+    const inputEnd = document.createElement('input');
+    inputEnd.type = 'datetime-local';
+    inputEnd.id = `end_${b.booking_id}`;
+    inputEnd.dataset.bookingId = b.booking_id;
+    inputEnd.value = b.end_date ? b.end_date.substring(0,16) : '';
+    tdEnd.appendChild(inputEnd);
+    tr.appendChild(tdEnd);
+
+    // Items
+    const tdItems = document.createElement('td');
+    tdItems.className = 'items';
+    tdItems.textContent = (b.reservables || [])
       .map(r => r.name || r.label || '')
       .filter(Boolean)
       .join(', ');
+    tr.appendChild(tdItems);
 
-    tr.innerHTML = `
-      <td class="lot" data-id="${b.reservable_batch_id}">${escapeHtml(lotName)}</td>
-      <td class="org" data-id="${b.renter_organization_id ?? ''}">${escapeHtml(orgName)}</td>
-      <td class="start" data-id="${b.booking_id}">
-        <input type="datetime-local" value="${b.start_date ? b.start_date.substring(0,16) : ''}" />
-      </td>
-      <td class="end" data-id="${b.booking_id}">
-        <input type="datetime-local" value="${b.end_date ? b.end_date.substring(0,16) : ''}" />
-      </td>
-      <td class="items">${escapeHtml(itemsList)}</td>
-    `;
-
-    // --- Bouton check stock ---
+    // Bouton check stock
     const tdBtn = document.createElement('td');
     const btnCheck = document.createElement('button');
     btnCheck.className = 'btn-check-stock';
     btnCheck.dataset.batchId = b.reservable_batch_id;
-
     const status = batchStatusesMap.get(Number(b.reservable_batch_id));
-
     if (status === 'in_stock') {
       btnCheck.textContent = 'Sortir';
       btnCheck.disabled = false;
@@ -105,12 +126,11 @@ async function renderBookingTable(bookings) {
       btnCheck.textContent = '—';
       btnCheck.disabled = true;
     }
-
     btnCheck.addEventListener('click', onCheckStockClick);
     tdBtn.appendChild(btnCheck);
     tr.appendChild(tdBtn);
 
-    // --- Boutons edit / delete ---
+    // Bouton éditer
     const tdEdit = document.createElement('td');
     const btnEdit = document.createElement('button');
     btnEdit.className = 'btn-edit booking-btn';
@@ -120,6 +140,7 @@ async function renderBookingTable(bookings) {
     tdEdit.appendChild(btnEdit);
     tr.appendChild(tdEdit);
 
+    // Bouton supprimer
     const tdDelete = document.createElement('td');
     const btnDelete = document.createElement('button');
     btnDelete.className = 'btn-delete booking-btn';
@@ -129,6 +150,7 @@ async function renderBookingTable(bookings) {
     tdDelete.appendChild(btnDelete);
     tr.appendChild(tdDelete);
 
+    // Ajout ligne au tableau
     tbody.appendChild(tr);
   }
 
@@ -141,6 +163,7 @@ async function renderBookingTable(bookings) {
 // Écouteurs pour inputs start/end
 // -----------------------------
 function bindBookingDateInputs() {
+
   const tbody = document.querySelector('#bookings_table tbody');
   if (!tbody) return;
 
@@ -165,14 +188,16 @@ async function onBookingDateChange(e) {
   const cell = input.closest('td');
   if (!cell) return;
 
+  const row = cell.closest('tr');
+
   const bookingId = Number(cell.dataset.id);
   if (!bookingId) return console.warn('Booking ID manquant pour update');
 
-  const startInput = cell.parentElement.querySelector('td.start input[type="datetime-local"]');
-  const endInput   = cell.parentElement.querySelector('td.end input[type="datetime-local"]');
+  const startInput = row.querySelector('td.start input[type="datetime-local"]');
+  const endInput   = row.querySelector('td.end input[type="datetime-local"]');
 
-  const startDate = startInput?.value || null;
-  const endDate   = endInput?.value || null;
+  const startDate = startInput ? startInput.value : null;
+  const endDate   = endInput ? endInput.value : null;
 
   try {
     await updateBooking(client, {
