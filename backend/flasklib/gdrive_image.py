@@ -19,14 +19,13 @@ def register_routes(app):
         allow_headers=["Content-Type", "Authorization"],
         methods=["GET", "OPTIONS"]
     )
-    def serve_photo(file_id):
+    def serve_photo(database_id, file_id):  # <-- database_id ajouté
         if request.method == "OPTIONS":
             return Response(status=200)
 
         drive_url = f"https://drive.google.com/file/d/{file_id}/"
 
         try:
-
             # 🔹 Téléchargement depuis Google Drive
             drive_service = get_drive_service(database_id)
             request_drive = drive_service.files().get_media(fileId=file_id)
@@ -63,10 +62,12 @@ def register_routes(app):
                 "PNG": "png",
                 "GIF": "gif",
                 "WEBP": "webp",
-                "TIFF": "tiff", "TIF": "tif",
+                "TIFF": "tiff",
+                "TIF": "tif",
                 "BMP": "bmp",
                 "ICO": "ico",
-                "JP2": "jp2", "JPEG2000": "jp2",
+                "JP2": "jp2",
+                "JPEG2000": "jp2",
             }
             filename = f"{file_id}.{ext_map.get(img_format, 'bin')}"
 
