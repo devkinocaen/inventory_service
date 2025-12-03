@@ -27,11 +27,6 @@ function saveFormState(tabIndex, contentEl) {
     // 🔹 Sauvegarde des chips sélectionnés
     const chips = contentEl.querySelectorAll('.chip');
     state.__chips = Array.from(chips).map(chip => chip.classList.contains('selected') || chip.classList.contains('active'));
-    
-    // 🔹 Sauvegarde des datepickers personnalisés
-    const datePickers = contentEl.querySelectorAll('[data-datepicker], .datepicker');
-    state.__dates = Array.from(datePickers).map(dp => dp.value || dp.dataset.dateValue || null);
-
 
     
   window.__tabFormStates[tabIndex] = state;
@@ -67,22 +62,6 @@ function restoreFormState(tabIndex, contentEl) {
         }
       });
     }
-
-    
-    // 🔹 Restauration des datepickers personnalisés
-    if (Array.isArray(state.__dates)) {
-      const datePickers = contentEl.querySelectorAll('[data-datepicker], .datepicker');
-      datePickers.forEach((dp, i) => {
-        const val = state.__dates[i];
-        if (val) {
-          if ('value' in dp) dp.value = val;  // input classique
-          dp.dataset.dateValue = val;        // pour les composants JS
-          // Si ton datepicker expose une API (flatpickr...)
-          if (dp._flatpickr) dp._flatpickr.setDate(val, true);
-        }
-      });
-    }
-
 }
 
 
