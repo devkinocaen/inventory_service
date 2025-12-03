@@ -21,5 +21,5 @@ def init_routes(app):
     restore_drive.register_routes(app)
 
     # Routes Google Drive images
-    gdriver_image.register_routes(app)
+    gdrive_image.register_routes(app)
     upload_to_drive.register_routes(app)
