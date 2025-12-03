@@ -15,6 +15,8 @@ import {
     roundDateByMinute
 } from '../libs/helpers.js';
 
+import { displayImage } from '../libs/image_utils.js';
+
 import { populateSelect } from '../libs/ui/populateSelect.js';
 
 let client =  null;
@@ -161,32 +163,49 @@ export function closeBookingModal() {
 // -----------------------------
 // Afficher les items sélectionnés
 // -----------------------------
-export function renderBookingItems() {
+export async function renderBookingItems() {
   if (!itemsContainer) return;
   itemsContainer.innerHTML = '';
-  bookingItems.forEach(item => {
+
+  for (const item of bookingItems) {
     const div = document.createElement('div');
     div.className = 'cart-item';
-    const img = document.createElement('img');
-    img.src = item.photos?.[0]?.url || 'data:image/svg+xml;charset=UTF-8,' +
-      encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60">
-        <rect width="60" height="60" fill="#ddd"/>
-        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="10">No Image</text>
-      </svg>`);
 
-    let hoverInterval, idx = 0;
-    div.addEventListener('mouseenter', () => {
-      if (!item.photos?.length) return;
-      hoverInterval = setInterval(() => {
-        idx = (idx + 1) % item.photos.length;
-        img.src = item.photos[idx].url;
-      }, 1000);
-    });
-    div.addEventListener('mouseleave', () => {
-      clearInterval(hoverInterval);
-      idx = 0;
-      img.src = item.photos?.[0]?.url || img.src;
-    });
+    const imgContainer = document.createElement('div');
+    imgContainer.style.width = '60px';
+    imgContainer.style.height = '60px';
+    imgContainer.style.flexShrink = '0';
+    imgContainer.style.overflow = 'hidden';
+    imgContainer.style.borderRadius = '4px';
+    div.appendChild(imgContainer);
+
+    // Affichage initial de l'image avec displayImage
+    const firstPhoto = item.photos?.[0];
+    if (firstPhoto) {
+      await displayImage(client, imgContainer, firstPhoto.url, { width: '60px', height: '60px', withPreview: true });
+    } else {
+      // Placeholder si pas de photo
+      imgContainer.innerHTML = `<img src="https://placehold.co/60x60?text=+" style="width:100%;height:100%;object-fit:cover">`;
+    }
+
+    // Hover pour faire défiler les photos
+    if (item.photos?.length > 1) {
+      let idx = 0;
+      let intervalId = null;
+
+      div.addEventListener('mouseenter', () => {
+        intervalId = setInterval(async () => {
+          idx = (idx + 1) % item.photos.length;
+          await displayImage(client, imgContainer, item.photos[idx].url, { width: '60px', height: '60px' });
+        }, 1000);
+      });
+
+      div.addEventListener('mouseleave', async () => {
+        if (intervalId) clearInterval(intervalId);
+        idx = 0;
+        await displayImage(client, imgContainer, firstPhoto.url, { width: '60px', height: '60px' });
+      });
+    }
 
     const info = document.createElement('div');
     info.style.flex = '1';
@@ -199,11 +218,11 @@ export function renderBookingItems() {
     info.appendChild(name);
     info.appendChild(cat);
 
-    div.appendChild(img);
     div.appendChild(info);
     itemsContainer.appendChild(div);
-  });
+  }
 }
+
 
 // -----------------------------
 // Initialisation du modal

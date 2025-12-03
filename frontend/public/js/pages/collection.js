@@ -12,12 +12,7 @@ import { openBookingModal } from '../modals/booking_modal.js';
 import { openOrgModal } from '../modals/org_modal.js';
 import { formatServerError, formatDateForDatetimeLocal } from '../libs/helpers.js';
 
-import {
-    getDisplayableImageUrl,
-    isInstagramUrl,
-    createInstagramBlockquote,
-    displayImage
-} from '../libs/image_utils.js';
+import { displayImage } from '../libs/image_utils.js';
 
 let client;
 let appConfig = null;
