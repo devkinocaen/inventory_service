@@ -235,9 +235,11 @@ export async function initBookingModal() {
 
    try {
      const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
-     personId = typeof loggedUser.personId === "number" || typeof loggedUser.personId === "string"
-       ? loggedUser.personId
-       : null;
+       if (loggedUser.role == 'viewer') {
+         personId = typeof loggedUser.personId === "number" || typeof loggedUser.personId === "string"
+           ? loggedUser.personId
+           : null;
+       }
    } catch (e) {
      console.error("❌ Erreur lecture loggedUser :", e);
    }
