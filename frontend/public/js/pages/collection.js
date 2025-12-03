@@ -423,6 +423,7 @@ function closeZoom() {
 async function openZoom(item) {
   // Fermer tout overlay existant avant d’en ouvrir un nouveau
   closeZoom();
+    console.log ('item', item)
 
   document.body.style.overflow = 'hidden';
 
@@ -480,10 +481,12 @@ async function openZoom(item) {
   const infoData = [
     { label: 'Taille', value: item.size || '-' },
     { label: 'Catégorie', value: item.category_name || '-' },
-    { label: 'Sous-catégorie', value: item.subcategory_name || '-' },
-    { label: 'Style', value: item.style_name || '-' },
-    { label: 'Genre', value: genderLabelMap[item.gender] || '-' },
     { label: 'État', value: item.quality },
+    { label: 'Genre', value: genderLabelMap[item.gender] || '-' },
+    { label: 'Sous-catégorie', value: item.subcategory_name || '-' },
+    { label: 'Description', value: item.description },
+    { label: 'En magasin', value: item.is_in_stock? 'Oui':'Non' },
+    { label: 'Style', value: (item.style_names?.length ? item.style_names.join(', ') : '-') },
   ];
 
   if (appConfig.show_prices) {

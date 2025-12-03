@@ -41,7 +41,6 @@ export async function fetchReservables(client, filters = {}) {
     gender: item.gender,
     privacy: item.privacy,
     inventory_type: item.inventory_type,
-    type_id: item.type_id,
     type_name: item.type_name,
     category_id: item.category_id,
     category_name: item.category_name,
@@ -57,8 +56,6 @@ export async function fetchReservables(client, filters = {}) {
     owner_name: item.owner_name,
     manager_id: item.manager_id,
     manager_name: item.manager_name,
-    size_id: item.size_id,
-    size_label: item.size_label,
     style_ids: item.style_ids || [],
     style_names: item.style_names || []
   }));
