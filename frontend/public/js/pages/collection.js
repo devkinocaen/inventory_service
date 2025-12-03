@@ -10,7 +10,7 @@ import {
 import { initClient } from '../libs/client.js';
 import { openBookingModal } from '../modals/booking_modal.js';
 import { openOrgModal } from '../modals/org_modal.js';
-import { formatServerError } from '../libs/helpers.js';
+import { formatServerError, formatDateForDatetimeLocal } from '../libs/helpers.js';
 
 import {
     getDisplayableImageUrl,
@@ -123,8 +123,10 @@ async function fetchItems() {
   let filterEndDate = currentFilterEnd ? currentFilterEnd.toISOString() : null;
 
   const now = new Date();
-  if (filterStartDate && new Date(filterStartDate).getTime() < now.getTime()) filterStartDate = null;
-  if (filterEndDate && new Date(filterEndDate).getTime() < now.getTime()) filterEndDate = null;
+    let filterStartDate = currentFilterStart ? formatDateForDatetimeLocal(currentFilterStart) : null;
+    let filterEndDate   = currentFilterEnd   ? formatDateForDatetimeLocal(currentFilterEnd)   : null;
+    
+    
   if (filterStartDate && filterEndDate && new Date(filterStartDate) >= new Date(filterEndDate)) {
     alert('La date de fin doit être après la date de début');
     filterStartDate = null;
