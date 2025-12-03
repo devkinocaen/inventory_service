@@ -335,6 +335,21 @@ export async function init() {
 
   await loadData();
   updateCartCount();
+    
+    // -----------------------------
+     // Rendre les sections filtres repliables
+     // -----------------------------
+     const collapsibleSections = document.querySelectorAll('#cstm-filtersSidebar .filter-section');
+
+     collapsibleSections.forEach(section => {
+       section.classList.add('cstm-filter-collapsible');
+       
+       const titleDiv = section.querySelector('div:first-child');
+       
+       titleDiv.addEventListener('click', () => {
+         section.classList.toggle('collapsed');
+       });
+     });
 }
 
 

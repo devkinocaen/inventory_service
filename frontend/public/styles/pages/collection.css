@@ -491,3 +491,33 @@
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+
+
+/* Contenu repliable */
+.cstm-filter-collapsible .cstm-chip-list {
+  transition: max-height 0.25s ease, opacity 0.25s ease;
+  overflow: hidden;
+  max-height: 500px; /* valeur max quand ouvert */
+  opacity: 1;
+}
+
+.cstm-filter-collapsible.collapsed .cstm-chip-list {
+  max-height: 0;
+  opacity: 0;
+}
+.cstm-filter-collapsible > div:first-child {
+  cursor: pointer;
+  user-select: none;
+}
+/* Flèche pour sections collapsibles */
+.cstm-filter-collapsible > div:first-child::before {
+  content: "▶";        /* flèche droite par défaut */
+  display: inline-block;
+  margin-right: 0.5em;
+  transition: transform 0.25s ease;
+}
+
+/* Section ouverte → flèche vers le bas */
+.cstm-filter-collapsible:not(.collapsed) > div:first-child::before {
+  transform: rotate(90deg);
+}

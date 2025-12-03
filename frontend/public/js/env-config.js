@@ -1,6 +1,6 @@
 window.ENV = {
   APP_NAME: "Costumerie",
-  APP_VERSION: "0.0.12",
+  APP_VERSION: "DebugCollectionFilters",
   DB_CLIENT: "",
   BASE_PATH: "",
 
