@@ -55,22 +55,22 @@ Ce guide décrit les étapes nécessaires pour **créer, initialiser et connecte
 
 2.** Générer le token OAuth**
 
-- Le script Python `connexion/gcloud/oauth_setup.py` sert à **générer le token OAuth (`token.json`)** pour que l’application Flask puisse accéder à Google Drive.  
-- Il utilise le fichier `connexion/gcloud/client_secret_oauth.json` fourni par le projet GCloud **GCloudStorage**.
+- Le script Python `services/gcloud/oauth_setup.py` sert à **générer le token OAuth (`token.json`)** pour que l’application Flask puisse accéder à Google Drive.  
+- Il utilise le fichier `services/gcloud/client_secret_oauth.json` fourni par le projet GCloud **GCloudStorage**.
 - Pour générer le token, exécutez la commande depuis la racine du projet **avec une fenêtre Chrome active du compte Google où vous avez votre Drive**:
 
     ```bash
-    python3 connexion/gcloud/oauth_setup.py \
-      --credentials connexion/gcloud/client_secret_oauth.json \
-      --token connexion/gcloud/secrets/mon_token.json
+    python3 services/gcloud/oauth_setup.py \
+      --credentials services/gcloud/client_secret_oauth.json \
+      --token services/gcloud/secrets/mon_token.json
     ```
     Lors de l’exécution, une fenêtre de consentement Google s’ouvre pour le compte que vous avez ajouté comme utilisateur de test. Acceptez les autorisations.
-    Stockez ce token OAuth dans le dossier `connexion/gcloud/secrets`. Par exemple `mon_token.json`.
+    Stockez ce token OAuth dans le dossier `services/gcloud/secrets`. Par exemple `mon_token.json`.
 
 3. **Stocker le token**  
    - Le token OAuth généré (`token.json`) doit être placé dans :  
      ```
-     connexion/gcloud/secrets/mon_token.json
+         services/gcloud/secrets/mon_token.json
      ```  
    Versionnez-le sous git afin que le serveur flask y ait accès (ou alors enregistrez-le dans les secrets si vous hébergez le service sous render).
      
