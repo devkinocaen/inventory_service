@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Costumerie</title>
-  <link rel="stylesheet" href="./collection.css">
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body class="cstm-body">
 
@@ -11,32 +11,34 @@
   <aside id="cstm-filtersSidebar" class="cstm-collapsed">
     <h3>Filtres</h3>
 
+    <!-- Catégories -->
     <div class="filter-section collapsed" id="category-section">
       <h4 class="filter-header">Catégorie</h4>
       <div id="cstm-categoryChips" class="filter-content cstm-chip-list"></div>
     </div>
 
+    <!-- Sous-catégories -->
     <div class="filter-section collapsed" id="subcategory-section">
       <h4 class="filter-header">Sous-catégorie</h4>
       <div id="cstm-subcatChips" class="filter-content cstm-chip-list"></div>
     </div>
 
+    <!-- Styles -->
     <div class="filter-section collapsed" id="style-section">
       <h4 class="filter-header">Style</h4>
       <div id="cstm-styleChips" class="filter-content cstm-chip-list"></div>
     </div>
 
+    <!-- Genre -->
     <div class="filter-section collapsed" id="gender-section">
       <h4 class="filter-header">Genre</h4>
       <div id="cstm-genderChips" class="filter-content cstm-chip-list">
-        <div class="filter-chip" data-gender="male">Homme</div>
-        <div class="filter-chip" data-gender="female">Femme</div>
-        <div class="filter-chip" data-gender="unisex">Unisexe</div>
       </div>
     </div>
 
     <hr class="cstm-divider">
 
+    <!-- Période -->
     <div class="filter-section collapsed" id="period-section">
       <h4 class="filter-header">Période</h4>
       <div class="filter-content cstm-date-filters">
@@ -48,7 +50,6 @@
           <label for="cstm-filterEndDate">Au</label>
           <input type="datetime-local" id="cstm-filterEndDate">
         </div>
-
         <div class="cstm-apply-filters">
           <button id="cstm-applyDateFilter" type="button">Valider</button>
         </div>

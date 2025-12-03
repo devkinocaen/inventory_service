@@ -1,3 +1,4 @@
+/* ==== BODY & LAYOUT ==== */
 .cstm-body {
   font-family: sans-serif;
   margin: 0;
@@ -11,21 +12,150 @@
   position: fixed;
   left: 0;
   top: 0;
-  width: 240px;
+  width: 280px; /* largeur un peu plus grande */
   height: 100vh;
   background: #fafafa;
   border-right: 1px solid #ccc;
   padding: 12px;
-  overflow-y: auto;
+  overflow-y: auto; /* scroll vertical */
+  overflow-x: hidden;
   transition: transform 0.3s;
   z-index: 900;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
 }
+
 #cstm-filtersSidebar.cstm-collapsed {
   transform: translateX(-100%);
 }
+
+/* ---- Sections de filtres ---- */
+.filter-section {
+  margin-bottom: 12px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+.filter-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.filter-header {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between; /* texte à gauche, flèche à droite */
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-size: 0.95em;
+  position: relative;
+}
+
+.filter-header::after {
+  content: '▼';
+  display: inline-block;
+  color: #333;
+  font-size: 1em;
+  transition: transform 0.25s ease;
+}
+
+.filter-section.collapsed .filter-header::after {
+  transform: rotate(-90deg); /* flèche vers la droite */
+}
+
+.filter-content {
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+  max-height: 1000px; /* suffisamment grand pour tout le contenu */
+}
+
+.filter-section.collapsed .filter-content {
+  max-height: 0;
+}
+
+/* ---- Chips ---- */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 9999px;
+  background: #f7f7f7;
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+  margin: 3px 2px;
+}
+
+.filter-chip:hover {
+  background: #f0f0f0;
+  border-color: #aaa;
+  transform: translateY(-1px);
+}
+
+.filter-chip.selected {
+  background: #0078ff;
+  color: white;
+  border-color: #0078ff;
+  box-shadow: 0 0 0 3px rgba(0, 120, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.filter-chip:active {
+  transform: scale(0.95);
+}
+
+/* ---- Date filters ---- */
+.cstm-date-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.cstm-date-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cstm-date-row label {
+  width: 30px;
+  font-size: 0.85em;
+  color: #333;
+  text-align: right;
+}
+
+.cstm-date-row input[type="datetime-local"] {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+
+.cstm-apply-filters button {
+  width: 100%;
+  padding: 6px 0;
+  background: #4CAF50;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95em;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.cstm-apply-filters button:hover {
+  background: #45a049;
+  transform: scale(1.02);
+}
+
 
 /* ---- Zone principale ---- */
 #cstm-main {

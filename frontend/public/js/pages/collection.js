@@ -10,7 +10,7 @@ import {
 import { initClient } from '../libs/client.js';
 import { openBookingModal } from '../modals/booking_modal.js';
 import { openOrgModal } from '../modals/org_modal.js';
-import { formatServerError } from '../libs/helpers.js';
+import { formatServerError, formatDateForDatetimeLocal } from '../libs/helpers.js';
 
 import {
     getDisplayableImageUrl,
@@ -110,17 +110,30 @@ function renderFilterChips(categories, subcategories, styles) {
   styleChips.innerHTML = '';
   styles.forEach(s => styleChips.appendChild(makeChip(s.name, 'style')));
 
-  const genders = ['Homme', 'Femme', 'Unisexe'];
-  genderChips.innerHTML = '';
-  genders.forEach(g => genderChips.appendChild(makeChip(g, 'gender')));
+    const genders = ['Homme', 'Femme', 'Unisexe'];
+    genderChips.innerHTML = '';
+    genders.forEach(label => {
+      const value = genderMap[label];  // male/female/unisex
+      const chip = document.createElement('div');
+      chip.textContent = label;
+      chip.className = 'filter-chip' + (activeFilters.gender.includes(value) ? ' selected' : '');
+      chip.onclick = () => {
+        toggleFilter('gender', value); // stocke la valeur correcte
+        renderFilterChips(categories, subcategories, styles);
+        fetchItemsAndRender();
+      };
+      genderChips.appendChild(chip);
+    });
+
 }
 
 /**
  * Fetch les items depuis la base SQL selon les filtres sidebar
  */
 async function fetchItems() {
-  let filterStartDate = currentFilterStart ? currentFilterStart.toISOString() : null;
-  let filterEndDate = currentFilterEnd ? currentFilterEnd.toISOString() : null;
+    let filterStartDate = currentFilterStart ? formatDateForDatetimeLocal(currentFilterStart) : null;
+    let filterEndDate   = currentFilterEnd   ? formatDateForDatetimeLocal(currentFilterEnd)   : null;
+
 
   const now = new Date();
   if (filterStartDate && new Date(filterStartDate).getTime() < now.getTime()) filterStartDate = null;
