@@ -64,8 +64,14 @@ function toggleFilter(type, value) {
     activeFilters[type] = activeFilters[type].filter(v => v !== value);
   } else {
     activeFilters[type].push(value);
+    
+    // Si c'est une catégorie qui change, on reset les sous-catégories
+    if (type === 'category') {
+      activeFilters.subcategory = [];
+    }
   }
 }
+
 
 /**
  * Render les filtres sous forme de chips stylées

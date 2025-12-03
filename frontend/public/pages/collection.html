@@ -11,24 +11,24 @@
   <aside id="cstm-filtersSidebar" class="cstm-collapsed">
     <h3>Filtres</h3>
 
-    <div class="filter-section">
-      <div><strong>Catégorie</strong></div>
-      <div id="cstm-categoryChips" class="cstm-chip-list"></div>
+    <div class="filter-section collapsed" id="category-section">
+      <h4 class="filter-header">Catégorie</h4>
+      <div id="cstm-categoryChips" class="filter-content cstm-chip-list"></div>
     </div>
 
-    <div class="filter-section">
-      <div><strong>Sous-catégorie</strong></div>
-      <div id="cstm-subcatChips" class="cstm-chip-list"></div>
+    <div class="filter-section collapsed" id="subcategory-section">
+      <h4 class="filter-header">Sous-catégorie</h4>
+      <div id="cstm-subcatChips" class="filter-content cstm-chip-list"></div>
     </div>
 
-    <div class="filter-section">
-      <div><strong>Style</strong></div>
-      <div id="cstm-styleChips" class="cstm-chip-list"></div>
+    <div class="filter-section collapsed" id="style-section">
+      <h4 class="filter-header">Style</h4>
+      <div id="cstm-styleChips" class="filter-content cstm-chip-list"></div>
     </div>
 
-    <div class="filter-section">
-      <div><strong>Genre</strong></div>
-      <div id="cstm-genderChips" class="cstm-chip-list">
+    <div class="filter-section collapsed" id="gender-section">
+      <h4 class="filter-header">Genre</h4>
+      <div id="cstm-genderChips" class="filter-content cstm-chip-list">
         <div class="filter-chip" data-gender="male">Homme</div>
         <div class="filter-chip" data-gender="female">Femme</div>
         <div class="filter-chip" data-gender="unisex">Unisexe</div>
@@ -37,9 +37,9 @@
 
     <hr class="cstm-divider">
 
-    <div class="filter-section">
-      <div><strong>Période</strong></div>
-      <div class="cstm-date-filters">
+    <div class="filter-section collapsed" id="period-section">
+      <h4 class="filter-header">Période</h4>
+      <div class="filter-content cstm-date-filters">
         <div class="cstm-date-row">
           <label for="cstm-filterStartDate">Du</label>
           <input type="datetime-local" id="cstm-filterStartDate">
@@ -57,31 +57,37 @@
 
   </aside>
 
-
   <!-- ---- Sidebar Panier ---- -->
   <div id="cstm-cartSidebar" class="cstm-collapsed"></div>
+
   <!-- Lookup input -->
   <div id="cstm-lookupContainer" style="margin: 1em 0;">
     <label for="cstm-lookupInput"><strong>Recherche article :</strong></label>
     <input type="text" id="cstm-lookupInput" placeholder="Tapez un mot-clef pour filtrer…">
   </div>
+
   <!-- ---- Zone principale ---- -->
-  <div id="cstm-main">  </div>
-  
+  <div id="cstm-main"></div>
+
   <!-- Mini bar horizontale centrée avec filtres et panier -->
   <div id="cstm-topControls">
     <div id="cstm-filtersInline" class="cstm-inlineControls"></div>
-   <!-- <div id="cstm-cartInline" class="cstm-inlineControls"></div> -->
-   <div id="zoom-viewer" class="hidden"></div>
-
+    <div id="zoom-viewer" class="hidden"></div>
   </div>
   
   <!-- ---- Boutons flottants ---- -->
   <button id="cstm-filtersToggle" class="cstm-collapsed">🔍</button>
-  <button id="cstm-orgToggle" class="cstm-collapsed">👥</button> 
+  <button id="cstm-orgToggle" class="cstm-collapsed">👥</button>
   <button id="cstm-cartToggle" class="cstm-collapsed">🛒</button>
 
-
-  <script type="module" src="./collection.js"></script>
+  <script type="module">
+    // Toggle collapse sections
+    document.querySelectorAll('.filter-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const section = header.parentElement;
+        section.classList.toggle('collapsed');
+      });
+    });
+  </script>
 </body>
 </html>

@@ -19,9 +19,9 @@
   overflow-y: auto;
   transition: transform 0.3s;
   z-index: 900;
-  display: flex;          /* active flexbox */
-  flex-direction: column; /* colonne verticale */
-  justify-content: center; /* centre verticalement */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 #cstm-filtersSidebar.cstm-collapsed {
   transform: translateX(-100%);
@@ -92,9 +92,9 @@
 
 /* ---- Bouton filtre / poignée ---- */
 #cstm-filtersToggle {
-  position: fixed;       /* toujours fixé par rapport à la fenêtre */
+  position: fixed;
   top: 50%;
-  left: 0;               /* bord gauche de l'écran */
+  left: 0;
   transform: translateY(-50%);
   width: 40px;
   height: 40px;
@@ -108,17 +108,8 @@
   z-index: 1001;
   transition: left 0.3s, transform 0.2s;
 }
-
-/* Décalage quand la sidebar est ouverte */
-#cstm-filtersSidebar:not(.cstm-collapsed) ~ #cstm-filtersToggle {
-  left: 240px;  /* largeur sidebar */
-}
-
-/* Décalage quand la sidebar est fermée */
-#cstm-filtersSidebar.cstm-collapsed ~ #cstm-filtersToggle {
-  left: 0;      /* collé au bord gauche */
-}
-
+#cstm-filtersSidebar:not(.cstm-collapsed) ~ #cstm-filtersToggle { left: 240px; }
+#cstm-filtersSidebar.cstm-collapsed ~ #cstm-filtersToggle { left: 0; }
 
 #cstm-cartToggle {
   position: fixed;
@@ -321,7 +312,6 @@
   transform: translateY(-1px);
 }
 
-/* ✅ État sélectionné */
 .filter-chip.selected {
   background: #0078ff;
   color: white;
@@ -330,12 +320,10 @@
   transform: scale(1.05);
 }
 
-/* ✅ Effet de rebond au clic */
 .filter-chip:active {
   transform: scale(0.95);
 }
 
-/* Optionnel : icône ou croix dans la chip */
 .filter-chip .chip-icon {
   font-size: 1rem;
   line-height: 1;
@@ -361,7 +349,6 @@
 }
 
 /* === ZOOM OVERLAY === */
-/* ===== Overlay ===== */
 .zoom-overlay {
   position: fixed;
   inset: 0;
@@ -375,7 +362,6 @@
   overflow-y: auto;
 }
 
-/* ===== Carte ===== */
 .zoom-content {
   background: #fff;
   border-radius: 12px;
@@ -391,7 +377,6 @@
   to   { opacity: 1; transform: scale(1); }
 }
 
-/* ===== Bouton fermer ===== */
 .zoom-close-btn {
   position: absolute;
   right: 15px;
@@ -401,7 +386,6 @@
   user-select: none;
 }
 
-/* ===== CARROUSEL ===== */
 .zoom-carousel {
   display: flex;
   gap: 12px;
@@ -412,7 +396,7 @@
 }
 
 .zoom-carousel-cell {
-  flex: 0 0 260px;   /* 3 visibles sur 900px */
+  flex: 0 0 260px;
   height: 260px;
   border-radius: 10px;
   overflow: hidden;
@@ -428,7 +412,6 @@
   object-fit: cover;
 }
 
-/* ===== Infos en grille ===== */
 .zoom-info-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -441,7 +424,6 @@
   font-size: 15px;
 }
 
-/* ===== No photo ===== */
 .no-photo {
   flex: 0 0 260px;
   height: 260px;
@@ -479,7 +461,7 @@
 }
 
 .imgzoom-img {
-  width: 800px; /* forcer 800px même si petite */
+  width: 800px;
   max-width: 100%;
   height: auto;
   object-fit: contain;
@@ -490,4 +472,44 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+.filter-header {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between; /* texte à gauche, flèche à droite */
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-size: 0.95em;
+  position: relative; /* pour que ::after soit bien positionné */
+}
+
+.filter-header::after {
+  content: '▼';
+  display: inline-block;
+  margin-left: 6px;
+  /*
+   font-size: 0.8em;
+   color: #333;   force la couleur de la flèche
+   */
+  color: red;
+  font-size: 1em;
+  transition: transform 0.25s ease;
+}
+
+
+.filter-section.collapsed .filter-header::after {
+  transform: rotate(-90deg); /* flèche vers la droite */
+}
+
+
+.filter-content {
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+  max-height: 1000px;
+}
+
+.filter-section.collapsed .filter-content {
+  max-height: 0;
 }
