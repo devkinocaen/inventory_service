@@ -3,7 +3,7 @@ from . import backup
 from . import backup_list
 from . import restore_drive
 from . import rpc
-from . import gdriver_image
+from . import gdrive_image
 from . import upload_to_drive
 from . import routes
 
