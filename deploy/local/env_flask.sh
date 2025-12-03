@@ -29,6 +29,9 @@ pip install --upgrade pip
 
 pip install -r ${FLASK_APP_DIR}/requirements.txt
 
+echo on charge la config du server: ${FLASK_APP_DIR}/config.sh
+source ${FLASK_APP_DIR}/config.sh
+
 
 cd $CURRENT_DIR
 

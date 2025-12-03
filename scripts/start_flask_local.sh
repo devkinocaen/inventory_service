@@ -13,6 +13,6 @@ export FLASK_DEBUG=1
 
 export PATH=/usr/local/pgsql/bin/:$PATH
 
-bash "$CURRENT_SCRIPT_DIR/../deploy/local/env_flask.sh"
+source "$CURRENT_SCRIPT_DIR/../deploy/local/env_flask.sh"
 bash "$CURRENT_SCRIPT_DIR/../deploy/local/start_flask.sh"
 

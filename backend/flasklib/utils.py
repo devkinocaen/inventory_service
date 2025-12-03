@@ -47,7 +47,11 @@ def get_drive_service(database_id: str, folder_type: "DriveFolderType" = None):
         token_filename = db_conf.get("gdrive_token")
         token_folder = os.environ.get("GOOGLE_TOKEN_JSON_FOLDER")
         if not token_filename or not token_folder:
+            logging.error(f"Token JSON introuvable pour la DB '{database_id}'")
+            logging.error(f"Fichier attendu : {token_filename or 'non défini'}")
+            logging.error(f"Dossier attendu : {token_folder or 'non défini'}")
             raise FileNotFoundError(f"Token JSON missing for {database_id}")
+
 
         token_path = os.path.join(token_folder, token_filename)
         if not os.path.exists(token_path):
