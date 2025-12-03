@@ -97,9 +97,6 @@ async function loadOrganizations() {
 
 // -----------------------------------------------------
 function updateReferentFields(personId, org) {
-    
-    console.log("updateReferentFields personId", personId)
-    console.log("updateReferentFields org", org)
 
   const person = (org.persons || []).find(p => p.id == personId);
   if (!person) return;
@@ -156,7 +153,7 @@ async function loadOrganizationDetails() {
 // -----------------------------------------------------
 function renderPeople(list) {
   peopleList.innerHTML = '';
-
+console.log ('list',list)
   list.forEach(person => {
     const row = document.createElement('div');
     row.className = 'person-row-card';
@@ -218,6 +215,60 @@ function renderPeople(list) {
 
     peopleList.appendChild(row);
   });
+}
+
+async function removePersonFromOrganization(personIdToRemove) {
+  const orgId = parseInt(orgSelect.value);
+  const org = organizations.find(o => o.id === orgId);
+
+  if (!org) return alert("Organisation introuvable");
+  if (!confirm("Retirer cette personne de l'organisation ?")) return;
+
+  // -------------------------------------------------
+  // 1. Interdire la suppression du référent actuel
+  // -------------------------------------------------
+  if (org.referent_id === personIdToRemove) {
+    return alert("Impossible de retirer le référent. Change d'abord le référent avant de retirer cette personne.");
+  }
+
+  // -------------------------------------------------
+  // 2. Reconstruire la liste des personnes après suppression
+  // -------------------------------------------------
+  const persons = (org.persons || [])
+    .filter(p => p.id !== personIdToRemove)
+    .map(p => ({
+      id: p.id,
+      role: p.role || null
+    }));
+
+  try {
+    // -------------------------------------------------
+    // 3. Mise à jour organisation (sans la personne retirée)
+    // -------------------------------------------------
+    await upsertOrganization(client, {
+      name: orgName.value.trim(),
+      address: orgAddress.value.trim(),
+      referent_id: org.referent_id,
+      persons
+    });
+
+    alert("Personne retirée de l'organisation");
+
+    // -------------------------------------------------
+    // 4. Recharger les organisations et l’état local
+    // -------------------------------------------------
+    await loadOrganizations();
+
+    // -------------------------------------------------
+    // 5. Forcer le rechargement du référent
+    // -------------------------------------------------
+    const updatedOrg = organizations.find(o => o.id === orgId);
+    const newRef = await fetchPersonById(client, updatedOrg.referent_id);
+    populateReferentSelect(updatedOrg, newRef);
+
+  } catch (err) {
+    alert("Erreur : " + formatServerError(err.message));
+  }
 }
 
 

@@ -25,31 +25,56 @@ BEGIN
         pr.last_name::TEXT AS referent_last_name,
         pr.phone::TEXT AS referent_phone,
 
-        -- JSONB des personnes avec le référent inclus
-        COALESCE(
-            JSONB_AGG(
-                JSONB_BUILD_OBJECT(
-                    'id', p.id,
-                    'first_name', p.first_name::TEXT,
-                    'last_name', p.last_name::TEXT,
-                    'email', p.email::TEXT,
-                    'phone', p.phone::TEXT,
-                    'role',
-                        COALESCE(op.role::TEXT,
-                                 CASE WHEN p.id = o.referent_id THEN 'Référent' END)
-                )
-                ORDER BY p.first_name, p.last_name
-            ) FILTER (WHERE p.id IS NOT NULL),
-            '[]'::JSONB
+        (
+            SELECT COALESCE(
+                JSONB_AGG(
+                    JSONB_BUILD_OBJECT(
+                        'id', p2.id,
+                        'first_name', p2.first_name,
+                        'last_name', p2.last_name,
+                        'email', p2.email,
+                        'phone', p2.phone,
+                        'role',
+                            COALESCE(op2.role,
+                                     CASE WHEN p2.id = o.referent_id THEN 'Référent' END)
+                    )
+                    ORDER BY p2.first_name, p2.last_name
+                ),
+                '[]'::JSONB
+            )
+            FROM (
+                SELECT DISTINCT ON (p.id)
+                    p.*,
+                    op.role
+                FROM inventory.person p
+                LEFT JOIN inventory.organization_person op
+                    ON op.person_id = p.id
+                   AND op.organization_id = o.id
+                WHERE p.id = o.referent_id
+                   OR p.id IN (
+                        SELECT person_id
+                        FROM inventory.organization_person
+                        WHERE organization_id = o.id
+                   )
+                ORDER BY p.id
+            ) AS p2
+            LEFT JOIN inventory.organization_person op2
+                ON op2.organization_id = o.id
+               AND op2.person_id = p2.id
         ) AS persons
 
     FROM inventory.organization o
-    LEFT JOIN inventory.person pr ON pr.id = o.referent_id
-    LEFT JOIN inventory.organization_person op ON op.organization_id = o.id
-    LEFT JOIN inventory.person p ON p.id = op.person_id OR p.id = o.referent_id  -- référent inclus
+    LEFT JOIN inventory.person pr
+           ON pr.id = o.referent_id
 
-    WHERE o.referent_id = p_person_id OR op.person_id = p_person_id
-    GROUP BY o.id, o.name, o.referent_id, pr.first_name, pr.last_name, pr.phone, o.address
+    WHERE EXISTS (
+        SELECT 1
+        FROM inventory.organization_person opx
+        WHERE opx.organization_id = o.id
+          AND opx.person_id = p_person_id
+    )
+    OR o.referent_id = p_person_id
+
     ORDER BY o.name;
 END;
 $$;
