@@ -50,10 +50,18 @@ const pRole = document.getElementById('pRole');
   try {
     const logged = JSON.parse(localStorage.getItem("loggedUser") || "{}");
     personId = logged.personId ?? null;
+    console.log("logged", logged)
+     if (logged.role == 'viewer' && personId == null) {
+       alert("Utilisateur inconnu");
+        return;
+     }
+
+ 
   } catch (err) {
     console.warn("Impossible de lire loggedUser");
   }
-
+ 
+ 
   await loadOrganizations();
  pFirst.value = '';
  pLast.value = '';
@@ -71,7 +79,7 @@ async function loadOrganizations() {
     organizations = personId
       ? await fetchOrganizationsByPersonId(client, personId)
       : await fetchOrganizations(client);
-
+ 
     populateSelect(orgSelect, organizations, null, {
       labelField: 'name',
       placeholder: '-- Choisir une organisation --'
@@ -89,12 +97,15 @@ async function loadOrganizations() {
 
 // -----------------------------------------------------
 function updateReferentFields(personId, org) {
+    
+    console.log("updateReferentFields personId", personId)
+    console.log("updateReferentFields org", org)
+
   const person = (org.persons || []).find(p => p.id == personId);
   if (!person) return;
 
   refEmail.value = person.email ?? '';
   refPhone.value = person.phone ?? '';
-//  refAddress.value = person.address ?? '';
 }
 
 // -----------------------------------------------------
@@ -102,8 +113,10 @@ function populateReferentSelect(org, ref) {
   const refSelect = document.getElementById('refSelect');
   refSelect.innerHTML = '';
 
+
   const personsMap = new Map();
   if (ref) personsMap.set(ref.id, ref);
+    
 
   (org.persons || []).forEach(p => personsMap.set(p.id, p));
 
@@ -114,6 +127,7 @@ function populateReferentSelect(org, ref) {
     if (p.id === org.referent_id) opt.selected = true;
     refSelect.appendChild(opt);
   });
+    
 
   updateReferentFields(refSelect.value, org);
 
@@ -131,9 +145,7 @@ async function loadOrganizationDetails() {
 
   orgName.value = org.name ?? '';
   orgAddress.value = org.address ?? '';
-console.log ("*** org", org)
-  const ref = await fetchPersonById(client, org.referent_id)
-    console.log ("*** ref", ref)
+   const ref = await fetchPersonById(client, org.referent_id)
 
   renderPeople(org.persons || []);
   populateReferentSelect(org, ref);

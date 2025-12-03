@@ -170,7 +170,10 @@ export async function init() {
     let orgIds = null;
     try {
       const logged = JSON.parse(localStorage.getItem("loggedUser") || "{}");
-
+        if (logged.role == 'viewer' && logged.personId == null) {
+            alert('utilisateur incoonu');
+            return;
+        }
       if (logged.personId) {
         const organizations = await fetchOrganizationsByPersonId(client, logged.personId);
 
@@ -178,7 +181,9 @@ export async function init() {
         orgIds = organizations.map(o => o.id);
       }
     } catch (err) {
-      console.warn("Impossible de lire loggedUser ou fetchOrganizationsByPersonId a échoué", err);
+        console.warn("Impossible de lire loggedUser ou fetchOrganizationsByPersonId a échoué", err);
+        alert("Erreur : " + formatServerError(err.message));
+        return;
     }
 
     // Définir les filtres courants

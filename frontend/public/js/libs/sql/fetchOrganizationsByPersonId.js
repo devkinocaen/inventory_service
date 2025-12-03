@@ -18,8 +18,7 @@ export async function fetchOrganizationsByPersonId(client, personId) {
     }
 
     // Retourne la liste ou tableau vide
-
-  return data.map(row => ({
+   return data.map(row => ({
       id: row.id,
       name: row.name,
       address: row.address,
