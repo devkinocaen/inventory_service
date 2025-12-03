@@ -119,10 +119,6 @@ function renderFilterChips(categories, subcategories, styles) {
  * Fetch les items depuis la base SQL selon les filtres sidebar
  */
 async function fetchItems() {
-  let filterStartDate = currentFilterStart ? currentFilterStart.toISOString() : null;
-  let filterEndDate = currentFilterEnd ? currentFilterEnd.toISOString() : null;
-
-  const now = new Date();
     let filterStartDate = currentFilterStart ? formatDateForDatetimeLocal(currentFilterStart) : null;
     let filterEndDate   = currentFilterEnd   ? formatDateForDatetimeLocal(currentFilterEnd)   : null;
     
