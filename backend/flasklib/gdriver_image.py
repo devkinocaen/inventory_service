@@ -12,7 +12,7 @@ from .config import logger, JWT_SECRET, get_jwt_audience, ALLOWED_ORIGINS
 
 
 def register_routes(app):
-    @app.route("/drive/photo/<file_id>", methods=["GET", "OPTIONS"])
+    @app.route("/drive/photo/<database_id>/<file_id>", methods=["GET", "OPTIONS"])
     @cross_origin(
         origins=ALLOWED_ORIGINS,
         supports_credentials=True,
@@ -26,23 +26,9 @@ def register_routes(app):
         drive_url = f"https://drive.google.com/file/d/{file_id}/"
 
         try:
-            # 🔹 Auth JWT
-            auth_header = request.headers.get("Authorization", "")
-            token = auth_header.split(" ")[1] if " " in auth_header else None
-            if not token:
-                return Response(json.dumps({
-                    "error": "No token provided",
-                    "drive_url": drive_url
-                }), status=401, mimetype="application/json")
 
-            decoded = jwt.decode(
-                token,
-                JWT_SECRET,
-                algorithms=["HS256"],
-                audience=get_jwt_audience(database_id)
-            )
             # 🔹 Téléchargement depuis Google Drive
-            drive_service = get_drive_service()
+            drive_service = get_drive_service(database_id)
             request_drive = drive_service.files().get_media(fileId=file_id)
             fh = io.BytesIO()
             downloader = MediaIoBaseDownload(fh, request_drive)

@@ -53,7 +53,7 @@ export async function getDriveImageFull(client, file_id, DEBUG = false) {
 // ------------------------------
 // 3️⃣ getDisplayableImageUrl
 // ------------------------------
-export async function getDisplayableImageUrl(rawUrl, { withPreview = true, client, DEBUG = false } = {}) {
+export async function getDisplayableImageUrl(rawUrl, { withPreview = true, client, DEBUG = true } = {}) {
   if (!rawUrl) return { url: null, filename: null, mime: null };
 
   if (DEBUG) console.log("🔹 rawUrl:", rawUrl);
