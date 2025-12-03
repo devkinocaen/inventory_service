@@ -447,12 +447,18 @@ token: null, // JWT stocké après login
             alert("❌ Aucun file_id fourni !");
             throw new Error("file_id required");
         }
+        
+        const idBase = localStorage.getItem("currentDataBase");
+        if (!idBase) {
+            alert("❌ Aucun identifiant de base défini ! Veuillez sélectionner une base avant de continuer.");
+            throw new Error("Aucun identifiant de base défini");
+        }
 
         const headers = {
             Authorization: `Bearer ${this.token}`,
         };
 
-        const url = `${this.baseUrl}/drive/photo/${file_id}`;
+        const url = `${this.baseUrl}/drive/photo/${idBase}/${file_id}`;
         if (DEBUG) console.log("🔹 Fetching full-resolution image from:", url);
 
         const res = await fetch(url, { headers });

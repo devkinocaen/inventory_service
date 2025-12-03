@@ -36,6 +36,7 @@ ALLOWED_ORIGINS = [
     "https://inventory-service.vercel.app",
     "https://inventory-service-bice.vercel.app",
     "https://costumeriejulie.vercel.app",
+    "https://costumerie-julie.vercel.app",
     "https://costumerie-alex.vercel.app"
 ]
 
