@@ -1,4 +1,3 @@
-// js/api/upsertOrganization.js
 import { single } from '../helpers.js';
 
 /**
@@ -37,6 +36,12 @@ export async function upsertOrganization(client, {
     );
   }
 
-  // Retourne l’enregistrement unique
-  return single(data);
+  // Remappe les champs avec les noms front
+  const org = single(data);
+  return {
+    id: org.org_id,
+    name: org.org_name,
+    address: org.org_address,
+    referent_id: org.org_referent_id
+  };
 }

@@ -7,12 +7,12 @@ CREATE OR REPLACE FUNCTION inventory.upsert_person(
     p_address TEXT
 )
 RETURNS TABLE (
-    id INT,
-    first_name TEXT,
-    last_name TEXT,
-    email TEXT,
-    phone TEXT,
-    address TEXT
+    person_id INT,
+    person_first_name TEXT,
+    person_last_name TEXT,
+    person_email TEXT,
+    person_phone TEXT,
+    person_address TEXT
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -40,12 +40,12 @@ BEGIN
             p_address::text
         )
         RETURNING
-            id,
-            first_name::text,
-            last_name::text,
-            email::text,
-            phone::text,
-            address::text;
+            id AS person_id,
+            first_name::text AS person_first_name,
+            last_name::text AS person_last_name,
+            email::text AS person_email,
+            phone::text AS person_phone,
+            address::text AS person_address;
 
         RETURN;
     END IF;
@@ -71,12 +71,12 @@ BEGIN
         address    = COALESCE(p_address::text, address)
     WHERE id = p_id
     RETURNING
-        id,
-        first_name::text,
-        last_name::text,
-        email::text,
-        phone::text,
-        address::text;
+        id AS person_id,
+        first_name::text AS person_first_name,
+        last_name::text AS person_last_name,
+        email::text AS person_email,
+        phone::text AS person_phone,
+        address::text AS person_address;
 
 END;
 $$;

@@ -1,6 +1,7 @@
 // js/ui/org_modal.js
 import { initClient } from '../libs/client.js';
 import {
+  fetchPersonByName,
   fetchOrganizations,
   upsertOrganization,
   upsertPerson,
@@ -97,63 +98,76 @@ const orgModal = (() => {
     orgReferentSelect.innerHTML = '<option value="">-- Choisir un référent --</option>';
   }
 
-  // -----------------------------
-  // Add Person Row
-  // -----------------------------
-  function onAddPersonClick() {
-    addPersonRow();
-  }
+    // -----------------------------
+    // Add Person Row
+    // -----------------------------
+    function addPersonRow(person = {}) {
+      const div = document.createElement('div');
+      div.className = 'person-item';
+      // id = dataset.personId, null/empty pour nouvelles lignes
+      div.dataset.personId = person.id ? String(person.id) : '';
 
-  function addPersonRow(person = {}) {
-    const div = document.createElement('div');
-    div.className = 'person-item';
-    // id = dataset.personId, null/empty pour nouvelles lignes
-    div.dataset.personId = person.id ? String(person.id) : '';
+      div.innerHTML = `
+        <input type="text" placeholder="Nom" class="person-lastname" value="${escapeHtml(person.last_name||'')}" />
+        <input type="text" placeholder="Prénom" class="person-firstname" value="${escapeHtml(person.first_name||'')}" />
+        <input type="email" placeholder="Email" class="person-email" value="${escapeHtml(person.email||'')}" />
+        <input type="text" placeholder="Téléphone" class="person-phone" value="${escapeHtml(person.phone||'')}" />
+        <input type="text" placeholder="Rôle" class="person-role" value="${escapeHtml(person.role||'')}" />
+        <button type="button" class="person-remove-btn">✕</button>
+      `;
 
-    div.innerHTML = `
-      <input type="text" placeholder="Nom" class="person-lastname" value="${escapeHtml(person.last_name||'')}" />
-      <input type="text" placeholder="Prénom" class="person-firstname" value="${escapeHtml(person.first_name||'')}" />
-      <input type="email" placeholder="Email" class="person-email" value="${escapeHtml(person.email||'')}" />
-      <input type="text" placeholder="Téléphone" class="person-phone" value="${escapeHtml(person.phone||'')}" />
-      <input type="text" placeholder="Rôle" class="person-role" value="${escapeHtml(person.role||'')}" />
-      <button type="button" class="person-remove-btn">✕</button>
-    `;
+      // supprimer la ligne
+      div.querySelector('.person-remove-btn').addEventListener('click', () => {
+        div.remove();
+        updateReferentSelect();
+      });
 
-    // supprimer la ligne
-    div.querySelector('.person-remove-btn').addEventListener('click', () => {
-      div.remove();
-      updateReferentSelect();
-    });
-
-    personList.appendChild(div);
-    div.querySelector('.person-firstname')?.focus();
-    updateReferentSelect();
-  }
-
-  // -----------------------------
-  // Référent select
-  // -----------------------------
-  function updateReferentSelect() {
-    if (!orgReferentSelect) return;
-    const selVal = orgReferentSelect.value;
-    orgReferentSelect.innerHTML = '<option value="">-- Choisir un référent --</option>';
-
-    Array.from(personList.children).forEach(div => {
-      const fn = div.querySelector('.person-firstname')?.value.trim();
-      const ln = div.querySelector('.person-lastname')?.value.trim();
-      const pid = div.dataset.personId || '';
-      if (fn && ln && pid) {
-        const opt = document.createElement('option');
-        opt.value = pid;
-        opt.textContent = `${fn} ${ln}`;
-        orgReferentSelect.appendChild(opt);
-      }
-    });
-
-    if (selVal && Array.from(orgReferentSelect.options).some(o => o.value === selVal)) {
-      orgReferentSelect.value = selVal;
+      personList.appendChild(div);
+      div.querySelector('.person-firstname')?.focus();
+      updateReferentSelect(); // 🔹 mise à jour du select référent à chaque ajout
     }
-  }
+
+    // -----------------------------
+    // Référent select
+    // -----------------------------
+    function updateReferentSelect() {
+      if (!orgReferentSelect) return;
+      const selVal = orgReferentSelect.value;
+      orgReferentSelect.innerHTML = '<option value="">-- Choisir un référent --</option>';
+
+      Array.from(personList.children).forEach((div, idx) => {
+        const fn = div.querySelector('.person-firstname')?.value.trim();
+        const ln = div.querySelector('.person-lastname')?.value.trim();
+        let pid = div.dataset.personId;
+
+        if (!pid && fn && ln) {
+          // personne nouvellement ajoutée mais pas encore en base
+          // générer un identifiant temporaire unique
+          pid = `temp-${idx}-${Math.random().toString(36).substr(2, 5)}`;
+          div.dataset.personId = pid;
+        }
+
+        if (fn && ln) {
+          const opt = document.createElement('option');
+          opt.value = pid;
+          opt.textContent = `${fn} ${ln}`;
+          orgReferentSelect.appendChild(opt);
+        }
+      });
+
+      // restaurer la valeur précédente si toujours disponible
+      if (selVal && Array.from(orgReferentSelect.options).some(o => o.value === selVal)) {
+        orgReferentSelect.value = selVal;
+      }
+    }
+
+    
+    // -----------------------------
+    // Add Person Row
+    // -----------------------------
+    function onAddPersonClick() {
+      addPersonRow();
+    }
 
   // -----------------------------
   // Load organizations
@@ -212,91 +226,111 @@ const orgModal = (() => {
   }
 
                   
-                  
- async function saveOrganization() {
-   setDisabledState(true);
+    async function saveOrganization() {
+      setDisabledState(true);
 
-   try {
-     const name = orgNameInput.value.trim();
-     if (!name) throw new Error('Nom obligatoire');
+      try {
+        const name = orgNameInput.value.trim();
+        if (!name) throw new Error('Nom obligatoire');
 
-     const rows = Array.from(personList.querySelectorAll('.person-item'));
-     const persons = [];
+        const rows = Array.from(personList.querySelectorAll('.person-item'));
+        const persons = [];
 
-     for (const row of rows) {
-       const fn = row.querySelector('.person-firstname')?.value.trim();
-       const ln = row.querySelector('.person-lastname')?.value.trim();
-       if (!fn || !ln) continue;
+        for (const row of rows) {
+          const fn = row.querySelector('.person-firstname')?.value.trim();
+          const ln = row.querySelector('.person-lastname')?.value.trim();
+          if (!fn || !ln) continue;
 
-       let pid = row.dataset.personId || null;
-       let savedPerson;
+          let pid = row.dataset.personId || null;
+          let savedPerson;
+            
+            const searchPerson = await fetchPersonByName(client, fn, ln);
+            if (searchPerson != null) {
+                pid = searchPerson.id.toString();
+            }
 
-       // INSERT
-       if (!pid) {
-         savedPerson = await upsertPerson(client, {
-           first_name: fn,
-           last_name: ln,
-           email: row.querySelector('.person-email')?.value.trim() || null,
-           phone: row.querySelector('.person-phone')?.value.trim() || null,
-           address: null
-         });
+          // INSERT
+          if (!pid || pid.startsWith('temp-')) {
+              console.log ('before upsertPerson / insert')
 
-         if (savedPerson?.id) {
-           row.dataset.personId = String(savedPerson.id);
-         }
-       }
+            savedPerson = await upsertPerson(client, {
+              first_name: fn,
+              last_name: ln,
+              email: row.querySelector('.person-email')?.value.trim() || null,
+              phone: row.querySelector('.person-phone')?.value.trim() || null,
+              address: null
+            });
 
-       // UPDATE
-       else {
-         savedPerson = await upsertPerson(client, {
-           id: Number(pid),
-           first_name: fn,
-           last_name: ln,
-           email: row.querySelector('.person-email')?.value.trim() || null,
-           phone: row.querySelector('.person-phone')?.value.trim() || null,
-           address: null
-         });
-       }
+            if (savedPerson?.id) {
+              row.dataset.personId = String(savedPerson.id);
+            }
+          }
+          // UPDATE
+          else {
+              console.log ('before upsertPerson / update')
 
-       if (savedPerson?.id) {
-         persons.push({
-           id: Number(savedPerson.id),
-           role: row.querySelector('.person-role')?.value.trim() || null
-         });
-       }
-     }
+            savedPerson = await upsertPerson(client, {
+              id: Number(pid),
+              first_name: fn,
+              last_name: ln,
+              email: row.querySelector('.person-email')?.value.trim() || null,
+              phone: row.querySelector('.person-phone')?.value.trim() || null,
+              address: null
+            });
+          }
 
-     // Référent obligatoire
-     const referentId = orgReferentSelect.value;
-     if (!referentId) throw new Error('Référent obligatoire');
+          if (savedPerson?.id) {
+            persons.push({
+              id: Number(savedPerson.id),
+              role: row.querySelector('.person-role')?.value.trim() || null
+            });
+          }
+        }
 
-     const orgData = {
-       id: selectedOrgId || null,
-       name,
-       address: orgAddressInput.value.trim() || null,
-       referent_id: Number(referentId),
-       persons
-     };
+        // Référent obligatoire
+        let referentId = orgReferentSelect.value;
+        if (!referentId) throw new Error('Référent obligatoire');
 
-     const savedOrg = await upsertOrganization(client, orgData);
+        // remplacer les pid temporaires par les vrais IDs
+        if (referentId.startsWith('temp-')) {
+          const refRow = personList.querySelector(`.person-item[data-person-id="${referentId}"]`);
+          if (refRow?.dataset.personId && !refRow.dataset.personId.startsWith('temp-')) {
+            referentId = refRow.dataset.personId;
+          } else {
+            // fallback : prendre le premier vrai id dans persons
+            referentId = persons.length ? String(persons[0].id) : null;
+          }
+          if (!referentId) throw new Error('Référent obligatoire');
+        }
 
-     await loadOrganizations();
-     orgSelect.value = savedOrg.id;
+        const orgData = {
+          id: selectedOrgId || null,
+          name,
+          address: orgAddressInput.value.trim() || null,
+          referent_id: Number(referentId),
+          persons
+        };
+          console.log ('before upsertOrganization', orgData)
+        const savedOrg = await upsertOrganization(client, orgData);
 
-     alert('✅ Organisation enregistrée');
-   }
+        // recharger organisations et restaurer la sélection
+        await loadOrganizations();
+        orgSelect.value = savedOrg.id;
 
-   catch (err) {
-     const errMsg = formatServerError(err.message || err);
-     console.error('[saveOrganization] Erreur :', errMsg);
-     alert(`❌ ${errMsg}`);
-   }
+        alert('✅ Organisation enregistrée');
+      }
 
-   finally {
-     // 🔥 Toujours exécuté
-     setDisabledState(false);
-   }
- }
+      catch (err) {
+        const errMsg = formatServerError(err.message || err);
+        console.error('[saveOrganization] Erreur :', errMsg);
+        alert(`❌ ${errMsg}`);
+      }
+
+      finally {
+        setDisabledState(false);
+      }
+    }
+
 
                   
   function setDisabledState(disabled) {

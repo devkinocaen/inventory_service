@@ -51,6 +51,7 @@ enums=(
     "privacy_type"
     "reservable_type"
     "reservable_status"
+    "reservable_batch_status"
     "reservable_quality"
 )
 

@@ -33,7 +33,7 @@ export async function upsertPerson(client, {
 
   const raw = single(data);
 
-  // Remap propre
+  // Remap propre avec les noms de champs préfixés
   return {
     id: raw.person_id,
     first_name: raw.person_first_name,

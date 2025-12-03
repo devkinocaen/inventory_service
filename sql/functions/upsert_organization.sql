@@ -5,10 +5,10 @@ CREATE OR REPLACE FUNCTION inventory.upsert_organization(
     p_person_roles JSONB DEFAULT '[]'  -- [{"person_id":7,"role":"manager"}, ...]
 )
 RETURNS TABLE(
-    id INT,
-    name TEXT,
-    address TEXT,
-    referent_id INT
+    org_id INT,
+    org_name TEXT,
+    org_address TEXT,
+    org_referent_id INT
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -48,7 +48,7 @@ BEGIN
     IF v_org_id IS NULL THEN
         INSERT INTO inventory.organization AS o (name, address, referent_id)
         VALUES (p_name, p_address, p_referent_id)
-        RETURNING o.id INTO v_org_id;  -- <-- QUALIFIER la colonne
+        RETURNING o.id INTO v_org_id;
     ELSE
         UPDATE inventory.organization AS o
         SET address = COALESCE(p_address, o.address),
@@ -81,16 +81,15 @@ BEGIN
     END LOOP;
 
     ----------------------------------------------------
-    -- 5) Retourner l’organisation
+    -- 5) Retourner l’organisation avec préfixe
     ----------------------------------------------------
     RETURN QUERY
-    SELECT o.id,
-           o.name::TEXT,
-           o.address::TEXT,
-           o.referent_id
+    SELECT o.id AS org_id,
+           o.name::TEXT AS org_name,
+           o.address::TEXT AS org_address,
+           o.referent_id AS org_referent_id
     FROM inventory.organization AS o
     WHERE o.id = v_org_id;
-
 
 END;
 $$;

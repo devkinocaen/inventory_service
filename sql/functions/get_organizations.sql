@@ -22,21 +22,19 @@ BEGIN
         pr.first_name::TEXT AS referent_first_name,
         pr.last_name::TEXT AS referent_last_name,
         pr.phone::TEXT AS referent_phone,
-
         (
             SELECT COALESCE(
                 JSONB_AGG(
                     JSONB_BUILD_OBJECT(
-                        'id', p2.id,
-                        'first_name', p2.first_name,
-                        'last_name', p2.last_name,
-                        'email', p2.email,
-                        'phone', p2.phone,
-                        'role',
-                            COALESCE(op2.role,
-                                     CASE WHEN p2.id = o.referent_id THEN 'Référent' END)
+                        'id', p_sub.id,
+                        'first_name', p_sub.first_name,
+                        'last_name', p_sub.last_name,
+                        'email', p_sub.email,
+                        'phone', p_sub.phone,
+                        'role', COALESCE(op_sub.role,
+                                         CASE WHEN p_sub.id = o.referent_id THEN 'Référent' END)
                     )
-                    ORDER BY p2.first_name, p2.last_name
+                    ORDER BY p_sub.first_name, p_sub.last_name
                 ),
                 '[]'::JSONB
             )
@@ -54,11 +52,10 @@ BEGIN
                         WHERE organization_id = o.id
                    )
                 ORDER BY p.id
-            ) AS p2(p2_id)
-            LEFT JOIN inventory.organization_person op2
-                ON op2.organization_id = o.id AND op2.person_id = p2.id
+            ) AS p_sub
+            LEFT JOIN inventory.organization_person op_sub
+                ON op_sub.organization_id = o.id AND op_sub.person_id = p_sub.id
         ) AS persons
-
     FROM inventory.organization o
     LEFT JOIN inventory.person pr ON pr.id = o.referent_id
     ORDER BY o.name;
