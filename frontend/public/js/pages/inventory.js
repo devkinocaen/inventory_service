@@ -63,6 +63,7 @@ function renderStockTable(items) {
     
     items.forEach(item => {
         const tr = document.createElement('tr');
+        tr.dataset.id = item.id;
         
         // Styles : tableau N:N -> liste de noms séparés par virgule
         const stylesList = item.style_names?.join(', ') || '';
@@ -87,6 +88,7 @@ function renderStockTable(items) {
     `;
         
         tbody.appendChild(tr);
+        enableRowDragDrop(tr, client);
     });
     
     initEditableCells();
@@ -499,4 +501,90 @@ if (addReservableBtn) {
       alert('Erreur création réservable : ' + formatServerError(err.message));
     }
   });
+}
+
+
+/**
+ * Upload une image vers Drive, met à jour le reservable, renvoie les nouvelles photos
+ */
+async function uploadPhotoToReservable(client, reservableId, file) {
+  if (!file || !file.type.startsWith("image/")) {
+    throw new Error("Fichier non image ou invalide");
+  }
+
+  // 1) Upload Drive
+  const data = await client.uploadToDrive(file, "INVENTORY", 300, true);
+  if (!data?.drive_url) {
+    throw new Error("Réponse upload Drive invalide");
+  }
+
+  // 2) Récupérer la fiche actuelle
+  const reservable = await fetchReservableById(client, reservableId);
+  const photos = Array.isArray(reservable?.photos) ? reservable.photos : [];
+
+  // 3) Ajouter la photo
+  const updatedPhotos = [...photos, { url: data.drive_url, caption: "" }];
+
+  // 4) Enregistrer dans SQL
+  await updateReservable(client, {
+    id: reservableId,
+    photos: updatedPhotos
+  });
+
+  return updatedPhotos;
+}
+
+
+/**
+ * Attache le drag & drop pour une ligne de tableau
+ */
+function enableRowDragDrop(rowElement, client) {
+  const reservableId = rowElement.dataset.id;
+  if (!reservableId) return;
+
+  function highlight(on) {
+    rowElement.style.background = on ? "#dfefff" : "";
+    rowElement.style.border = on ? "2px dashed #3399ff" : "";
+  }
+
+  rowElement.addEventListener("dragenter", (e) => {
+    e.preventDefault();
+    highlight(true);
+  });
+
+  rowElement.addEventListener("dragover", (e) => e.preventDefault());
+
+  rowElement.addEventListener("dragleave", () => highlight(false));
+
+  rowElement.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    highlight(false);
+
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
+    if (!files.length) return;
+
+    const item = currentItems.find(i => i.id === Number(reservableId));
+    if (!item) return;
+
+    try {
+      let newPhotos = item.photos || [];
+      for (const file of files) {
+        newPhotos = await uploadPhotoToReservable(client, reservableId, file);
+      }
+      item.photos = newPhotos; // update currentItems
+      updatePhotoCountInRow(rowElement, newPhotos.length);
+    } catch (err) {
+      console.error("Erreur DnD :", err);
+      alert("Impossible d'ajouter la/les photo(s) : " + err.message);
+    }
+  });
+}
+
+
+/**
+ * Met à jour l’affichage "Photos (x)" dans la ligne
+ */
+function updatePhotoCountInRow(row, count) {
+  const btn = row.querySelector(".btn-photos");
+  if (btn) btn.textContent = `Modifier (${count})`;
 }
