@@ -32,6 +32,16 @@ function displayGender(value) {
   }
 }
 
+function privacyEmoji(privacy) {
+  switch (privacy) {
+    case 'public': return '🌐';
+    case 'private': return '🔒';
+    case 'hidden': return '🚫'; //return '🚫👁️';
+    default: return '';
+  }
+}
+
+
 async function loadAllSubCategories() {
     const all = await fetchSubcategories(client);
     subCategories = {};
@@ -58,7 +68,10 @@ function renderStockTable(items) {
         const stylesList = item.style_names?.join(', ') || '';
         
         tr.innerHTML = `
-      <td class="editable" data-field="name" data-id="${item.id}">${item.name || ''}</td>
+      <td class="editable" data-field="name" data-id="${item.id}">
+        ${privacyEmoji(item.privacy)} ${item.name || ''}
+      </td>
+
       <td class="editable" data-field="size" data-id="${item.id}">${item.size || ''}</td>
       <td class="editable" data-field="description" data-id="${item.id}">${item.description || ''}</td>
       <td class="editable-select" data-field="gender" data-id="${item.id}">${GENDER_MAP[item.gender] || ''}</td>
@@ -444,16 +457,14 @@ function refreshTable() {
 }
 
 function updateTableRow(item) {
-    console.log ('updateTableRow', item)
   const tbody = document.querySelector('#stock_table tbody');
   if (!tbody) return;
   const row = tbody.querySelector(`tr td[data-id="${item.id}"]`)?.parentElement;
 
   if (!row) return;
-    console.log ('updateTableRow2', item)
-console.log ('item', item)
-  row.innerHTML = `
-    <td class="editable" data-field="name" data-id="${item.id}">${item.name || ''}</td>
+   row.innerHTML = `
+    <td class="editable" data-field="name" data-id="${item.id}">  ${privacyEmoji(item.privacy)} ${item.name || ''}  </td>
+
     <td class="editable" data-field="size" data-id="${item.id}">${item.size || ''}</td>
     <td class="editable" data-field="description" data-id="${item.id}">${item.description || ''}</td>
     <td class="editable-select" data-field="gender" data-id="${item.id}">${GENDER_MAP[item.gender] || ''}</td>
