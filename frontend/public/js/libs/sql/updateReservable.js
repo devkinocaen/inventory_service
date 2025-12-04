@@ -49,7 +49,6 @@ export async function updateReservable(client, {
     throw new Error(error.message || 'Erreur lors de la mise à jour du reservable');
   }
 
-  console.log('updateReservable', data);
 
   // La fonction SQL RETURN VOID → data = null
   return data ?? null;

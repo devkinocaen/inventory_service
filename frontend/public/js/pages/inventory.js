@@ -284,7 +284,6 @@ function initEditableCells() {
             else
               payload[field] = newValue; // envoyer l'ID au serveur
 
-            console.log('payload', payload)
             await updateReservable(client, payload);
 
             item[field + '_id'] = newValue;

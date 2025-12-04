@@ -50,7 +50,6 @@ const pRole = document.getElementById('pRole');
   try {
     const logged = JSON.parse(localStorage.getItem("loggedUser") || "{}");
     personId = logged.personId ?? null;
-    console.log("logged", logged)
      if (logged.role == 'viewer' && personId == null) {
        alert("Utilisateur inconnu");
         return;
@@ -153,8 +152,7 @@ async function loadOrganizationDetails() {
 // -----------------------------------------------------
 function renderPeople(list) {
   peopleList.innerHTML = '';
-console.log ('list',list)
-  list.forEach(person => {
+   list.forEach(person => {
     const row = document.createElement('div');
     row.className = 'person-row-card';
     row.style.padding = '10px';
