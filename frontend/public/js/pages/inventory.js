@@ -279,7 +279,12 @@ function initEditableCells() {
             if (['category', 'subcategory'].includes(field)) newValue = Number(newValue);
 
             const payload = { id: itemId };
-            payload[field + '_id'] = newValue; // envoyer l'ID au serveur
+            if (field == 'category' || field == 'subcategory')
+              payload[field + '_id'] = newValue; // envoyer l'ID au serveur
+            else
+              payload[field] = newValue; // envoyer l'ID au serveur
+
+            console.log('payload', payload)
             await updateReservable(client, payload);
 
             item[field + '_id'] = newValue;
