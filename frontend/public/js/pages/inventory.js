@@ -567,6 +567,7 @@ function enableRowDragDrop(rowElement, client) {
     if (!item) return;
 
     try {
+        showSpinner();
       let newPhotos = item.photos || [];
       for (const file of files) {
         newPhotos = await uploadPhotoToReservable(client, reservableId, file);
@@ -575,8 +576,11 @@ function enableRowDragDrop(rowElement, client) {
       updatePhotoCountInRow(rowElement, newPhotos.length);
     } catch (err) {
       console.error("Erreur DnD :", err);
-      alert("Impossible d'ajouter la/les photo(s) : " + err.message);
+        alert("Impossible d'ajouter la/les photo(s) : " + formatServerError(err));
     }
+      finally {
+         hideSpinner(); // ✅ masquer le spinner à la fin
+       }
   });
 }
 
@@ -587,4 +591,15 @@ function enableRowDragDrop(rowElement, client) {
 function updatePhotoCountInRow(row, count) {
   const btn = row.querySelector(".btn-photos");
   if (btn) btn.textContent = `Modifier (${count})`;
+}
+
+
+function showSpinner() {
+  const spinner = document.getElementById('upload-spinner');
+  if (spinner) spinner.style.display = 'block';
+}
+
+function hideSpinner() {
+  const spinner = document.getElementById('upload-spinner');
+  if (spinner) spinner.style.display = 'none';
 }

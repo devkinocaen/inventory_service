@@ -1,6 +1,6 @@
 window.ENV = {
   APP_NAME: "Costumerie",
-  APP_VERSION: "dev",
+  APP_VERSION: "DragnDropPhotos",
   DB_CLIENT: "",
   BASE_PATH: "",
 
