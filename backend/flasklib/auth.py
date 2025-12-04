@@ -70,10 +70,16 @@ def login(database_id=None):
             logger.info("row: %s", row)
             logger.info("user found for email: %s, with role: %s", email, user_role)
 
+            # 🔹 Bloquer les viewers si non autorisés
+            if user_role == "viewer" and not viewer_allowed:
+                logger.warning("Login attempt by viewer not allowed: %s", email)
+                return jsonify({"error": "Viewer access not allowed"}), 403
+
         else:
             logger.info("No user found for email: %s", email)
             cur.close()
             return jsonify({"error": "No user found with this email"}), 403
+
 
         cur.close()
 
