@@ -54,7 +54,7 @@ def register_routes(app):
 
     @app.route("/health")
     def health():
-        return jsonify({"status": "ok github"}), 200
+        return jsonify({"status": "ok"}), 200
 
     @app.route("/cors-test", methods=["GET"])
     def cors_test():
