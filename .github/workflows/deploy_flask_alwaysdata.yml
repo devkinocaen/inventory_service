@@ -28,7 +28,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ secrets.AD_USER }}@${{ secrets.AD_HOST }} "
             set -e  # arrêter en cas d'erreur
-            cd /home/inventory-service || { echo 'Dossier /home/inventory-service introuvable'; exit 1; }
+            cd /home/inventory-service/inventory_service || { echo 'Dossier /home/inventory-service/inventory_service introuvable'; exit 1; }
             git fetch origin
             git checkout ${{ github.event.inputs.branch }} || { echo 'Impossible de checkout la branche'; exit 1; }
             git pull origin ${{ github.event.inputs.branch }} || { echo 'Impossible de faire git pull'; exit 1; }
