@@ -56,3 +56,17 @@ jobs:
             python3 -m pip install --upgrade pip
             pip install -r requirements.txt
           "
+
+      - name: Update code on AlwaysData
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ${{ secrets.AD_USER }}@${{ secrets.AD_HOST }} "
+            set -e
+            cd /home/inventory-service/inventory_service || { echo 'Dossier introuvable'; exit 1; }
+  
+            git fetch origin
+            git checkout $BRANCH_TO_DEPLOY || { echo 'Impossible de checkout la branche'; exit 1; }
+            git pull origin $BRANCH_TO_DEPLOY || { echo 'Impossible de faire git pull'; exit 1; }
+  
+            # Forcer le reload du service Flask
+            touch backend/passenger_wsgi.py
+          "
