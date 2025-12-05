@@ -1,6 +1,10 @@
 name: Deploy Flask app to AlwaysData
 
 on:
+  push:
+    branches:
+      - 0.0.12   # déclenche automatiquement quand il y a un push sur cette branche
+
   workflow_dispatch:   # permet de lancer manuellement et de choisir la branche
     inputs:
       branch:
@@ -24,18 +28,31 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes ${{ secrets.AD_USER }}@${{ secrets.AD_HOST }} "echo 'SSH connection OK'" || exit 1
 
+      - name: Determine branch to deploy
+        run: |
+          # Détecte si on est en workflow_dispatch ou push
+          if [ -n "${{ github.event.inputs.branch }}" ]; then
+            BRANCH_TO_DEPLOY="${{ github.event.inputs.branch }}"
+          else
+            BRANCH_TO_DEPLOY="${GITHUB_REF##refs/heads/}"
+          fi
+          echo "Branch to deploy: $BRANCH_TO_DEPLOY"
+          echo "BRANCH_TO_DEPLOY=$BRANCH_TO_DEPLOY" >> $GITHUB_ENV
+
       - name: Update code on AlwaysData
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ secrets.AD_USER }}@${{ secrets.AD_HOST }} "
             set -e  # arrêter en cas d'erreur
             cd /home/inventory-service/inventory_service || { echo 'Dossier /home/inventory-service/inventory_service introuvable'; exit 1; }
             git fetch origin
-            git checkout ${{ github.event.inputs.branch }} || { echo 'Impossible de checkout la branche'; exit 1; }
-            git pull origin ${{ github.event.inputs.branch }} || { echo 'Impossible de faire git pull'; exit 1; }
+            git checkout $BRANCH_TO_DEPLOY || { echo 'Impossible de checkout la branche'; exit 1; }
+            git pull origin $BRANCH_TO_DEPLOY || { echo 'Impossible de faire git pull'; exit 1; }
           "
 
-      - name: Restart Python service
+      - name: Install Python dependencies
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ secrets.AD_USER }}@${{ secrets.AD_HOST }} "
-            adtools service restart ${{ secrets.AD_SERVICE_ID }} || { echo 'Impossible de redémarrer le service'; exit 1; }
+            cd /home/inventory-service/inventory_service
+            python3 -m pip install --upgrade pip
+            pip install -r requirements.txt
           "
