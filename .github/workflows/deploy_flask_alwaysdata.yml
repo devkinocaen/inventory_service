@@ -52,7 +52,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ secrets.AD_USER }}@${{ secrets.AD_HOST }} "
-            cd /home/inventory-service/inventory_service
+            cd /home/inventory-service/inventory_service/backend
             python3 -m pip install --upgrade pip
             pip install -r requirements.txt
           "
