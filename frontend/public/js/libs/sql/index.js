@@ -33,6 +33,8 @@ export { deleteReservableBatch } from './deleteReservableBatch.js';
 export { fetchReservableStatuses } from './fetchReservableStatuses.js';
 export { fetchReservableTypes } from './fetchReservableTypes.js';
 export { fetchCategories } from './fetchCategories.js';
+export { fetchColors } from './fetchColors.js';
+
 export { upsertCategory } from './upsertCategory.js';
 export { deleteCategory } from './deleteCategory.js';
 export { fetchSubcategories } from './fetchSubcategories.js';

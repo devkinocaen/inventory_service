@@ -11,17 +11,24 @@ export async function fetchReservables(client, filters = {}) {
       : null,
     p_gender: Array.isArray(filters.p_gender) && filters.p_gender.length
       ? filters.p_gender
-      : null, // <- vecteur
+      : null, // <- vecteur ENUM
     p_style_ids: Array.isArray(filters.p_style_ids) && filters.p_style_ids.length
       ? filters.p_style_ids
       : null,
     p_status_ids: Array.isArray(filters.p_status_ids) && filters.p_status_ids.length
       ? filters.p_status_ids
-      : null, 
+      : null,
+
+    // 🔹 nouveau : filtre par couleurs (vecteur d'IDs)
+    p_color_ids: Array.isArray(filters.p_color_ids) && filters.p_color_ids.length
+      ? filters.p_color_ids
+      : null,
+
     p_start_date: filters.p_start_date ?? null,
     p_end_date: filters.p_end_date ?? null,
     p_is_in_stock: filters.p_is_in_stock ?? null,
-    // 🔹 filtre privacy_min (ENUM: 'hidden' | 'private' | 'public')
+
+    // 🔹 privacy minimum (ENUM)
     p_privacy_min: filters.p_privacy_min ?? null
   };
 
@@ -35,9 +42,10 @@ export async function fetchReservables(client, filters = {}) {
   return (data || []).map(item => ({
     id: item.id,
     name: item.name,
+    serial_id: item.serial_id,
     description: item.description,
     price_per_day: item.price_per_day,
-    photos: item.photos,
+    photos: item.photos || [],
     gender: item.gender,
     privacy: item.privacy,
     inventory_type: item.inventory_type,
@@ -57,6 +65,9 @@ export async function fetchReservables(client, filters = {}) {
     manager_id: item.manager_id,
     manager_name: item.manager_name,
     style_ids: item.style_ids || [],
-    style_names: item.style_names || []
+    style_names: item.style_names || [],
+
+    // 🔹 nouveau champ JSONB renvoyé par le SQL
+    colors: item.colors || []
   }));
 }

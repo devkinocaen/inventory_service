@@ -130,11 +130,21 @@ CREATE TABLE inventory.reservable_subcategory (
 --);
 
 -- ===========================
+-- Couleurs
+-- ===========================
+CREATE TABLE color (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    hex_code CHAR(7) NOT NULL UNIQUE  -- exemple : #FF5733
+);
+
+-- ===========================
 -- Objets réservable
 -- ===========================
 CREATE TABLE inventory.reservable (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL UNIQUE,
+    serial VARCHAR (50),
     inventory_type inventory.reservable_type NOT NULL,
     status inventory.reservable_status NOT NULL DEFAULT 'disponible',
     quality inventory.reservable_quality NOT NULL DEFAULT 'bon état',
@@ -153,13 +163,24 @@ CREATE TABLE inventory.reservable (
 );
 
 -- ===========================
--- Liens N:N : styles <-> objets
+-- Table de liaison N styles <-> 1 reservable
 -- ===========================
 CREATE TABLE inventory.reservable_style_link (
     reservable_id INT NOT NULL REFERENCES inventory.reservable(id) ON DELETE CASCADE,
     style_id INT NOT NULL REFERENCES inventory.reservable_style(id) ON DELETE CASCADE,
     PRIMARY KEY (reservable_id, style_id)
 );
+
+-- ===========================
+-- Table de liaison N couleurs <-> 1 reservable
+-- ===========================
+
+CREATE TABLE inventory.reservable_color (
+    reservable_id INT REFERENCES inventory.reservable(id) ON DELETE CASCADE,
+    color_id INT REFERENCES inventory.color(id) ON DELETE CASCADE,
+    PRIMARY KEY (reservable_id, color_id)
+);
+
 
 -- ===========================
 -- Lots d'objets

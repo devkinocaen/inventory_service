@@ -5,6 +5,7 @@ import { single } from '../helpers.js';
  */
 export async function createReservable(client, {
   name,
+  serial_id = null,
   inventory_type,
   owner_id,
   manager_id,
@@ -19,10 +20,13 @@ export async function createReservable(client, {
   photos = '[]',
   status = 'disponible',
   quality = 'bon état',
-  is_in_stock = true
+  is_in_stock = true,
+  color_ids = null
 }) {
+
   const { data, error } = await client.rpc('create_reservable', {
     p_name: name,
+    p_serial_id: serial_id,
     p_inventory_type: inventory_type,
     p_owner_id: owner_id,
     p_manager_id: manager_id,
@@ -37,14 +41,16 @@ export async function createReservable(client, {
     p_photos: photos,
     p_status: status,
     p_quality: quality,
-    p_is_in_stock: is_in_stock
+    p_is_in_stock: is_in_stock,
+    p_color_ids: color_ids
   });
 
   if (error) {
     console.error('[createReservable] Erreur serveur :', error);
-    throw new Error(error.message || 'Erreur lors de la création du reservable');
+    throw new Error(error.message || 'Erreur lors de la création du réservable');
   }
-console.log ('data in creatreservable', data);
-    
+
+  console.log('data in createReservable', data);
+
   return single(data).create_reservable;
 }

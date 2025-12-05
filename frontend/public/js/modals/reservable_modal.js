@@ -1,6 +1,7 @@
 import { initClient } from '../libs/client.js';
 import {
     fetchReservableById,
+    fetchColors,
     updateReservable,
     createReservable,
     fetchCategories,
@@ -24,6 +25,9 @@ let subCategories = {}; // { categoryId: [subcat,...] }
 let organizations = [];
 let storageLocations = [];
 let onSaveCallback = null; // callback à appeler après sauvegarde
+let allColors = [];
+js
+Copier le code
 
 // -----------------------------
 // Initialisation modal
@@ -34,6 +38,8 @@ export async function initReservableModal() {
     await loadStyles();
     await loadOrganizationsSelects();
     await loadStorageSelect();
+    await loadColors();
+
 }
 
 // -----------------------------
@@ -196,6 +202,7 @@ export async function openReservableModal(reservableId, onSave = null) {
 
         const fields = {
             '#rsb-res-name': currentReservable.name,
+            '#rsb-res-serial-id': currentReservable.serial_id,
             '#rsb-res-size': currentReservable.size,
             '#rsb-res-price': currentReservable.price_per_day,
             '#rsb-res-description': currentReservable.description,
@@ -279,13 +286,19 @@ async function saveReservable(e) {
         return;
     }
 
+    const serial_id = getEl('#rsb-res-serial_id').value.trim();
+
     const gender = dialog.querySelector('input[name="rsb-res-gender"]:checked')?.value;
     const privacy = dialog.querySelector('input[name="rsb-res-privacy"]:checked')?.value;
     const style_ids = Array.from(dialog.querySelectorAll('#rsb-chips-style .rsb-chip')).map(c => Number(c.dataset.id));
+    const color_ids = Array.from(dialog.querySelectorAll('#rsb-chips-color .rsb-chip'))
+    .map(c => Number(c.dataset.id));
+
 
     const data = {
         id: currentReservable?.id || null,
         name,
+        serial_id,
         inventory_type: 'costume',
         type: getEl('#rsb-res-type')?.value || null,
         size: getEl('#rsb-res-size').value,
@@ -300,7 +313,8 @@ async function saveReservable(e) {
         storage_location_id: getEl('#rsb-res-storage').value || null,
         gender,
         privacy,
-        style_ids
+        style_ids,
+        color_ids
     };
 
     try {
@@ -325,4 +339,58 @@ async function saveReservable(e) {
         console.error('[saveReservable]', err);
         alert(`❌ Impossible d’enregistrer : ${formatServerError(err)}`);
     }
+}
+
+
+async function loadColors() {
+    allColors = await fetchColors(client);
+
+    const colorSelect = dialog.querySelector('#rsb-res-add-color');
+    populateSelect(colorSelect, allColors, 'id', 'name', 'Ajouter une couleur');
+
+    colorSelect.addEventListener('change', () => {
+        const id = Number(colorSelect.value);
+        if (!id) return;
+        const color = allColors.find(c => c.id === id);
+        if (color) addColorChip(color);
+        colorSelect.value = '';
+    });
+
+    renderColorChips();
+}
+
+function renderColorChips() {
+    const container = dialog.querySelector('#rsb-chips-color');
+    container.innerHTML = '';
+
+    if (!currentReservable?.color_ids?.length) return;
+
+    currentReservable.color_ids.forEach(id => {
+        const color = allColors.find(c => c.id === id);
+        if (color) addColorChip(color);
+    });
+}
+
+
+function addColorChip(color) {
+    const container = dialog.querySelector('#rsb-chips-color');
+
+    if (Array.from(container.children).some(c => Number(c.dataset.id) === color.id)) return;
+
+    const chip = document.createElement('div');
+    chip.className = 'rsb-chip';
+    chip.dataset.id = color.id;
+
+    chip.innerHTML = `
+        <span class="rsb-chip-color" style="background:${color.hex_code}"></span>
+        ${color.name}
+        <button type="button">✕</button>
+    `;
+
+    chip.querySelector('button').addEventListener('click', (e) => {
+        e.stopPropagation();
+        chip.remove();
+    });
+
+    container.appendChild(chip);
 }

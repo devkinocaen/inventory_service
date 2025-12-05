@@ -18,5 +18,13 @@ export async function fetchReservableById(client, id) {
     throw error;
   }
 
-  return single(data);
+  const item = single(data);
+  if (!item) return null;
+
+  return {
+    ...item,
+    style_ids: item.style_ids || [],
+    style_names: item.style_names || [],
+    colors: item.colors || [] // 🔹 nouveau champ JSONB
+  };
 }

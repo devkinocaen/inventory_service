@@ -1,7 +1,6 @@
--- Ajouter d'abord cette colonne dans la table (si ce n'est pas déjà fait)
-
 CREATE OR REPLACE FUNCTION inventory.create_reservable(
     p_name TEXT,
+    p_serial_id TEXT,
     p_inventory_type inventory.reservable_type,
     p_owner_id INT,
     p_manager_id INT,
@@ -16,7 +15,8 @@ CREATE OR REPLACE FUNCTION inventory.create_reservable(
     p_photos JSONB DEFAULT '[]'::jsonb,
     p_status inventory.reservable_status DEFAULT 'disponible',
     p_quality inventory.reservable_quality DEFAULT 'bon état',
-    p_is_in_stock BOOLEAN DEFAULT TRUE
+    p_is_in_stock BOOLEAN DEFAULT TRUE,
+    p_color_ids INT[] DEFAULT NULL
 )
 RETURNS INT
 LANGUAGE plpgsql
@@ -26,6 +26,7 @@ DECLARE
 BEGIN
     INSERT INTO inventory.reservable (
         name,
+        serial_id,
         inventory_type,
         owner_id,
         manager_id,
@@ -43,6 +44,7 @@ BEGIN
         is_in_stock
     ) VALUES (
         p_name,
+        p_serial_id,
         p_inventory_type,
         p_owner_id,
         p_manager_id,
@@ -60,6 +62,13 @@ BEGIN
         p_is_in_stock
     )
     RETURNING id INTO v_id;
+
+    -- 🔹 Ajouter les couleurs si fournies
+    IF p_color_ids IS NOT NULL THEN
+        INSERT INTO inventory.reservable_color (reservable_id, color_id)
+        SELECT v_id, unnest_id
+        FROM unnest(p_color_ids) AS unnest_id;
+    END IF;
 
     RETURN v_id;
 END;
