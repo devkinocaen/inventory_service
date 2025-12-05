@@ -114,22 +114,6 @@ CREATE TABLE inventory.reservable_subcategory (
 );
 
 -- ===========================
--- Tailles
--- ===========================
---CREATE TABLE inventory.size_type (
---    id SERIAL PRIMARY KEY,
---    name TEXT NOT NULL UNIQUE
---);
-
---CREATE TABLE inventory.size (
---    id SERIAL PRIMARY KEY,
---    size_type_id INT NOT NULL REFERENCES inventory.size_type(id),
---    label TEXT NOT NULL,
---    description TEXT DEFAULT '',
---    UNIQUE(size_type_id, label)
---);
-
--- ===========================
 -- Couleurs
 -- ===========================
 CREATE TABLE color (
@@ -144,7 +128,7 @@ CREATE TABLE color (
 CREATE TABLE inventory.reservable (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL UNIQUE,
-    serial VARCHAR (50),
+    serial_id VARCHAR (50),
     inventory_type inventory.reservable_type NOT NULL,
     status inventory.reservable_status NOT NULL DEFAULT 'disponible',
     quality inventory.reservable_quality NOT NULL DEFAULT 'bon état',
@@ -175,7 +159,7 @@ CREATE TABLE inventory.reservable_style_link (
 -- Table de liaison N couleurs <-> 1 reservable
 -- ===========================
 
-CREATE TABLE inventory.reservable_color (
+CREATE TABLE inventory.reservable_color_link (
     reservable_id INT REFERENCES inventory.reservable(id) ON DELETE CASCADE,
     color_id INT REFERENCES inventory.color(id) ON DELETE CASCADE,
     PRIMARY KEY (reservable_id, color_id)

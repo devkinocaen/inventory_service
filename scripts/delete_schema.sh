@@ -23,6 +23,7 @@ echo "Suppression des tables..."
 tables=(
     "app_config"
     "person"
+    "color"
     "organization"
     "organization_person"
     "storage_location"
@@ -37,6 +38,7 @@ tables=(
     "reservable_batch"
     "reservable_batch_link"
     "reservable_booking"
+    "reservable_color"
 )
 
 

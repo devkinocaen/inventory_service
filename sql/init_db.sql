@@ -7,7 +7,7 @@
 -- Configuration globale
 -- ===========================================
 INSERT INTO inventory.app_config (app_name, schema_version)
-VALUES ('Costumerie', '0.1.0')
+VALUES ('Costumerie', '0.2.0')
 ON CONFLICT DO NOTHING;
 
 -- ===========================================
