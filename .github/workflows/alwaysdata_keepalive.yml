@@ -1,0 +1,22 @@
+name: AlwaysData Keepalive
+
+on:
+  schedule:
+    # Tous les dimanches à 12h UTC
+    - cron: '0 12 * * 0'
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AD_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.AD_HOST }} >> ~/.ssh/known_hosts
+
+      - name: SSH to AlwaysData and Hello World
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes ${{ secrets.AD_USER }}@${{ secrets.AD_HOST }} "echo 'Hello World from AlwaysData! 👋'"
