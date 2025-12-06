@@ -41,6 +41,66 @@ ALLOWED_ORIGINS = [
 ]
 
 
+# 🔹 Ordre global des tables pour restore / truncate
+# Parents → enfants pour restore
+# En inversé pour truncate (enfants → parents)
+TABLES = [
+    # 🔹 Personnes et organisations
+    "inventory.person",
+    "inventory.organization",
+    "inventory.organization_person",
+
+    # 🔹 Stockage
+    "inventory.storage_location",
+
+    # 🔹 Config globale
+    "inventory.app_config",
+
+    # 🔹 Styles et couleurs
+    "inventory.reservable_style",
+    "inventory.color",
+
+    # 🔹 Catégories et sous-catégories
+    "inventory.reservable_category",
+    "inventory.reservable_subcategory",
+
+    # 🔹 Objets réservable
+    "inventory.reservable",
+
+    # 🔹 Liens N:N styles <-> objets
+    "inventory.reservable_style_link",
+    "inventory.reservable_color_link",
+    "inventory.reservable_batch",
+    "inventory.reservable_batch_link",
+
+    # 🔹 Références de booking
+    "inventory.booking_reference",
+
+    # 🔹 Réservations
+    "inventory.reservable_booking"
+]
+
+
+# Séquences à réinitialiser après purge
+SEQUENCES = [
+    "app_config_id_seq",
+    "person_id_seq",
+    "organization_id_seq",
+    "organization_person_organization_id_seq",
+    "organization_person_person_id_seq",
+    "storage_location_id_seq",
+    "reservable_style_id_seq",
+    "reservable_category_id_seq",
+    "reservable_subcategory_id_seq",
+    "reservable_batch_id_seq",
+    "reservable_id_seq",
+    "booking_reference_id_seq",
+    "reservable_booking_id_seq"
+]
+
+
+
+
 # Google Drive / Service Account
 GOOGLE_SERVICE_ACCOUNT_FILE = os.environ.get(
     "GOOGLE_SERVICE_ACCOUNT_JSON",

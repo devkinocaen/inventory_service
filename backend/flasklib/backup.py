@@ -14,7 +14,7 @@ from .utils import get_drive_folder_id, get_drive_service, DriveFolderType
 from .db import get_db_config
 from flasklib.rotate_backups import rotate_backups
 import flasklib.config as config
-from flasklib.config import get_jwt_audience
+from flasklib.config import TABLES, get_jwt_audience
 
 logger = logging.getLogger(__name__)
 
@@ -84,22 +84,8 @@ def register_routes(app):
             ts = datetime.now(tz=config.LOCAL_TZ).strftime("%Y%m%dT%H%M%S")
             dump_file = f"/tmp/{BACKUP_PREFIX}_{database_id}_{ts}.sql"
 
-            tables = [
-                "inventory.reservable_booking",       # dépend de reservable_batch, reservable, organization, person, booking_reference
-                "inventory.reservable_batch_link",    # dépend de reservable_batch, reservable
-                "inventory.reservable_style_link",    # dépend de reservable_style, reservable
-                "inventory.reservable",               # dépend de category, subcategory, organization, storage_location
-                "inventory.booking_reference",        # indépendant
-                "inventory.reservable_style",         # indépendant
-                "inventory.reservable_subcategory",   # dépend de category
-                "inventory.reservable_category",      # indépendant
-                "inventory.reservable_batch",         # indépendant
-                "inventory.organization_person",      # dépend de organization, person
-                "inventory.organization",             # dépend de person (via referent_id)
-                "inventory.person",                   # indépendant
-                "inventory.storage_location",         # indépendant
-                "inventory.app_config"                # indépendant
-            ]
+            tables_to_dump = list(reversed(TABLES))
+
 
 
             cmd = [
@@ -120,7 +106,7 @@ def register_routes(app):
             env["PGPASSWORD"] = db_cfg["password"]
             env["PGSSLMODE"] = "require"
 
-            for t in tables:
+            for t in tables_to_dump:
                 cmd.extend(["--table", t])
 
 
