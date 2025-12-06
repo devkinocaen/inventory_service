@@ -80,6 +80,7 @@ CREATE TABLE inventory.app_config (
     schema_version TEXT NOT NULL,
     viewer_allowed BOOL DEFAULT FALSE,
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    last_data_export TIMESTAMP DEFAULT NULL,
     default_manager_id INT REFERENCES inventory.organization(id) ON DELETE SET NULL,
     default_owner_id INT REFERENCES inventory.organization(id) ON DELETE SET NULL,
     default_storage_location_id INT REFERENCES inventory.storage_location(id) ON DELETE SET NULL,
