@@ -25,6 +25,8 @@ RETURNS TABLE (
     colors JSONB
 )
 LANGUAGE sql
+STABLE
+SECURITY DEFINER
 AS $$
     SELECT
         r.id,

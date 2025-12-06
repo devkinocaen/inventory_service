@@ -9,9 +9,7 @@ import { single } from '../helpers.js';
 export async function fetchReservableById(client, id) {
   if (!id) throw new Error('L’ID du reservable est obligatoire');
 
-  const { data, error } = await client.rpc('get_reservable_by_id', {
-    p_id: id
-  });
+  const { data, error } = await client.rpc('get_reservable_by_id', { p_id: id });
 
   if (error) {
     console.error('[fetchReservableById] Erreur serveur :', error);

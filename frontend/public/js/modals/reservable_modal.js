@@ -30,15 +30,121 @@ let allColors = [];
 // -----------------------------
 // Initialisation modal
 // -----------------------------
+// -----------------------------
+// Initialisation modal refactorée
+// -----------------------------
 export async function initReservableModal() {
+    // 🔹 Charger le HTML du modal
     await loadReservableModal();
-    await loadCategorySelects();
-    await loadStyles();
-    await loadOrganizationsSelects();
-    await loadStorageSelect();
-    await loadColors();
 
+    if (!dialog) return;
+
+    // 🔹 Charger toutes les données en parallèle
+    const [
+        fetchedCategories,
+        fetchedStyles,
+        fetchedOrganizations,
+        fetchedStorageLocations,
+        fetchedColors
+    ] = await Promise.all([
+        fetchCategories(client),
+        fetchStyles(client),
+        fetchOrganizations(client),
+        fetchStorageLocations(client),
+        fetchColors(client)
+    ]);
+
+    // 🔹 Stocker globalement
+    categories = fetchedCategories;
+    allStyles = fetchedStyles;
+    organizations = fetchedOrganizations;
+    storageLocations = fetchedStorageLocations;
+    allColors = fetchedColors;
+
+    // 🔹 Initialiser les selects
+    await initCategorySelects();
+    initStyleSelect();
+    initOrganizationSelects();
+    initStorageSelect();
+    renderColorChips();
 }
+
+
+// -----------------------------
+// Catégories & sous-catégories
+// -----------------------------
+async function initCategorySelects() {
+    const categorySelect = dialog.querySelector('#rsb-res-category');
+    const subCategorySelect = dialog.querySelector('#rsb-res-subcategory');
+
+    populateSelect(categorySelect, categories, 'id', 'name', 'Sélectionnez une catégorie');
+
+    categorySelect.addEventListener('change', async () => {
+        const selectedId = Number(categorySelect.value) || null;
+        if (selectedId && !subCategories[selectedId]) {
+            subCategories[selectedId] = await fetchSubcategoriesByCategory(client, selectedId);
+        }
+        populateSelect(subCategorySelect, subCategories[selectedId] || [], 'id', 'name', 'Sélectionnez une sous-catégorie');
+        subCategorySelect.value = '';
+    });
+
+    if (currentReservable?.category_id) {
+        categorySelect.value = currentReservable.category_id;
+        if (!subCategories[currentReservable.category_id]) {
+            subCategories[currentReservable.category_id] = await fetchSubcategoriesByCategory(client, currentReservable.category_id);
+        }
+        populateSelect(subCategorySelect, subCategories[currentReservable.category_id] || [], 'id', 'name', 'Sélectionnez une sous-catégorie');
+        subCategorySelect.value = currentReservable.subcategory_id || '';
+    }
+}
+
+// -----------------------------
+// Styles
+// -----------------------------
+function initStyleSelect() {
+    const styleSelect = dialog.querySelector('#rsb-res-add-style');
+    populateSelect(styleSelect, allStyles, 'id', 'name', 'Ajouter un style');
+
+    styleSelect.addEventListener('change', () => {
+        const selectedId = Number(styleSelect.value);
+        if (!selectedId) return;
+        const selectedStyle = allStyles.find(s => s.id === selectedId);
+        if (selectedStyle) addStyleChip(selectedStyle);
+        styleSelect.value = '';
+    });
+
+    renderStyleChips();
+}
+
+
+// -----------------------------
+// Organisations
+// -----------------------------
+function initOrganizationSelects() {
+    const ownerSelect = dialog.querySelector('#rsb-res-owner');
+    const managerSelect = dialog.querySelector('#rsb-res-manager');
+
+    populateSelect(ownerSelect, organizations, 'id', 'name', 'Sélectionnez un propriétaire');
+    populateSelect(managerSelect, organizations, 'id', 'name', 'Sélectionnez un gestionnaire');
+
+    if (currentReservable) {
+        ownerSelect.value = currentReservable.owner_id || '';
+        managerSelect.value = currentReservable.manager_id || '';
+    }
+}
+
+// -----------------------------
+// Storage locations
+// -----------------------------
+function initStorageSelect() {
+    const storageSelect = dialog.querySelector('#rsb-res-storage');
+    populateSelect(storageSelect, storageLocations, 'id', 'name', 'Sélectionnez un stockage');
+
+    if (currentReservable) {
+        storageSelect.value = currentReservable.storage_location_id || '';
+    }
+}
+
 
 // -----------------------------
 // Charger le modal HTML
@@ -63,54 +169,6 @@ export async function loadReservableModal() {
     saveBtn?.addEventListener('click', saveReservable);
 }
 
-// -----------------------------
-// Catégories & sous-catégories
-// -----------------------------
-async function loadCategorySelects() {
-    categories = await fetchCategories(client);
-    const categorySelect = dialog.querySelector('#rsb-res-category');
-    const subCategorySelect = dialog.querySelector('#rsb-res-subcategory');
-
-    populateSelect(categorySelect, categories, 'id', 'name', 'Sélectionnez une catégorie');
-
-    categorySelect.addEventListener('change', async () => {
-        const selectedId = Number(categorySelect.value) || null;
-        await loadSubCategories(selectedId);
-        populateSelect(subCategorySelect, subCategories[selectedId] || [], 'id', 'name', 'Sélectionnez une sous-catégorie');
-        subCategorySelect.value = '';
-    });
-
-    if (currentReservable?.category_id) {
-        categorySelect.value = currentReservable.category_id;
-        await loadSubCategories(currentReservable.category_id);
-        populateSelect(subCategorySelect, subCategories[currentReservable.category_id] || [], 'id', 'name', 'Sélectionnez une sous-catégorie');
-        subCategorySelect.value = currentReservable.subcategory_id || '';
-    }
-}
-
-async function loadSubCategories(categoryId) {
-    if (!categoryId) return;
-    subCategories[categoryId] = await fetchSubcategoriesByCategory(client, categoryId);
-}
-
-// -----------------------------
-// Styles
-// -----------------------------
-async function loadStyles() {
-    allStyles = await fetchStyles(client);
-    const styleSelect = dialog.querySelector('#rsb-res-add-style');
-    populateSelect(styleSelect, allStyles, 'id', 'name', 'Ajouter un style');
-
-    styleSelect.addEventListener('change', () => {
-        const selectedId = Number(styleSelect.value);
-        if (!selectedId) return;
-        const selectedStyle = allStyles.find(s => s.id === selectedId);
-        if (selectedStyle) addStyleChip(selectedStyle);
-        styleSelect.value = '';
-    });
-
-    renderStyleChips();
-}
 
 function renderStyleChips() {
     const container = dialog.querySelector('#rsb-chips-style');
@@ -139,35 +197,6 @@ function addStyleChip(style) {
     container.appendChild(chip);
 }
 
-// -----------------------------
-// Organisations (owner & manager)
-// -----------------------------
-async function loadOrganizationsSelects() {
-    organizations = await fetchOrganizations(client);
-    const ownerSelect = dialog.querySelector('#rsb-res-owner');
-    const managerSelect = dialog.querySelector('#rsb-res-manager');
-
-    populateSelect(ownerSelect, organizations, 'id', 'name', 'Sélectionnez un propriétaire');
-    populateSelect(managerSelect, organizations, 'id', 'name', 'Sélectionnez un gestionnaire');
-
-    if (currentReservable) {
-        ownerSelect.value = currentReservable.owner_id || '';
-        managerSelect.value = currentReservable.manager_id || '';
-    }
-}
-
-// -----------------------------
-// Storage locations
-// -----------------------------
-async function loadStorageSelect() {
-    storageLocations = await fetchStorageLocations(client);
-    const storageSelect = dialog.querySelector('#rsb-res-storage');
-
-    populateSelect(storageSelect, storageLocations, 'id', 'name', 'Sélectionnez un stockage');
-    if (currentReservable) {
-        storageSelect.value = currentReservable.storage_location_id || '';
-    }
-}
 
 // -----------------------------
 // Ouvrir / fermer modal
@@ -179,7 +208,7 @@ export async function openReservableModal(reservableId, onSave = null) {
     appConfig = res || {}; // sécurité
     
     onSaveCallback = onSave;
-     let fetchedReservable = null;
+    let fetchedReservable = null;
 
     if (reservableId != null) {
         try {
@@ -189,7 +218,7 @@ export async function openReservableModal(reservableId, onSave = null) {
         }
     }
     currentReservable = fetchedReservable || { id: null, inventory_type: 'costume' };
-
+console.log ('currentReservable', currentReservable)
     await initReservableModal();
     if (!modal || !dialog) return;
 
@@ -350,10 +379,12 @@ function isColorDark(hex) {
     return luminance < 150;
 }
 
-async function loadColors() {
-    allColors = await fetchColors(client);
 
-    const container = document.querySelector('#rsb-grid-colors');
+// -----------------------------
+// Couleurs
+// -----------------------------
+function renderColorChips() {
+    const container = document.getElementById('rsb-grid-colors');
     container.innerHTML = '';
 
     allColors.forEach(color => {
@@ -378,15 +409,6 @@ async function loadColors() {
         container.appendChild(chip);
     });
 }
-
-// Récupération des couleurs sélectionnées
-function getSelectedColorIdsBKP() {
-    const container = document.getElementById('rsb-grid-colors');
-    return Array.from(container.children)
-        .filter(c => c.classList.contains('selected'))
-        .map(c => Number(c.dataset.id));
-}
-
 
 function getSelectedColorIds() {
     const container = document.getElementById('rsb-grid-colors');
