@@ -47,30 +47,26 @@ AS $$
         r.status,
         r.quality,
         r.is_in_stock,
-        ARRAY_AGG(rs.style_id) FILTER (WHERE rs.style_id IS NOT NULL) AS style_ids,
-        ARRAY_AGG(st.name) FILTER (WHERE st.name IS NOT NULL) AS style_names,
-        COALESCE(
-            JSONB_AGG(
-                DISTINCT JSONB_BUILD_OBJECT(
-                    'id', c2.id,
-                    'name', c2.name,
-                    'hex_code', c2.hex_code
-                )
-            ) FILTER (WHERE c2.id IS NOT NULL),
-            '[]'::jsonb
-        ) AS colors
+        styles.style_ids,
+        styles.style_names,
+        colors.colors
     FROM inventory.reservable r
     LEFT JOIN inventory.reservable_category c ON c.id = r.category_id
     LEFT JOIN inventory.reservable_subcategory s ON s.id = r.subcategory_id
-    LEFT JOIN inventory.reservable_style_link rs ON rs.reservable_id = r.id
-    LEFT JOIN inventory.reservable_style st ON st.id = rs.style_id
-    LEFT JOIN inventory.reservable_color_link rc ON rc.reservable_id = r.id
-    LEFT JOIN inventory.color c2 ON c2.id = rc.color_id
-    WHERE r.id = p_id
-    GROUP BY
-        r.id, r.name, r.serial_id, r.inventory_type, r.owner_id, r.manager_id,
-        r.storage_location_id, r.category_id, c.name,
-        r.subcategory_id, s.name, r.size, r.gender,
-        r.privacy, r.price_per_day, r.description,
-        r.photos, r.status, r.quality, r.is_in_stock;
+    LEFT JOIN (
+        SELECT rs.reservable_id,
+               ARRAY_AGG(rs.style_id) AS style_ids,
+               ARRAY_AGG(st.name) AS style_names
+        FROM inventory.reservable_style_link rs
+        LEFT JOIN inventory.reservable_style st ON st.id = rs.style_id
+        GROUP BY rs.reservable_id
+    ) styles ON styles.reservable_id = r.id
+    LEFT JOIN (
+        SELECT rc.reservable_id,
+               JSONB_AGG(JSONB_BUILD_OBJECT('id', c2.id, 'name', c2.name, 'hex_code', c2.hex_code)) AS colors
+        FROM inventory.reservable_color_link rc
+        LEFT JOIN inventory.color c2 ON c2.id = rc.color_id
+        GROUP BY rc.reservable_id
+    ) colors ON colors.reservable_id = r.id
+    WHERE r.id = p_id;
 $$;

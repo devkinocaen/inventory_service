@@ -87,10 +87,15 @@
   gap: 12px;
   margin-top: 20px;
 }
+
 .rsb-modal-actions button {
-  padding: 8px 16px;
+  padding: 10px 20px;           /* même padding pour tous */
+  min-width: 100px;             /* largeur minimum identique */
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;           /* arrondi uniforme */
+  font-weight: 600;
+  font-size: 0.95em;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 /* Bouton Save */
@@ -100,21 +105,27 @@
   border: none;
 }
 
+#rsb-res-save:hover {
+  background: #1a5fcc;
+}
+
 /* Bouton Cancel modernisé */
 #rsb-res-cancel {
-  background: #fff;
+  background: #f5f5f5;
   border: 1px solid #ccc;
   color: #333;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
+
 #rsb-res-cancel:hover {
-  background: #f2f2f2;
+  background: #e0e0e0;
   border-color: #bbb;
 }
+
 #rsb-res-cancel:active {
-  background: #e6e6e6;
+  background: #d6d6d6;
   border-color: #aaa;
 }
+
 
 /* --- FULL WIDTH --- */
 .rsb-full-width { grid-column: 1 / -1; }
@@ -136,31 +147,48 @@
   border-color: #bbb !important; /* accent légèrement plus foncé au focus */
 }
 
+
+/* Grille */
 .rsb-grid-colors {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 colonnes */
-  gap: 8px; /* espace entre les chips */
+  grid-template-rows: repeat(3, 80px); /* 4 lignes */
+  grid-auto-flow: column;              /* remplissage par colonne */
+  gap: 10px;
   margin-top: 4px;
 }
 
+
+/* Chip rond */
 .rsb-grid-colors .rsb-chip {
+  width: 70px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.75em;
+  font-weight: 600;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.9em;
-  font-weight: 500;
-  color: #fff;
   text-align: center;
+
+  padding: 4px;
+  border: 2px solid #ccc; /* Liseré gris pour non sélectionné */
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.rsb-chip-color {
-    display:inline-block;
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    margin-right:6px;
-    vertical-align:middle;
-    border:1px solid #0002;
+/* Survol */
+.rsb-grid-colors .rsb-chip:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 6px rgba(0,0,0,0.25);
+}
+
+/* --------------------------- */
+/* OPTION 2 — double anneau iOS style */
+.rsb-grid-colors .rsb-chip.selected {
+  box-shadow:
+    0 0 0 6px #fff inset,  /* anneau intérieur plus épais */
+    0 0 0 6px #000;         /* anneau externe */
+  transform: scale(1.05);
+  border-color: transparent;
 }

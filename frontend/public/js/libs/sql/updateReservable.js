@@ -6,6 +6,7 @@ import { single } from '../helpers.js';
 export async function updateReservable(client, {
   id,
   name = null,
+  serial_id = null,
   inventory_type = null,
   owner_id = null,
   manager_id = null,
@@ -21,11 +22,14 @@ export async function updateReservable(client, {
   status = null,
   quality = null,
   is_in_stock = null,
-  style_ids = null
+  style_ids = null,
+  color_ids = null
 }) {
-  const { data, error } = await client.rpc('update_reservable', {
+    
+  const payload = {
     p_id: id,
     p_name: name,
+    p_serial_id: serial_id,
     p_inventory_type: inventory_type,
     p_owner_id: owner_id,
     p_manager_id: manager_id,
@@ -41,14 +45,18 @@ export async function updateReservable(client, {
     p_status: status,
     p_quality: quality,
     p_is_in_stock: is_in_stock,
-    p_style_ids: style_ids  
-  });
+    p_style_ids: style_ids,
+    p_color_ids: color_ids
+  };
+
+  console.log('payload', payload);
+    
+  const { data, error } = await client.rpc('update_reservable', payload);
 
   if (error) {
     console.error('[updateReservable] Erreur serveur :', error);
     throw new Error(error.message || 'Erreur lors de la mise à jour du reservable');
   }
-
 
   // La fonction SQL RETURN VOID → data = null
   return data ?? null;

@@ -151,21 +151,20 @@ ON CONFLICT (name) DO NOTHING;
 -- ===========================================
 INSERT INTO inventory.color (name, hex_code)
 VALUES
-  ('Rouge', '#FF0000'),
-  ('Vert', '#00FF00'),
-  ('Bleu', '#0000FF'),
-  ('Jaune', '#FFFF00'),
-  ('Marron', '#8B4513'),
-  ('Noir', '#000000'),
   ('Blanc', '#FFFFFF'),
+  ('Gris', '#999999'),
+  ('Noir', '#000000'),
+  ('Rouge', '#FF0000'),
+  ('Bleu', '#0000FF'),
+  ('Vert', '#006400'),
+  ('Marron', '#8B4513'),
+  ('Jaune', '#FFFF00'),
   ('Orange', '#FFA500'),
   ('Violet', '#800080'),
   ('Rose', '#FFC0CB'),
-  ('Doré', '#FFD700'),
-  ('Argenté', '#C0C0C0')
+  ('Argenté', '#C0C0C0'),
+  ('Doré', '#FFD700')
 ON CONFLICT (name) DO NOTHING;
-
-
 
 -- ===========================================
 -- DONE ✅

@@ -1,15 +1,17 @@
+-- SQL: get_colors
 CREATE OR REPLACE FUNCTION inventory.get_colors()
-RETURNS jsonb
+RETURNS TABLE (
+    id TEXT,
+    name TEXT,
+    hex_code TEXT
+)
 LANGUAGE sql
 STABLE
+SECURITY DEFINER
 AS $$
-  SELECT jsonb_agg(
-    jsonb_build_object(
-      'id', c.id,
-      'name', c.name,
-      'hex_code', c.hex_code
-    )
-    ORDER BY c.name
-  )
-  FROM inventory.color c;
+  SELECT
+      id,
+      name::text,
+      hex_code::text
+  FROM inventory.color;
 $$;
