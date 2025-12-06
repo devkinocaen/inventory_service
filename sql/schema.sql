@@ -144,7 +144,9 @@ CREATE TABLE inventory.reservable (
     price_per_day double precision DEFAULT 0,
     description TEXT DEFAULT '',
     photos JSONB DEFAULT '[]'::jsonb,
-    is_in_stock BOOLEAN NOT NULL DEFAULT TRUE
+    is_in_stock BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- ===========================
@@ -267,6 +269,25 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_check_category_consistency
 BEFORE INSERT OR UPDATE ON inventory.reservable
 FOR EACH ROW EXECUTE FUNCTION inventory.check_reservable_category_consistency();
+
+
+
+-- Fonction de trigger pour mettre à jour updated_at
+CREATE OR REPLACE FUNCTION inventory.update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.updated_at = NOW();
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger sur la table reservable
+CREATE TRIGGER trg_reservable_updated_at
+BEFORE UPDATE ON inventory.reservable
+FOR EACH ROW
+EXECUTE FUNCTION inventory.update_updated_at_column();
+
+
 
 -- ===========================
 -- Index pour tables volumineuses

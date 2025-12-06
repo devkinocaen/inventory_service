@@ -41,7 +41,8 @@ BEGIN
         photos,
         status,
         quality,
-        is_in_stock
+        is_in_stock,
+        created_at
     ) VALUES (
         p_name,
         p_serial_id,
@@ -59,13 +60,14 @@ BEGIN
         p_photos,
         p_status,
         p_quality,
-        p_is_in_stock
+        p_is_in_stock,
+        NOW()
     )
     RETURNING id INTO v_id;
 
     -- 🔹 Ajouter les couleurs si fournies
     IF p_color_ids IS NOT NULL THEN
-        INSERT INTO inventory.reservable_color (reservable_id, color_id)
+        INSERT INTO inventory.reservable_color_link (reservable_id, color_id)
         SELECT v_id, unnest_id
         FROM unnest(p_color_ids) AS unnest_id;
     END IF;

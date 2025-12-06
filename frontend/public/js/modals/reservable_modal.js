@@ -319,7 +319,6 @@ async function saveReservable(e) {
     const privacy = dialog.querySelector('input[name="rsb-res-privacy"]:checked')?.value;
     const style_ids = Array.from(dialog.querySelectorAll('#rsb-chips-style .rsb-chip')).map(c => Number(c.dataset.id));
     const color_ids = getSelectedColorIds();
-console.log ('color_ids', color_ids)
 
     const data = {
         id: currentReservable?.id || null,
@@ -346,9 +345,11 @@ console.log ('color_ids', color_ids)
     try {
         let saved, savedId;
         if (currentReservable?.id) {
+            console.log('updateReservable', data);
             await updateReservable(client, data);
             saved = await fetchReservableById(client, data.id);
         } else {
+            console.log('createReservable', data);
             savedId = await createReservable(client, data);
             saved = await fetchReservableById(client, savedId);
         }
