@@ -57,7 +57,6 @@ let lookupInput;
  * Toggle filtre sélectionné
  */
 function toggleFilter(type, value) {
-    console.log("la", type, value)
   if (activeFilters[type].includes(value)) {
     activeFilters[type] = activeFilters[type].filter(v => v !== value);
   } else {
@@ -91,7 +90,6 @@ function renderFilterChips(categories, subcategories, styles, colors) {
   const genderChips = document.getElementById('cstm-genderChips');
   const colorChips = document.getElementById('cstm-colorChips');
   if (!categoryChips || !subcatChips || !styleChips || !genderChips || !colorChips) return;
-    console.log ('renderFilterChips la')
 
   const makeChip = (name, type, colorHex=null) => {
     const chip = document.createElement('div');
@@ -112,6 +110,7 @@ function renderFilterChips(categories, subcategories, styles, colors) {
     chip.onclick = () => {
       toggleFilter(type, name);              // met à jour activeFilters
       renderFilterChips(currentCategories, currentSubcategories, currentStyles, currentColors); // rerender
+      fetchItemsAndRender();
     };
 
     return chip;
@@ -156,7 +155,6 @@ function renderFilterChips(categories, subcategories, styles, colors) {
  * Fetch les items depuis la base SQL selon les filtres sidebar
  */
 async function fetchItems() {
-    console.log ('fetchItems')
     let filterStartDate = currentFilterStart ? formatDateForDatetimeLocal(currentFilterStart) : null;
     let filterEndDate   = currentFilterEnd   ? formatDateForDatetimeLocal(currentFilterEnd)   : null;
     
@@ -166,7 +164,7 @@ async function fetchItems() {
     filterStartDate = null;
     filterEndDate = null;
   }
-
+console.log ('activeFilters', activeFilters)
   const filters = {
     p_category_ids: activeFilters.category.length
       ? currentCategories
@@ -183,6 +181,12 @@ async function fetchItems() {
           .filter(s => activeFilters.style.includes(s.name))
           .map(s => s.id)
       : null,
+      p_color_ids: activeFilters.color.length
+        ? currentColors
+            .filter(c => activeFilters.color.includes(c.name))
+            .map(c => c.id)
+        : null,
+
     p_gender: activeFilters.gender.length
       ? activeFilters.gender.map(g => genderMap[g])
       : null,
@@ -207,8 +211,6 @@ async function renderItems(itemsToRender = currentItems) {
   if (!container) return;
   container.innerHTML = '';
     
-    console.log ("ici")
-
   const lookupValue = lookupInput?.value?.trim().toLowerCase();
 
   const filteredItems = lookupValue
