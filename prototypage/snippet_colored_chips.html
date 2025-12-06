@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Demo Chips Couleurs</title>
+<style>
+body {
+  font-family: sans-serif;
+  padding: 20px;
+}
+
+/* Pastilles */
+.rsb-grid-colors {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.rsb-chip {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75em;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border 0.15s ease;
+  color: #000; /* couleur par défaut */
+  border: 3px solid #ccc; /* Liseré gris pour les non sélectionnés */
+}
+
+/* --------------------------- */
+/* OPTION 2 — double anneau iOS style */
+.rsb-chip.selected {
+  box-shadow:
+    0 0 0 4px #fff inset,
+    0 0 0 4px #000;
+  transform: scale(1.05);
+  border-color: transparent;
+}
+</style>
+
+<script>
+// Fonction pour déterminer couleur texte selon luminosité
+function getTextColor(bg) {
+    bg = bg.replace('#','');
+    const r = parseInt(bg.substr(0,2),16);
+    const g = parseInt(bg.substr(2,2),16);
+    const b = parseInt(bg.substr(4,2),16);
+    const lum = 0.299*r + 0.587*g + 0.114*b;
+    return lum < 150 ? '#fff' : '#000';
+}
+
+// Créer une pastille couleur
+function createColorChip(color, selected=false) {
+    const chip = document.createElement('div');
+    chip.className = 'rsb-chip';
+    chip.style.background = color.hex_code;
+    chip.style.color = getTextColor(color.hex_code);
+    chip.textContent = color.name;
+    if(selected) chip.classList.add('selected');
+
+    chip.addEventListener('click', () => {
+        chip.classList.toggle('selected');
+        // Pas d’inversion de couleur, texte reste visible
+    });
+
+    return chip;
+}
+
+// Charger les couleurs dans la grille
+function populateColorGrid(colors, selectedIds=[]) {
+    const container = document.getElementById('rsb-grid-colors');
+    container.innerHTML = '';
+    colors.forEach(c => {
+        const chip = createColorChip(c, selectedIds.includes(c.id));
+        container.appendChild(chip);
+    });
+}
+
+// Exemple de test
+document.addEventListener('DOMContentLoaded', () => {
+    const colors = [
+      {id:1, name:'Rouge', hex_code:'#ff0000'},
+      {id:2, name:'Jaune', hex_code:'#f5e050'},
+      {id:3, name:'Bleu', hex_code:'#0055ff'},
+      {id:4, name:'Violet', hex_code:'#7700cc'},
+      {id:5, name:'Noir', hex_code:'#000000'},
+      {id:6, name:'Blanc', hex_code:'#ffffff'}
+    ]
+;
+    const selected = [1,3]; // Rouge et Bleu sélectionnés
+    populateColorGrid(colors, selected);
+});
+</script>
+</head>
+<body>
+
+<h3>Couleurs</h3>
+<div id="rsb-grid-colors" class="rsb-grid-colors"></div>
+
+</body>
+</html>
