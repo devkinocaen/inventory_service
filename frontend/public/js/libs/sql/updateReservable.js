@@ -45,8 +45,8 @@ export async function updateReservable(client, {
     p_status: status,
     p_quality: quality,
     p_is_in_stock: is_in_stock,
-    p_style_ids: style_ids,
-    p_color_ids: color_ids
+    p_color_ids: Array.isArray(color_ids) && color_ids.length ? color_ids : null,
+    p_style_ids: Array.isArray(style_ids) && style_ids.length ? style_ids : null
   };
 
   console.log('payload', payload);

@@ -387,28 +387,31 @@ function renderColorChips() {
     const container = document.getElementById('rsb-grid-colors');
     container.innerHTML = '';
 
+    const selectedColorIds = (currentReservable?.colors?.map(c => Number(c.id))) || [];
+    console.log('selectedColorIds', selectedColorIds);
+
     allColors.forEach(color => {
+        const colorId = Number(color.id); // convertir en number
         const isDark = isColorDark(color.hex_code);
 
         const chip = document.createElement('div');
         chip.className = 'rsb-chip';
-        chip.dataset.id = color.id;
+        chip.dataset.id = colorId;
         chip.style.backgroundColor = color.hex_code;
         chip.style.color = isDark ? '#fff' : '#000';
         chip.title = color.name;
         chip.textContent = color.name;
 
-        if (currentReservable?.color_ids?.includes(color.id)) {
+        if (selectedColorIds.includes(colorId)) {
             chip.classList.add('selected');
         }
 
-        chip.addEventListener('click', () => {
-            chip.classList.toggle('selected');
-        });
-
+        chip.addEventListener('click', () => chip.classList.toggle('selected'));
         container.appendChild(chip);
     });
 }
+
+
 
 function getSelectedColorIds() {
     const container = document.getElementById('rsb-grid-colors');

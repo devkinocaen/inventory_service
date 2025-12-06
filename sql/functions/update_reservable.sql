@@ -22,6 +22,7 @@ CREATE OR REPLACE FUNCTION inventory.update_reservable(
 )
 RETURNS VOID
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 DECLARE
     v_old_category INT;
