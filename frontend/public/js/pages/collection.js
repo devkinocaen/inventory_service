@@ -57,6 +57,7 @@ let lookupInput;
  * Toggle filtre sélectionné
  */
 function toggleFilter(type, value) {
+    console.log("la", type, value)
   if (activeFilters[type].includes(value)) {
     activeFilters[type] = activeFilters[type].filter(v => v !== value);
   } else {
@@ -82,25 +83,31 @@ function isColorDark(hex) {
   return luminance < 186; // seuil à ajuster si nécessaire
 }
 
+
 function renderFilterChips(categories, subcategories, styles, colors) {
   const categoryChips = document.getElementById('cstm-categoryChips');
   const subcatChips = document.getElementById('cstm-subcatChips');
   const styleChips = document.getElementById('cstm-styleChips');
   const genderChips = document.getElementById('cstm-genderChips');
   const colorChips = document.getElementById('cstm-colorChips');
-
   if (!categoryChips || !subcatChips || !styleChips || !genderChips || !colorChips) return;
+    console.log ('renderFilterChips la')
 
   const makeChip = (name, type, colorHex=null) => {
     const chip = document.createElement('div');
     chip.textContent = name;
-    chip.className = 'color-chip' + (activeFilters[type].includes(name) ? ' selected' : '');
-    
-    if (colorHex) {
-      chip.style.backgroundColor = colorHex;
-      chip.style.color = isColorDark(colorHex) ? 'white' : 'black';
-      chip.style.border = '1px solid #ccc';
+    if (type == 'color') {
+      chip.className = 'color-chip' + (activeFilters[type].includes(name) ? ' selected' : '');
+          
+      if (colorHex) {
+        chip.style.backgroundColor = colorHex;
+        chip.style.color = isColorDark(colorHex) ? 'white' : 'black';
+        chip.style.border = '1px solid #ccc';
+      }
+    } else {
+       chip.className = 'filter-chip' + (activeFilters[type].includes(name) ? ' selected' : '');
     }
+
 
     chip.onclick = () => {
       toggleFilter(type, name);              // met à jour activeFilters
@@ -199,6 +206,8 @@ async function fetchItems() {
 async function renderItems(itemsToRender = currentItems) {
   if (!container) return;
   container.innerHTML = '';
+    
+    console.log ("ici")
 
   const lookupValue = lookupInput?.value?.trim().toLowerCase();
 
