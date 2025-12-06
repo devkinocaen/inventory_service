@@ -147,5 +147,27 @@ VALUES
 ON CONFLICT (name) DO NOTHING;
 
 -- ===========================================
+-- Couleurs de base
+-- ===========================================
+INSERT INTO inventory.color (name, hex_code)
+VALUES
+  ('Rouge', '#FF0000'),
+  ('Vert', '#00FF00'),
+  ('Bleu', '#0000FF'),
+  ('Jaune', '#FFFF00'),
+  ('Marron', '#8B4513'),
+  ('Noir', '#000000'),
+  ('Blanc', '#FFFFFF'),
+  ('Orange', '#FFA500'),
+  ('Violet', '#800080'),
+  ('Rose', '#FFC0CB'),
+  ('Doré', '#FFD700'),
+  ('Argenté', '#C0C0C0')
+ON CONFLICT (name) DO NOTHING;
+
+
+
+-- ===========================================
 -- DONE ✅
 -- ===========================================
+

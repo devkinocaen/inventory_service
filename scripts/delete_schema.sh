@@ -31,14 +31,12 @@ tables=(
     "booking_reference"
     "reservable_category"
     "reservable_subcategory"
-    "size_type"
-    "size"
     "reservable"
-    "reservable_style_link"
     "reservable_batch"
     "reservable_batch_link"
+    "reservable_style_link"
+    "reservable_color_link"
     "reservable_booking"
-    "reservable_color"
 )
 
 

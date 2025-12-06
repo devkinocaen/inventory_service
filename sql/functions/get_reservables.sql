@@ -9,7 +9,7 @@ CREATE OR REPLACE FUNCTION inventory.get_reservables(
     p_end_date TIMESTAMP DEFAULT NULL,
     p_is_in_stock BOOLEAN DEFAULT NULL,
     p_privacy_min inventory.privacy_type DEFAULT NULL,
-    p_color_ids INT[] DEFAULT NULL        -- <<< NOUVEAU PARAMÈTRE
+    p_color_ids INT[] DEFAULT NULL
 )
 RETURNS TABLE (
     id INT,
@@ -42,6 +42,7 @@ RETURNS TABLE (
     colors JSONB
 )
 LANGUAGE plpgsql STABLE
+SECURITY DEFINER
 AS $$
 BEGIN
     RETURN QUERY
@@ -72,7 +73,7 @@ BEGIN
         m.name::text AS manager_name,
         r.size::text,
         array_agg(DISTINCT rs.id)   FILTER (WHERE rs.id IS NOT NULL) AS style_ids,
-        array_agg(DISTINCT rs.name) FILTER (WHERE rs.name IS NOT NULL) AS style_names,
+        array_agg(DISTINCT rs.name::text) FILTER (WHERE rs.name IS NOT NULL) AS style_names,  -- ✅ cast ici
 
         COALESCE(
             jsonb_agg(
@@ -95,7 +96,7 @@ BEGIN
     LEFT JOIN inventory.reservable_style_link rsl ON rsl.reservable_id = r.id
     LEFT JOIN inventory.reservable_style rs ON rs.id = rsl.style_id
 
-    LEFT JOIN inventory.reservable_color rc ON rc.reservable_id = r.id
+    LEFT JOIN inventory.reservable_color_link rc ON rc.reservable_id = r.id
     LEFT JOIN inventory.color c2 ON c2.id = rc.color_id
 
     WHERE
@@ -113,7 +114,6 @@ BEGIN
 
         AND (p_is_in_stock IS NULL OR p_is_in_stock = r.is_in_stock)
 
-        -- === FILTRE STYLES ===
         AND (
             p_style_ids IS NULL
             OR EXISTS (
@@ -124,7 +124,6 @@ BEGIN
             )
         )
 
-        -- === FILTRE COULEURS (intersection) ===
         AND (
             p_color_ids IS NULL
             OR NOT EXISTS (
@@ -132,7 +131,7 @@ BEGIN
                 FROM unnest(p_color_ids) AS needed_color(id)
                 WHERE NOT EXISTS (
                     SELECT 1
-                    FROM inventory.reservable_color rc3
+                    FROM inventory.reservable_color_link rc3
                     WHERE rc3.reservable_id = r.id
                       AND rc3.color_id = needed_color.id
                 )

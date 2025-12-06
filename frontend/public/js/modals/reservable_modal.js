@@ -26,8 +26,6 @@ let organizations = [];
 let storageLocations = [];
 let onSaveCallback = null; // callback à appeler après sauvegarde
 let allColors = [];
-js
-Copier le code
 
 // -----------------------------
 // Initialisation modal
@@ -202,7 +200,7 @@ export async function openReservableModal(reservableId, onSave = null) {
 
         const fields = {
             '#rsb-res-name': currentReservable.name,
-            '#rsb-res-serial-id': currentReservable.serial_id,
+            '#rsb-res-serial_id': currentReservable.serial_id,
             '#rsb-res-size': currentReservable.size,
             '#rsb-res-price': currentReservable.price_per_day,
             '#rsb-res-description': currentReservable.description,
@@ -341,56 +339,45 @@ async function saveReservable(e) {
     }
 }
 
-
 async function loadColors() {
+    // Récupérer toutes les couleurs depuis la base
     allColors = await fetchColors(client);
 
-    const colorSelect = dialog.querySelector('#rsb-res-add-color');
-    populateSelect(colorSelect, allColors, 'id', 'name', 'Ajouter une couleur');
-
-    colorSelect.addEventListener('change', () => {
-        const id = Number(colorSelect.value);
-        if (!id) return;
-        const color = allColors.find(c => c.id === id);
-        if (color) addColorChip(color);
-        colorSelect.value = '';
-    });
-
-    renderColorChips();
-}
-
-function renderColorChips() {
-    const container = dialog.querySelector('#rsb-chips-color');
+    // Récupérer le container des chips (grille)
+    const container = dialog.querySelector('#rsb-grid-colors');
     container.innerHTML = '';
 
-    if (!currentReservable?.color_ids?.length) return;
+    // Créer un chip pour chaque couleur
+    allColors.forEach(color => {
+        const chip = document.createElement('div');
+        chip.className = 'rsb-chip';
+        chip.dataset.id = color.id;
 
-    currentReservable.color_ids.forEach(id => {
-        const color = allColors.find(c => c.id === id);
-        if (color) addColorChip(color);
+        // Si le reservable contient cette couleur, on ajoute une classe 'selected'
+        if (currentReservable?.color_ids?.includes(color.id)) {
+            chip.classList.add('selected');
+        }
+
+        chip.innerHTML = `
+            <span class="rsb-chip-color" style="background:${color.hex_code}"></span>
+            ${color.name}
+            <button type="button">✕</button>
+        `;
+
+        // Clic sur le bouton pour désélectionner / retirer
+        chip.querySelector('button').addEventListener('click', (e) => {
+            e.stopPropagation();
+            chip.classList.toggle('selected');
+        });
+
+        container.appendChild(chip);
     });
 }
 
-
-function addColorChip(color) {
-    const container = dialog.querySelector('#rsb-chips-color');
-
-    if (Array.from(container.children).some(c => Number(c.dataset.id) === color.id)) return;
-
-    const chip = document.createElement('div');
-    chip.className = 'rsb-chip';
-    chip.dataset.id = color.id;
-
-    chip.innerHTML = `
-        <span class="rsb-chip-color" style="background:${color.hex_code}"></span>
-        ${color.name}
-        <button type="button">✕</button>
-    `;
-
-    chip.querySelector('button').addEventListener('click', (e) => {
-        e.stopPropagation();
-        chip.remove();
-    });
-
-    container.appendChild(chip);
+// Pour récupérer les couleurs sélectionnées au moment du save :
+function getSelectedColorIds() {
+    const container = dialog.querySelector('#rsb-grid-colors');
+    return Array.from(container.children)
+        .filter(c => c.classList.contains('selected'))
+        .map(c => Number(c.dataset.id));
 }

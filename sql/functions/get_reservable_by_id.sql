@@ -64,11 +64,11 @@ AS $$
     LEFT JOIN inventory.reservable_subcategory s ON s.id = r.subcategory_id
     LEFT JOIN inventory.reservable_style_link rs ON rs.reservable_id = r.id
     LEFT JOIN inventory.reservable_style st ON st.id = rs.style_id
-    LEFT JOIN inventory.reservable_color rc ON rc.reservable_id = r.id
+    LEFT JOIN inventory.reservable_color_link rc ON rc.reservable_id = r.id
     LEFT JOIN inventory.color c2 ON c2.id = rc.color_id
     WHERE r.id = p_id
     GROUP BY
-        r.id, r.name, r.inventory_type, r.owner_id, r.manager_id,
+        r.id, r.name, r.serial_id, r.inventory_type, r.owner_id, r.manager_id,
         r.storage_location_id, r.category_id, c.name,
         r.subcategory_id, s.name, r.size, r.gender,
         r.privacy, r.price_per_day, r.description,
