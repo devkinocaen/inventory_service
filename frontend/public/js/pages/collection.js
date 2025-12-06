@@ -2,6 +2,7 @@
 import {
     fetchReservables,
     fetchCategories,
+    fetchColors,
     fetchSubcategories,
     fetchStyles,
     fetchAppConfig
@@ -19,7 +20,7 @@ let appConfig = null;
 
 let currentItems = [];
 let selectedItems = [];
-let activeFilters = { category: [], subcategory: [], style: [], gender: [] };
+let activeFilters = { category: [], subcategory: [], style: [], gender: [], color: [] };
 let currentFilterStart = null;
 let currentFilterEnd = null;
 
@@ -27,6 +28,7 @@ let currentFilterEnd = null;
 let currentCategories = [];
 let currentSubcategories = [];
 let currentStyles = [];
+let currentColors = []; // variable globale
 
 const genderMap = {
   'Homme': 'male',
@@ -68,29 +70,47 @@ function toggleFilter(type, value) {
 }
 
 
-/**
- * Render les filtres sous forme de chips stylées
- */
-function renderFilterChips(categories, subcategories, styles) {
+// Fonction utilitaire pour déterminer si une couleur est sombre ou claire
+function isColorDark(hex) {
+  // enlever le # si présent
+  hex = hex.replace('#', '');
+  const r = parseInt(hex.substring(0,2), 16);
+  const g = parseInt(hex.substring(2,4), 16);
+  const b = parseInt(hex.substring(4,6), 16);
+  // luminance relative
+  const luminance = 0.299*r + 0.587*g + 0.114*b;
+  return luminance < 186; // seuil à ajuster si nécessaire
+}
+
+function renderFilterChips(categories, subcategories, styles, colors) {
   const categoryChips = document.getElementById('cstm-categoryChips');
   const subcatChips = document.getElementById('cstm-subcatChips');
   const styleChips = document.getElementById('cstm-styleChips');
   const genderChips = document.getElementById('cstm-genderChips');
+  const colorChips = document.getElementById('cstm-colorChips');
 
-  if (!categoryChips || !subcatChips || !styleChips || !genderChips) return;
+  if (!categoryChips || !subcatChips || !styleChips || !genderChips || !colorChips) return;
 
-  const makeChip = (name, type) => {
+  const makeChip = (name, type, colorHex=null) => {
     const chip = document.createElement('div');
     chip.textContent = name;
-    chip.className = 'filter-chip' + (activeFilters[type].includes(name) ? ' selected' : '');
+    chip.className = 'color-chip' + (activeFilters[type].includes(name) ? ' selected' : '');
+    
+    if (colorHex) {
+      chip.style.backgroundColor = colorHex;
+      chip.style.color = isColorDark(colorHex) ? 'white' : 'black';
+      chip.style.border = '1px solid #ccc';
+    }
+
     chip.onclick = () => {
-      toggleFilter(type, name);
-      renderFilterChips(categories, subcategories, styles);
-      fetchItemsAndRender();
+      toggleFilter(type, name);              // met à jour activeFilters
+      renderFilterChips(currentCategories, currentSubcategories, currentStyles, currentColors); // rerender
     };
+
     return chip;
   };
 
+  // ---- catégories, sous-catégories, styles, genres (inchangés) ----
   categoryChips.innerHTML = '';
   categories.forEach(c => categoryChips.appendChild(makeChip(c.name, 'category')));
 
@@ -108,12 +128,28 @@ function renderFilterChips(categories, subcategories, styles) {
   const genders = ['Homme', 'Femme', 'Unisexe'];
   genderChips.innerHTML = '';
   genders.forEach(g => genderChips.appendChild(makeChip(g, 'gender')));
+
+  // ---- chips couleurs ----
+  colorChips.innerHTML = '';
+  let row = document.createElement('div');
+  row.className = 'chip-row';
+  colors.forEach((c, idx) => {
+    row.appendChild(makeChip(c.name, 'color', c.hex_code));
+    if ((idx+1) % 3 === 0) {
+      colorChips.appendChild(row);
+      row = document.createElement('div');
+      row.className = 'chip-row';
+    }
+  });
+  if (row.children.length > 0) colorChips.appendChild(row);
 }
+
 
 /**
  * Fetch les items depuis la base SQL selon les filtres sidebar
  */
 async function fetchItems() {
+    console.log ('fetchItems')
     let filterStartDate = currentFilterStart ? formatDateForDatetimeLocal(currentFilterStart) : null;
     let filterEndDate   = currentFilterEnd   ? formatDateForDatetimeLocal(currentFilterEnd)   : null;
     
@@ -150,6 +186,7 @@ async function fetchItems() {
   };
 
   try {
+      console.log ('filters', filters)
     currentItems = await fetchReservables(client, filters);
   } catch (err) {
     console.error('[Collection] Erreur fetchReservables :', err);
@@ -233,27 +270,30 @@ async function fetchItemsAndRender() {
  */
 async function loadData() {
   try {
-    const [items, categories, subcategories, styles] = await Promise.all([
+    const [items, categories, subcategories, styles, colors] = await Promise.all([
       fetchReservables(client, {p_privacy_min: 'private', p_status_ids: ['disponible']}),
       fetchCategories(client),
       fetchSubcategories(client),
-      fetchStyles(client)
+      fetchStyles(client),
+      fetchColors(client)
     ]);
 
     currentItems = items;
     currentCategories = categories;
     currentSubcategories = subcategories;
     currentStyles = styles;
+    currentColors = colors;
 
-    renderFilterChips(categories, subcategories, styles);
+    // <-- passer colors à renderFilterChips
+    renderFilterChips(categories, subcategories, styles, colors);
     await renderItems();
   } catch (err) {
     const errMsg = formatServerError(err.message || err);
     console.error('[Collection] Erreur :', errMsg);
     alert(`❌ Erreur : ${errMsg}`);
   }
-
 }
+
 
 /**
  * Initialisation après injection HTML

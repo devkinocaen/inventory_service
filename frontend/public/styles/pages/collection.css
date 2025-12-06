@@ -521,3 +521,36 @@
 .cstm-filter-collapsible:not(.collapsed) > div:first-child::before {
   transform: rotate(90deg);
 }
+.color-chip {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  font-size: 0.75rem;
+  font-style: italic;   /* texte en italique par défaut */
+  transition: all 0.2s ease;
+  filter: brightness(1.); /* légèrement plus clair */
+
+}
+
+.color-chip.selected {
+  border: 4px solid #000;               /* bord plus épais */
+  box-shadow: 0 0 8px rgba(0,0,0,0.8);  /* ombre plus marquée */
+  transform: scale(1.4);               /* agrandissement plus évident */
+  font-weight: bold;                     /* texte en gras */
+  font-style: normal;                     /* texte droit */
+  text-shadow: 0 0 2px rgba(0,0,0,0.7); /* texte mieux lisible sur fond */
+  filter: brightness(1.);
+}
+
+
+.chip-row {
+  display: flex;
+  flex-wrap: nowrap;
+  margin-bottom: 4px;
+}
