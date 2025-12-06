@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION inventory.update_reservable(
     p_id INT,
     p_name TEXT DEFAULT NULL,
-    p_serial_id TEXT DEFAULT NULL,
+    serial_id TEXT DEFAULT NULL UNIQUE,
     p_inventory_type inventory.reservable_type DEFAULT NULL,
     p_owner_id INT DEFAULT NULL,
     p_manager_id INT DEFAULT NULL,
