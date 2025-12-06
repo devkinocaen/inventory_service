@@ -14,100 +14,27 @@ import jwt
 from googleapiclient.http import MediaIoBaseDownload
 from .db import get_db_config
 from .utils import get_drive_folder_id, get_drive_service, DriveFolderType
-from .config import logger, ALLOWED_ORIGINS, JWT_SECRET, get_jwt_audience
+from .config import logger, TABLES, SEQUENCES, ALLOWED_ORIGINS, JWT_SECRET, get_jwt_audience
 
 logger = logging.getLogger(__name__)
 
 # Ordre de restauration pour éviter les FK : parents avant enfants
-RESTORE_ORDER = [
-    # 🔹 Personnes et organisations
-    "inventory.person",
-    "inventory.organization",
-    "inventory.organization_person",
-
-    # 🔹 Stockage
-    "inventory.storage_location",
-
-    # 🔹 Config globale (après que tout soit créé)
-    "inventory.app_config",
-
-    # 🔹 Styles et tailles
-    "inventory.reservable_style",
-
-    # 🔹 Catégories et sous-catégories
-    "inventory.reservable_category",
-    "inventory.reservable_subcategory",
-
-    # 🔹 Objets réservable
-    "inventory.reservable",
-
-    # 🔹 Liens N:N styles <-> objets
-    "inventory.reservable_style_link",
-    "inventory.reservable_batch",
-    "inventory.reservable_batch_link",
-
-    # 🔹 Références de booking
-    "inventory.booking_reference",
-
-    # 🔹 Réservations
-    "inventory.reservable_booking"
-]
-
+RESTORE_ORDER = TABLES
 
 # Ordre de purge pour éviter les FK : enfants avant parents
-TRUNCATE_ORDER = [
-    # 🔹 Réservations et liens N:N
-    "inventory.reservable_booking",
-    "inventory.reservable_batch_link",
-    "inventory.reservable_style_link",
+TRUNCATE_ORDER = list(reversed(TABLES))
 
-    # 🔹 Objets réservable
-    "inventory.reservable_batch",
-    "inventory.reservable",
-
-    # 🔹 Références de booking
-    "inventory.booking_reference",
-
-    # 🔹 Styles et tailles
-    "inventory.reservable_style",
-    # "inventory.size",
-    # "inventory.size_type",
-
-    # 🔹 Catégories et sous-catégories
-    "inventory.reservable_subcategory",
-    "inventory.reservable_category",
-
-    # 🔹 Stockage
-    "inventory.storage_location",
-
-    # 🔹 Organisations et personnes
-    "inventory.organization_person",
-    "inventory.organization",
-    "inventory.person",
-
-    # 🔹 Config globale
-    "inventory.app_config"
-]
-
-# Séquences à réinitialiser après purge
-SEQUENCES = [
-    "app_config_id_seq",
-    "person_id_seq",
-    "organization_id_seq",
-    "organization_person_organization_id_seq",  # si nécessaire
-    "organization_person_person_id_seq",        # si nécessaire
-    "storage_location_id_seq",
-    "reservable_style_id_seq",
-    # "size_type_id_seq",
-    # "size_id_seq",
-    "reservable_category_id_seq",
-    "reservable_subcategory_id_seq",
-    "reservable_batch_id_seq",
-    "reservable_id_seq",
-    "booking_reference_id_seq",
-    "reservable_booking_id_seq"
-]
-
+def table_exists(cur, table):
+    schema, tbl = table.split(".")
+    cur.execute("""
+        SELECT EXISTS (
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_schema = %s
+              AND table_name = %s
+        )
+    """, (schema, tbl))
+    return cur.fetchone()[0]
 
 
 def disable_user_triggers(cur, table: str):
@@ -172,8 +99,14 @@ def restore_strict(local_file, cur):
 
     # Restore table par table
     for table in RESTORE_ORDER:
+        # ignorer si table absente dans la base
+        if not table_exists(cur, table):
+            logger.warning(f"⚠️ Table {table} inexistante dans la base, skip")
+            continue
+
         lines = table_lines[table]
         if not lines:
+            logger.info(f"ℹ️ Table {table} absente du dump, skip")
             continue
 
         disable_user_triggers(cur, table)
@@ -210,14 +143,13 @@ def restore_strict(local_file, cur):
     logger.info("✔ Restore strict terminé avec succès")
 
 
-
 def restore_tolerant(local_file, cur):
     """Restore complet en mode tolérant aux différences de schéma"""
     logger.info(f"🔹 Démarrage de restore_tolerant pour {local_file}")
 
     # 🔹 Récupérer colonnes actuelles pour chaque table
     table_columns = {}
-    for table in TABLES:
+    for table in RESTORE_ORDER:
         schema, tbl = table.split(".")
         cur.execute("""
             SELECT column_name
@@ -244,8 +176,14 @@ def restore_tolerant(local_file, cur):
 
     # 🔹 Restaurer table par table
     for table in RESTORE_ORDER:
+        # ignorer si table absente dans la base
+        if not table_exists(cur, table):
+            logger.warning(f"⚠️ Table {table} inexistante dans la base, skip")
+            continue
+    
         lines = table_lines[table]
         if not lines:
+            logger.info(f"ℹ️ Table {table} absente du dump, skip")
             continue
 
         disable_user_triggers(cur, table)
@@ -293,12 +231,15 @@ def restore_tolerant(local_file, cur):
     logger.info("✔ Restore tolerant terminé avec succès")
 
 
-
 def truncate_tables(cur):
-    """🔹 Purge toutes les tables dans l'ordre correct avec RESTART IDENTITY CASCADE"""
+    """🔹 Purge toutes les tables dans l'ordre correct avec RESTART IDENTITY CASCADE si elles existent"""
     for table in TRUNCATE_ORDER:
-        cur.execute(f"TRUNCATE TABLE {table} RESTART IDENTITY CASCADE;")
-    logger.info("✔ Toutes les tables purgées dans l'ordre correct")
+        if table_exists(cur, table):
+            cur.execute(f"TRUNCATE TABLE {table} RESTART IDENTITY CASCADE;")
+        else:
+            logger.warning(f"⚠️ Table {table} inexistante, skip truncate")
+    logger.info("✔ Toutes les tables existantes purgées dans l'ordre correct")
+
 
 def realign_sequences(cur):
     """🔹 Réaligner toutes les séquences après restauration (uniquement pour les tables sauvegardées)"""
