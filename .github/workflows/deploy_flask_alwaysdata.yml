@@ -3,14 +3,14 @@ name: Deploy Flask app to AlwaysData
 on:
   push:
     branches:
-      - 0.0.12   # déclenche automatiquement quand il y a un push sur cette branche
+      - 0.0.13   # déclenche automatiquement quand il y a un push sur cette branche
 
   workflow_dispatch:   # permet de lancer manuellement et de choisir la branche
     inputs:
       branch:
         description: 'Nom de la branche à déployer'
         required: true
-        default: '0.0.12'
+        default: '0.0.13'
 
 jobs:
   deploy:
