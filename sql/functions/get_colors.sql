@@ -13,5 +13,6 @@ AS $$
       id,
       name::text,
       hex_code::text
-  FROM inventory.color;
+  FROM inventory.color
+  ORDER BY id;
 $$;

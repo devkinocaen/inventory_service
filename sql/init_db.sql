@@ -154,14 +154,15 @@ VALUES
   ('Blanc', '#FFFFFF'),
   ('Gris', '#999999'),
   ('Noir', '#000000'),
-  ('Rouge', '#FF0000'),
+  ('Marron', '#8B4513'),
   ('Bleu', '#0000FF'),
   ('Vert', '#006400'),
-  ('Marron', '#8B4513'),
+  ('Rouge', '#FF0000'),
   ('Jaune', '#FFFF00'),
   ('Orange', '#FFA500'),
   ('Violet', '#800080'),
   ('Rose', '#FFC0CB'),
+  ('Beige', '#F5F5DC'),
   ('Argenté', '#C0C0C0'),
   ('Doré', '#FFD700')
 ON CONFLICT (name) DO NOTHING;
