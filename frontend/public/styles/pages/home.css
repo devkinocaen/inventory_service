@@ -72,22 +72,27 @@ h1 {
 /* ==========================
    Conteneurs tabs / content
 ========================== */
+/* Conteneur onglets */
 .tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 8px;          /* réduit l’espace entre onglets */
+  padding: 0px 10px; /* moins de padding */
   border-bottom: 1px solid #ddd;
+  margin-bottom: 0px; /* espace réduit avec le contenu */
+  margin-top: -10px; /* espace réduit avec le contenu */
 }
 
+/* Contenu des onglets */
 .content {
-  padding: 20px;
-  min-height: 300px;
+  padding: 10px;     /* moins d’espace interne */
+  min-height: 200px; /* optionnel, pour visibilité */
   background-color: #fff;
   border: 1px solid #ddd;
-  margin: 0 20px 20px 20px;
+  margin: 0 0px 0px 0px; /* moins d’espace autour */
   border-radius: 4px;
 }
+
 
 /* ==========================
    Responsive
