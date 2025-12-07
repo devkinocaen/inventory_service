@@ -51,7 +51,7 @@ function normalize(str) {
 
 // ---- DOM Elements ----
 let filtersSidebar, filtersToggle, cartToggle, orgToggle, container;
-let lookupInput;
+let lookupInput, lookupSizeInput;
 
 /**
  * Toggle filtre sélectionné
@@ -212,12 +212,23 @@ async function renderItems(itemsToRender = currentItems) {
   container.innerHTML = '';
     
   const lookupValue = lookupInput?.value?.trim().toLowerCase();
+  const lookupSizeValue = lookupSizeInput?.value?.trim().toLowerCase();
 
-  const filteredItems = lookupValue
-  ? itemsToRender.filter(i =>
+  let filteredItems = itemsToRender;
+
+  // 🔍 filtre sur le nom
+  if (lookupValue) {
+    filteredItems = filteredItems.filter(i =>
       normalize(i.name).includes(normalize(lookupValue))
-    )
-  : itemsToRender;
+    );
+  }
+
+  // 🔍 filtre sur la taille
+  if (lookupSizeValue) {
+    filteredItems = filteredItems.filter(i =>
+      normalize(i.size || "").includes(normalize(lookupSizeValue))
+    );
+  }
 
   for (const item of filteredItems) {
     const div = document.createElement('div');
@@ -320,6 +331,7 @@ export async function init() {
   orgToggle = document.getElementById('cstm-orgToggle');
   container = document.getElementById('cstm-main');
   lookupInput = document.getElementById('cstm-lookupInput');
+  lookupSizeInput = document.getElementById('cstm-lookupSizeInput');
 
   if (!document.getElementById('cstm-cartBottom')) {
     const bottomCart = document.createElement('div');
@@ -378,7 +390,11 @@ export async function init() {
   lookupInput?.addEventListener('input', async () => {
     await renderItems();
   });
-
+    
+  lookupSizeInput?.addEventListener('input', async () => {
+    await renderItems();
+  });
+    
   await loadData();
   updateCartCount();
     

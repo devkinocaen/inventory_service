@@ -554,3 +554,32 @@
   flex-wrap: nowrap;
   margin-bottom: 4px;
 }
+
+#cstm-lookupRow {
+  display: flex;
+  align-items: flex-end; /* Aligne les inputs entre eux */
+  gap: 12px;
+  width: 100%;
+}
+
+/* Recherche */
+.cstm-lookupContainer {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  flex-shrink: 0;
+}
+
+/* Taille */
+.cstm-lookupSizeContainer {
+  display: flex;
+  flex-direction: column;
+  width: 130px;
+  flex-shrink: 0;
+}
+
+/* Optionnel : centrer le texte du champ taille */
+#cstm-lookupSizeInput {
+  text-align: center;
+}
+
