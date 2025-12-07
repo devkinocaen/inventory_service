@@ -141,7 +141,7 @@ function renderFilterChips(categories, subcategories, styles, colors) {
   row.className = 'chip-row';
   colors.forEach((c, idx) => {
     row.appendChild(makeChip(c.name, 'color', c.hex_code));
-    if ((idx+1) % 3 === 0) {
+    if ((idx+1) % 4 === 0) {
       colorChips.appendChild(row);
       row = document.createElement('div');
       row.className = 'chip-row';
