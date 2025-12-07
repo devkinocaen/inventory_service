@@ -23,6 +23,14 @@ export async function createReservable(client, {
   is_in_stock = true,
   color_ids = null
 }) {
+    
+    // 🔥 Normalisation : texte vide = null
+    if (typeof serial_id === 'string') {
+      serial_id = serial_id.trim();
+      if (serial_id === '') {
+        serial_id = null;
+      }
+    }
 
   const { data, error } = await client.rpc('create_reservable', {
     p_name: name,

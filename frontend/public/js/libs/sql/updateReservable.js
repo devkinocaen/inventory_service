@@ -26,6 +26,13 @@ export async function updateReservable(client, {
   color_ids = null
 }) {
     
+    // 🔥 Normalisation : texte vide = null
+    if (typeof serial_id === 'string') {
+      serial_id = serial_id.trim();
+      if (serial_id === '') {
+        serial_id = null;
+      }
+    }
   const payload = {
     p_id: id,
     p_name: name,
