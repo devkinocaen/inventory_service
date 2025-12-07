@@ -16,6 +16,23 @@ import { openReservableModal } from '../modals/reservable_modal.js'; // chemin v
 import { displayImage } from '../libs/image_utils.js'
 
 
+// ===== Mappings pour affichage =====
+const GENDER_MAP = { male: 'Homme', female: 'Femme', unisex: 'Unisexe' };
+const STATUS_MAP = {
+  'disponible': 'Disponible',
+  'indisponible': 'Indisponible',
+  'en réparation': 'En réparation',
+  'perdu': 'Perdu',
+  'hors service': 'Hors service'
+};
+const QUALITY_MAP = {
+  'neuf': 'Neuf',
+  'bon état': 'Bon état',
+  'abîmé': 'Abîmé',
+  'très abîmé': 'Très abîmé',
+  'inutilisable': 'Inutilisable'
+};
+
 const client = await initClient();
 let currentItems = [];
 
@@ -111,23 +128,6 @@ function renderStockTable(items) {
     setupEditButtons();
 }
 
-// ===== Mappings pour affichage =====
-const GENDER_MAP = { male: 'Homme', female: 'Femme', unisex: 'Unisexe' };
-const STATUS_MAP = {
-  'disponible': 'Disponible',
-  'indisponible': 'Indisponible',
-  'en réparation': 'En réparation',
-  'perdu': 'Perdu',
-  'hors service': 'Hors service'
-};
-const QUALITY_MAP = {
-  'neuf': 'Neuf',
-  'bon état': 'Bon état',
-  'abîmé': 'Abîmé',
-  'très abîmé': 'Très abîmé',
-  'inutilisable': 'Inutilisable'
-};
-
 
 // ========== Filtrage dynamique ==========
 function setupLookupFilter() {
@@ -153,6 +153,36 @@ function setupLookupFilter() {
     });
   });
 }
+
+/**
+ * Rafraîchit l’aperçu image d’une ligne du tableau.
+ */
+export async function refreshPreviewCell(client, rowElement, photos) {
+  const previewCell = rowElement.querySelector('td[data-field="preview"]');
+  if (!previewCell) return;
+
+  previewCell.innerHTML = '';
+
+  // Aucune photo → mettre placeholder
+  if (!photos || photos.length === 0) {
+    previewCell.innerHTML =
+      `<img src="https://placehold.co/60x60?text=+" style="height:60px;border-radius:4px;">`;
+    return;
+  }
+
+  // Afficher la première photo
+  try {
+    await displayImage(client, previewCell, photos[0].url, {
+      width: '60px',
+      withPreview: true,
+    });
+  } catch (err) {
+    console.error('[refreshPreviewCell] Erreur displayImage:', err);
+    previewCell.innerHTML =
+      `<img src="https://placehold.co/60x60?text=+" style="height:60px;border-radius:4px;">`;
+  }
+}
+
 
 
 
@@ -280,10 +310,11 @@ function initEditableCells() {
           field === 'gender' ? GENDER_MAP[item[field]] :
           field === 'status' ? STATUS_MAP[item[field]] :
           field === 'quality' ? QUALITY_MAP[item[field]] :
-          field === 'category' ? categories.find(c => c.id === Number(newValue))?.name || '' :
-          field === 'subcategory' ? subCategories[item.category_id]?.find(sc => sc.id === Number(newValue))?.name || '' :
+          field === 'category' ? categories.find(c => c.id === item.category_id)?.name || '' :
+          field === 'subcategory' ? subCategories[item.category_id]?.find(sc => sc.id === item.subcategory_id)?.name || '' :
           item[field + '_name'] || '';
       };
+
 
       select.addEventListener('change', async () => {
         let newValue = select.value;
@@ -438,21 +469,8 @@ function setupPhotoButtons() {
                              
          // 🔄 Mise à jour de l’aperçu
          const row = btn.closest('tr');
-         if (row) {
-           const previewCell = row.querySelector('td[data-field="preview"]');
-           if (previewCell) {
-             previewCell.innerHTML = '';
-
-             if (updatedPhotos.length > 0 && updatedPhotos[0].url) {
-               displayImage(client, previewCell, updatedPhotos[0].url,
-                            { width: '60px', withPreview: true}).catch(err => console.error('[displayImage] erreur refresh preview', err));
-             } else {
-               previewCell.innerHTML =
-                 `<img src="https://placehold.co/60x60?text=+" style="height:60px;border-radius:4px;">`;
-             }
-           }
-         }
-                             
+         if (row) refreshPreviewCell(client, row, updatedPhotos);
+                            
         });
       } catch (err) {
         alert('Erreur ouverture modal photos : ' + err.message);
@@ -473,10 +491,13 @@ function setupEditButtons() {
 
       try {
         // Ouvre le modal avec l'ID du reservable
-        await openReservableModal(itemId, (savedItem) => {
+        await openReservableModal(itemId, async (savedItem) => {
           const index = currentItems.findIndex(i => i.id === itemId);
           if (index !== -1) currentItems[index] = savedItem;
           updateTableRow(savedItem);
+          
+          const row = document.querySelector(`tr[data-id="${savedItem.id}"]`);
+          if (row) await refreshPreviewCell(client, row, savedItem.photos);
         });
 
                          
@@ -617,20 +638,7 @@ function enableRowDragDrop(rowElement, client) {
     
       // 🔄 Rafraîchir la cellule d’aperçu
       const previewCell = rowElement.querySelector('td[data-field="preview"]');
-      if (previewCell) {
-        previewCell.innerHTML = ''; // reset
-
-        if (newPhotos.length > 0 && newPhotos[0].url) {
-          displayImage(client, previewCell, newPhotos[0].url, {
-            width: '60px',
-            withPreview: false
-          }).catch(err => console.error('[displayImage] erreur refresh preview DnD', err));
-        } else {
-          previewCell.innerHTML =
-            `<img src="https://placehold.co/60x60?text=+" style="height:60px;border-radius:4px;">`;
-        }
-      }
-
+      if (previewCell) await refreshPreviewCell(client, rowElement, newPhotos);
                               
     } catch (err) {
       console.error("Erreur DnD :", err);
