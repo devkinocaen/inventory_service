@@ -108,7 +108,7 @@ function renderStockTable(items) {
       <td data-field="styles" data-id="${item.id}">${stylesList}</td>
       <td><button class="btn-edit" data-id="${item.id}">✏️</button></td>
       <td><button class="btn-photos" data-id="${item.id}">📸 (${item.photos?.length || 0})</button></td>
-      <td><button class="btn-delete" data-id="${item.id}">❌</button></td>
+      <td><button class="btn-delete" data-id="${item.id}">🗑️</button></td>
     `;
         
         tbody.appendChild(tr);
@@ -543,7 +543,7 @@ function updateTableRow(item) {
     <td data-field="styles" data-id="${item.id}">${item.style_names?.join(', ') || ''}</td>
     <td><button class="btn-edit" data-id="${item.id}">✏️</button></td>
     <td><button class="btn-photos" data-id="${item.id}">📸 (${item.photos?.length || 0})</button></td>
-    <td><button class="btn-delete" data-id="${item.id}">❌</button></td>
+    <td><button class="btn-delete" data-id="${item.id}">🗑️</button></td>
   `;
   initEditableCells();
   setupDeleteButtons();
