@@ -29,7 +29,8 @@ export async function fetchReservables(client, filters = {}) {
     p_is_in_stock: filters.p_is_in_stock ?? null,
 
     // 🔹 privacy minimum (ENUM)
-    p_privacy_min: filters.p_privacy_min ?? null
+    p_privacy_min: filters.p_privacy_min ?? null,
+    p_offset: filters.p_offset ?? null
   };
 
   const { data, error } = await client.rpc('get_reservables', params);

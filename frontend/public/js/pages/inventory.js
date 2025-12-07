@@ -13,6 +13,8 @@ import { formatServerError } from '../libs/helpers.js';
 import { initClient } from '../libs/client.js';
 import { openPhotoModal } from '../modals/photo_modal.js'; // chemin vers ton JS modal
 import { openReservableModal } from '../modals/reservable_modal.js'; // chemin vers ton JS modal
+import { displayImage } from '../libs/image_utils.js'
+
 
 const client = await initClient();
 let currentItems = [];
@@ -72,6 +74,10 @@ function renderStockTable(items) {
       <td class="editable" data-field="name" data-id="${item.id}">
         ${privacyEmoji(item.privacy)} ${item.name || ''}
       </td>
+                  
+      <td data-field="preview" data-id="${item.id}">
+        <img src="https://placehold.co/40x40?text=+" style="height:40px;border-radius:4px;cursor:pointer;">
+      </td>
 
       <td class="editable" data-field="size" data-id="${item.id}">${item.size || ''}</td>
       <td class="editable" data-field="description" data-id="${item.id}">${item.description || ''}</td>
@@ -88,6 +94,14 @@ function renderStockTable(items) {
     `;
         
         tbody.appendChild(tr);
+          const previewCell = tr.querySelector('[data-field="preview"]');
+          if (item.photos?.[0]) {
+            // Appel async non bloquant
+            displayImage(client, previewCell, item.photos[0].url, { width: '60px', withPreview: true })
+              .catch(err => console.error('[displayImage] erreur', err));
+          }
+
+                  
         enableRowDragDrop(tr, client);
     });
     
@@ -421,6 +435,24 @@ function setupPhotoButtons() {
           
           // Mettre à jour l'objet currentItems pour garder le compteur à jour
           if (item) item.photos = updatedPhotos;
+                             
+         // 🔄 Mise à jour de l’aperçu
+         const row = btn.closest('tr');
+         if (row) {
+           const previewCell = row.querySelector('td[data-field="preview"]');
+           if (previewCell) {
+             previewCell.innerHTML = '';
+
+             if (updatedPhotos.length > 0 && updatedPhotos[0].url) {
+               displayImage(client, previewCell, updatedPhotos[0].url,
+                            { width: '60px', withPreview: true}).catch(err => console.error('[displayImage] erreur refresh preview', err));
+             } else {
+               previewCell.innerHTML =
+                 `<img src="https://placehold.co/60x60?text=+" style="height:60px;border-radius:4px;">`;
+             }
+           }
+         }
+                             
         });
       } catch (err) {
         alert('Erreur ouverture modal photos : ' + err.message);
@@ -471,6 +503,10 @@ function updateTableRow(item) {
    row.innerHTML = `
     <td class="editable" data-field="name" data-id="${item.id}">  ${privacyEmoji(item.privacy)} ${item.name || ''}  </td>
 
+    <td data-field="preview" data-id="${item.id}">
+      <img src="https://placehold.co/60x60?text=+" style="height:60px;border-radius:4px;cursor:pointer;">
+    </td>
+    
     <td class="editable" data-field="size" data-id="${item.id}">${item.size || ''}</td>
     <td class="editable" data-field="description" data-id="${item.id}">${item.description || ''}</td>
     <td class="editable-select" data-field="gender" data-id="${item.id}">${GENDER_MAP[item.gender] || ''}</td>
@@ -480,7 +516,7 @@ function updateTableRow(item) {
     <td class="editable-select" data-field="category" data-id="${item.id}">${item.category_name || ''}</td>
     <td class="editable-select" data-field="subcategory" data-id="${item.id}">${item.subcategory_name || ''}</td>
     <td data-field="styles" data-id="${item.id}">${item.style_names?.join(', ') || ''}</td>
-    <td><button class="btn-edit" data-id="${item.id}">Editer</button></td>
+    <td><button class="btn-edit" data-id="${item.id}">✏️</button></td>
     <td><button class="btn-photos" data-id="${item.id}">Modifier (${item.photos?.length || 0})</button></td>
     <td><button class="btn-delete" data-id="${item.id}">Supprimer</button></td>
   `;
@@ -578,6 +614,24 @@ function enableRowDragDrop(rowElement, client) {
       }
       item.photos = newPhotos; // update currentItems
       updatePhotoCountInRow(rowElement, newPhotos.length);
+    
+      // 🔄 Rafraîchir la cellule d’aperçu
+      const previewCell = rowElement.querySelector('td[data-field="preview"]');
+      if (previewCell) {
+        previewCell.innerHTML = ''; // reset
+
+        if (newPhotos.length > 0 && newPhotos[0].url) {
+          displayImage(client, previewCell, newPhotos[0].url, {
+            width: '60px',
+            withPreview: false
+          }).catch(err => console.error('[displayImage] erreur refresh preview DnD', err));
+        } else {
+          previewCell.innerHTML =
+            `<img src="https://placehold.co/60x60?text=+" style="height:60px;border-radius:4px;">`;
+        }
+      }
+
+                              
     } catch (err) {
       console.error("Erreur DnD :", err);
         alert("Impossible d'ajouter la/les photo(s) : " + formatServerError(err));

@@ -9,6 +9,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 3;                
 }
 .rsb-modal-content {
   background: white;

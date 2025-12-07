@@ -38,8 +38,12 @@ th, td {
 }
 
 th {
-  background-color: #e9ecef;
+  position: sticky;
+  top: 0;
+  background-color: #e9ecef; /* assure que le fond reste opaque */
+  z-index: 2;                 /* pour que les cellules du tbody ne passent pas dessus */
 }
+
 
 tr:nth-child(even) {
   background-color: #f2f2f2;
@@ -154,4 +158,11 @@ tr:nth-child(even) {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.photo-thumb {
+  height: 40px;
+  border-radius: 4px;
+  cursor: pointer;
+  object-fit: cover;
 }

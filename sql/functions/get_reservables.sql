@@ -9,7 +9,8 @@ CREATE OR REPLACE FUNCTION inventory.get_reservables(
     p_end_date TIMESTAMP DEFAULT NULL,
     p_is_in_stock BOOLEAN DEFAULT NULL,
     p_privacy_min inventory.privacy_type DEFAULT NULL,
-    p_color_ids INT[] DEFAULT NULL
+    p_color_ids INT[] DEFAULT NULL,
+    p_offset INT DEFAULT 0
 )
 RETURNS TABLE (
     id INT,
@@ -150,6 +151,8 @@ BEGIN
              r.storage_location_id, sl.name, r.owner_id, o.name,
              r.manager_id, m.name, r.size
 
-    ORDER BY r.name;
+    ORDER BY r.updated_at DESC
+    LIMIT 200 OFFSET p_offset;
+
 END;
 $$;

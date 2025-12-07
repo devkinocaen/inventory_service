@@ -129,7 +129,7 @@ CREATE TABLE color (
 CREATE TABLE inventory.reservable (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL UNIQUE,
-    serial_id VARCHAR (50),
+    serial_id VARCHAR(50) DEFAULT NULL UNIQUE,
     inventory_type inventory.reservable_type NOT NULL,
     status inventory.reservable_status NOT NULL DEFAULT 'disponible',
     quality inventory.reservable_quality NOT NULL DEFAULT 'bon état',
