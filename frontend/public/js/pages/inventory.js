@@ -14,6 +14,7 @@ import { initClient } from '../libs/client.js';
 import { openPhotoModal } from '../modals/photo_modal.js'; // chemin vers ton JS modal
 import { openReservableModal } from '../modals/reservable_modal.js'; // chemin vers ton JS modal
 import { displayImage } from '../libs/image_utils.js'
+import { showToast } from '../libs/ui/toastMessage.js';
 
 
 // ===== Mappings pour affichage =====
@@ -433,7 +434,9 @@ function setupDeleteButtons() {
         // Retirer de currentItems
         currentItems = currentItems.filter(i => i.id !== itemId);
 
-        alert(`✅ L'item "${itemName}" (ID: ${itemId}) a été supprimé avec succès !`);
+       // alert(`✅ L'item "${itemName}" (ID: ${itemId}) a été supprimé avec succès !`);
+       showToast("✅ L'item '${itemName}' (ID: ${itemId}) a été supprimé", 'success');
+
         console.log(`[inventory] Item ${itemName} (ID: ${itemId}) supprimé`);
       } catch (err) {
         alert('Erreur lors de la suppression : ' + formatServerError(err));
@@ -461,9 +464,10 @@ function setupPhotoButtons() {
         await openPhotoModal(client, itemId, itemName, (updatedPhotos) => {
           // Callback après sauvegarde : mettre à jour le texte du bouton
           const count = updatedPhotos.length;
-          btn.textContent = `Modifier (${count})`;
+          btn.textContent = `📸 (${count})`;
           console.log(`Photos mises à jour pour l’item ${itemId}`, updatedPhotos);
-          
+          showToast('✅ `Photos mises à jour pour l’item ${itemId}`', 'success');
+
           // Mettre à jour l'objet currentItems pour garder le compteur à jour
           if (item) item.photos = updatedPhotos;
                              
