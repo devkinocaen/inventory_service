@@ -21,7 +21,7 @@
   z-index: 900;
   display: flex;          /* active flexbox */
   flex-direction: column; /* colonne verticale */
-  justify-content: center; /* centre verticalement */
+  justify-content: flex-start; 
 }
 #cstm-filtersSidebar.cstm-collapsed {
   transform: translateX(-100%);
