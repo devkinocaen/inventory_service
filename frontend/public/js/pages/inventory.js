@@ -227,6 +227,16 @@ function initEditableCells() {
 
       input.addEventListener('blur', async () => {
         const newValue = input.value.trim();
+         
+         // Expurger les emojis si on est sur le champ 'name'
+         if (field === 'name') {
+           // retire tous les caractères emoji Unicode
+           newValue = newValue.replace(
+             /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]|\u24C2|\uD83D[\uDC00-\uDE4F]|\uD83D[\uDE80-\uDEFF])/g,
+             ''
+           ).trim();
+         }
+                             
         if (newValue !== oldValue) {
           const itemId = Number(td.dataset.id);
           const item = currentItems.find(i => i.id === itemId);
