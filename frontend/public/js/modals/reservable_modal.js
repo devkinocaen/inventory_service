@@ -13,6 +13,7 @@ import {
 } from '../libs/sql/index.js';
 import { populateSelect } from '../libs/ui/populateSelect.js';
 import { formatServerError } from '../libs/helpers.js';
+import { showToast } from '../libs/ui/toastMessage.js';
 
 let client = null;
 let appConfig = null;
@@ -218,7 +219,7 @@ export async function openReservableModal(reservableId, onSave = null) {
         }
     }
     currentReservable = fetchedReservable || { id: null, inventory_type: 'costume' };
-console.log ('currentReservable', currentReservable)
+
     await initReservableModal();
     if (!modal || !dialog) return;
 
@@ -354,7 +355,8 @@ async function saveReservable(e) {
             saved = await fetchReservableById(client, savedId);
         }
 
-        alert('✅ Reservable enregistré avec succès.');
+        //alert('✅ Reservable enregistré avec succès.');
+        showToast('✅ Reservable enregistré!', 'success');
         console.log('Reservable enregistré', saved);
         
         if (typeof onSaveCallback === 'function') {
@@ -389,7 +391,6 @@ function renderColorChips() {
     container.innerHTML = '';
 
     const selectedColorIds = (currentReservable?.colors?.map(c => Number(c.id))) || [];
-    console.log('selectedColorIds', selectedColorIds);
 
     allColors.forEach(color => {
         const colorId = Number(color.id); // convertir en number
@@ -417,13 +418,10 @@ function renderColorChips() {
 function getSelectedColorIds() {
     const container = document.getElementById('rsb-grid-colors');
     const chips = Array.from(container.children);
-    console.log('Toutes les chips :', chips);
 
     const selectedChips = chips.filter(c => c.classList.contains('selected'));
-    console.log('Chips sélectionnées :', selectedChips);
 
     const ids = selectedChips.map(c => Number(c.dataset.id));
-    console.log('IDs sélectionnées :', ids);
 
     return ids;
 }

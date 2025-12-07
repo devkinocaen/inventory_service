@@ -17,7 +17,6 @@ export async function fetchReservableById(client, id) {
   }
 
   const item = single(data);
-    console.log ('item', item)
   if (!item) return null;
 
   return {
