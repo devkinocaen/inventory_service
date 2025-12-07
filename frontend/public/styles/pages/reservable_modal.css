@@ -47,11 +47,23 @@
   gap: 12px;
   margin-top: 6px;
 }
+
 .rsb-radio-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;               /* un peu plus d'espace */
+  padding: 4px 6px;       /* meilleure zone cliquable */
+  cursor: pointer;
 }
+
+/* Agrandir les radio boutons */
+.rsb-radio-item input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  transform: scale(1.35); /* taille visuelle augmentée */
+  cursor: pointer;
+}
+
 
 /* --- CHIPS --- */
 .rsb-chips-container {
