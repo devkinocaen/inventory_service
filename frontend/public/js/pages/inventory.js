@@ -226,7 +226,7 @@ function initEditableCells() {
       const cancelEdit = () => { td.textContent = oldValue; };
 
       input.addEventListener('blur', async () => {
-        const newValue = input.value.trim();
+        let newValue = input.value.trim();
          
          // Expurger les emojis si on est sur le champ 'name'
          if (field === 'name') {
@@ -247,6 +247,7 @@ function initEditableCells() {
               await updateReservable(client, payload);
               item[field] = payload[field];
               td.textContent = payload[field];
+              if (field === 'name') td.textContent =privacyEmoji(item.privacy) + ' ' + td.textContent;
             } catch (err) {
               alert('Erreur lors de la sauvegarde : ' + formatServerError(err));
               td.textContent = oldValue;
