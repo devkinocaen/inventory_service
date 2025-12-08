@@ -255,7 +255,10 @@ function initEditableCells() {
               td.textContent = privacyEmoji(item.privacy) + ' ' + oldValue;
             }
           }
-        } else td.textContent = privacyEmoji(item.privacy) + ' ' + oldValue;
+        } else {
+            console.log ("le nom n'a pas été changé, on cosnerve l'ancien")
+            td.textContent = privacyEmoji(item.privacy) + ' ' + oldValue;
+        }
       });
 
       input.addEventListener('keydown', e => {
