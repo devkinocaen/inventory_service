@@ -213,10 +213,16 @@ function initEditableCells() {
     // fields à traiter en input simple : tout sauf gender/status/quality/category/subcategory
     if (['gender','status','quality','category','subcategory'].includes(field)) return;
     td.addEventListener('dblclick', async () => {
-      const oldValue = td.textContent.replace(
+        
+      let oldValue = td.textContent;
+      let rawOldValue = oldValue;
+      if (field === 'name') {
+        // retire tous les caractères emoji Unicode
+          oldValue = oldValue.replace(
           /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]|\u24C2|\uD83D[\uDC00-\uDE4F]|\uD83D[\uDE80-\uDEFF])/g,
-           ''
-         ).trim();
+          ''
+        ).trim();
+      }
           
       const input = document.createElement('input');
       input.type = field === 'price_per_day' ? 'number' : 'text';
@@ -256,8 +262,8 @@ function initEditableCells() {
             }
           }
         } else {
-            console.log ("le nom n'a pas été changé, on cosnerve l'ancien")
-            td.textContent = privacyEmoji(item.privacy) + ' ' + oldValue;
+            console.log ("le nom n'a pas été changé, on conserve l'ancien")
+            td.textContent = rawOldValue;
         }
       });
 
