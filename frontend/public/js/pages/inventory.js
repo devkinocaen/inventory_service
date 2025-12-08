@@ -89,9 +89,7 @@ function renderStockTable(items) {
         const stylesList = item.style_names?.join(', ') || '';
         
         tr.innerHTML = `
-      <td class="editable" data-field="name" data-id="${item.id}">
-        ${privacyEmoji(item.privacy)} ${item.name || ''}
-      </td>
+      <td class="editable" data-field="name" data-id="${item.id}">${privacyEmoji(item.privacy)} ${item.name || ''}</td>
                   
       <td data-field="preview" data-id="${item.id}">
         <img src="https://placehold.co/40x40?text=+" style="height:40px;border-radius:4px;cursor:pointer;">
@@ -247,7 +245,7 @@ function initEditableCells() {
               await updateReservable(client, payload);
               item[field] = payload[field];
               td.textContent = payload[field];
-              if (field === 'name') td.textContent =privacyEmoji(item.privacy) + ' ' + td.textContent;
+              if (field === 'name') td.textContent = privacyEmoji(item.privacy) + ' ' + td.textContent;
             } catch (err) {
               alert('Erreur lors de la sauvegarde : ' + formatServerError(err));
               td.textContent = oldValue;
@@ -537,7 +535,7 @@ function updateTableRow(item) {
 
   if (!row) return;
    row.innerHTML = `
-    <td class="editable" data-field="name" data-id="${item.id}">  ${privacyEmoji(item.privacy)} ${item.name || ''}  </td>
+    <td class="editable" data-field="name" data-id="${item.id}">${privacyEmoji(item.privacy)} ${item.name || ''}</td>
 
     <td data-field="preview" data-id="${item.id}">
       <img src="https://placehold.co/60x60?text=+" style="height:60px;border-radius:4px;cursor:pointer;">
