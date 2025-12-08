@@ -214,7 +214,13 @@ function initEditableCells() {
     if (['gender','status','quality','category','subcategory'].includes(field)) return;
     td.addEventListener('dblclick', async () => {
       const oldValue = td.textContent;
-      const input = document.createElement('input');
+      
+      oldValue = oldValue.replace(
+       /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF]|\u24C2|\uD83D[\uDC00-\uDE4F]|\uD83D[\uDE80-\uDEFF])/g,
+        ''
+      ).trim();
+    
+        const input = document.createElement('input');
       input.type = field === 'price_per_day' ? 'number' : 'text';
       input.value = oldValue;
       td.textContent = '';
