@@ -5,6 +5,10 @@ export async function fetchReservables(client, filters = {}) {
     p_name: filters.p_name ?? null,
     p_size: filters.p_size ?? null,
     p_type: filters.p_type ?? null,
+      // Filtre par qualité : ['neuf', 'bon état']
+      p_qualities: Array.isArray(filters.p_qualities) && filters.p_qualities.length
+        ? filters.p_qualities
+        : null,
     p_category_ids: Array.isArray(filters.p_category_ids) && filters.p_category_ids.length
       ? filters.p_category_ids
       : null,

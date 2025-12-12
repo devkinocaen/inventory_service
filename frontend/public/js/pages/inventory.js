@@ -3,6 +3,7 @@ import {
     fetchReservableById,
     fetchCategories,
     fetchSubcategories,
+    fetchStyles,
     updateReservable,
     deleteReservable
 } from '../libs/sql/index.js';
@@ -50,6 +51,7 @@ const client = await initClient();
 let currentItems = [];
 
 let categories = null;
+let styles = null;
 let subCategories = {}; // { categoryId: [subcat,...] }
 let selectedCategoryId = null;
 
@@ -202,6 +204,7 @@ export async function init() {
   try {
 
     categories = await fetchCategories(client);
+    styles = await fetchStyles(client);
     await loadAllSubCategories();
 
     await reloadPage();
@@ -775,7 +778,9 @@ async function fetchFilteredReservables(offset = 0, limit = LIMIT) {
   if (activeFilters.name) filtersPayload.p_name = activeFilters.name;
   if (activeFilters.styles) filtersPayload.p_style_ids = Array.isArray(activeFilters.styles) ? activeFilters.styles : [activeFilters.styles];
   if (activeFilters.size) filtersPayload.p_size = activeFilters.size;
-  if (activeFilters.quality) filtersPayload.p_quality = activeFilters.quality;
+  if (activeFilters.quality) {
+    filtersPayload.p_qualities = [activeFilters.quality]; // mettre dans un tableau
+  }
   if (activeFilters.gender) filtersPayload.p_gender = Array.isArray(activeFilters.gender) ? activeFilters.gender : [activeFilters.gender];
   if (activeFilters.category) filtersPayload.p_category_ids = Array.isArray(activeFilters.category) ? activeFilters.category : [activeFilters.category];
 
@@ -798,61 +803,63 @@ function initFilterableHeaders() {
       th.innerHTML = '';
       let inputOrSelect;
 
-        if (['gender','quality','category'].includes(field)) {
-            inputOrSelect = document.createElement('select');
-            
-            // Option "Champs vide" pour réinitialiser le filtre
-            const emptyOption = document.createElement('option');
-            emptyOption.value = '';
-            emptyOption.textContent = 'Tout';
-            inputOrSelect.appendChild(emptyOption);
-            
-            let options = [];
-            if (field === 'gender') options = Object.keys(GENDER_MAP);
-            if (field === 'quality') options = Object.keys(QUALITY_MAP);
-            if (field === 'category') options = categories;
-            
-            options.forEach(opt => {
-                const option = document.createElement('option');
-                
-                if (typeof opt === 'object') {
-                    option.value = opt.id;
-                    option.textContent = opt.name;
-                } else {
-                    option.value = opt;
-                    option.textContent =
-                    field === 'gender' ? GENDER_MAP[opt] :
-                    field === 'quality' ? QUALITY_MAP[opt] : opt;
-                }
-                
-                inputOrSelect.appendChild(option);
-            });
-            
-            // Au lieu du click sur option, utiliser change sur le select
-            inputOrSelect.addEventListener('change', async () => {
-                let value = inputOrSelect.value;
-                if (field === 'category') value = Number(value) || null;
-                if (!value) value = null;
-                
-                activeFilters[field] = value;
-                
-                // Affichage dans l'en-tête
-                th.textContent = th.dataset.label || field;
-                if (value !== null) {
-                    let displayValue = value;
-                    if (field === 'gender') displayValue = GENDER_MAP[value];
-                    if (field === 'quality') displayValue = QUALITY_MAP[value];
-                    if (field === 'category') displayValue = categories.find(c => c.id === value)?.name;
-                    th.textContent += ` [${displayValue}]`;
-                }
-                
-                await applyFilters();
-                
-                // Fermer le select
-                inputOrSelect.blur();
-            });
+        if (['gender','quality','category', 'styles'].includes(field)) {
+        inputOrSelect = document.createElement('select');
         
-                    
+        // Option "Champs vide" pour réinitialiser le filtre
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = 'Tout';
+        inputOrSelect.appendChild(emptyOption);
+        
+        let options = [];
+        if (field === 'gender') options = Object.keys(GENDER_MAP);
+        if (field === 'quality') options = Object.keys(QUALITY_MAP);
+        if (field === 'category') options = categories;
+        if (field === 'styles') options = styles;
+
+        options.forEach(opt => {
+            const option = document.createElement('option');
+            
+            if (typeof opt === 'object') {
+                option.value = opt.id;
+                option.textContent = opt.name;
+            } else {
+                option.value = opt;
+                option.textContent =
+                field === 'gender' ? GENDER_MAP[opt] :
+                field === 'quality' ? QUALITY_MAP[opt] : opt;
+            }
+            
+            inputOrSelect.appendChild(option);
+        });
+        
+        // Au lieu du click sur option, utiliser change sur le select
+        inputOrSelect.addEventListener('change', async () => {
+            let value = inputOrSelect.value;
+            if (field === 'category') value = Number(value) || null;
+            if (field === 'styles') value = Number(value) || null;
+            if (!value) value = null;
+            
+            activeFilters[field] = value;
+            
+            // Affichage dans l'en-tête
+            th.textContent = th.dataset.label || field;
+            if (value !== null) {
+                let displayValue = value;
+                if (field === 'gender') displayValue = GENDER_MAP[value];
+                if (field === 'quality') displayValue = QUALITY_MAP[value];
+                if (field === 'category') displayValue = categories.find(c => c.id === value)?.name;
+                if (field === 'styles') displayValue = styles.find(c => c.id === value)?.name;
+                th.textContent += ` [${displayValue}]`;
+            }
+            
+            await applyFilters();
+            
+            // Fermer le select
+            inputOrSelect.blur();
+        });
+           
       } else {
         inputOrSelect = document.createElement('input');
         inputOrSelect.type = 'text';
@@ -876,6 +883,7 @@ function initFilterableHeaders() {
           if (field === 'gender') displayValue = GENDER_MAP[value];
           if (field === 'quality') displayValue = QUALITY_MAP[value];
           if (field === 'category') displayValue = categories.find(c => c.id === value)?.name;
+          if (field === 'styles') displayValue = styles.find(c => c.id === value)?.name;
           th.textContent += ` [${displayValue}]`;
         }
 

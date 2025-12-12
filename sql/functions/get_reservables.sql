@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION inventory.get_reservables(
     p_category_ids INT[] DEFAULT NULL,
     p_subcategory_ids INT[] DEFAULT NULL,
     p_gender inventory.reservable_gender[] DEFAULT NULL,
+    p_qualities inventory.reservable_quality[] DEFAULT NULL,
     p_size TEXT DEFAULT NULL,
     p_style_ids INT[] DEFAULT NULL,
     p_status_ids inventory.reservable_status[] DEFAULT NULL,
@@ -111,6 +112,7 @@ BEGIN
         AND (p_status_ids IS NULL OR r.status = ANY(p_status_ids))
         AND (p_name IS NULL OR r.name ILIKE '%' || p_name || '%')    
         AND (p_size IS NULL OR r.size = p_size)
+        AND (p_qualities IS NULL OR r.quality = ANY(p_qualities))
         AND (
             p_privacy_min IS NULL
             OR array_position(ARRAY['hidden','private','public']::text[], r.privacy::text)
