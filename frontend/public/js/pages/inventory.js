@@ -154,8 +154,8 @@ function setupLookupFilter() {
 
     Array.from(tbody.rows).forEach(row => {
       const nameText = row.cells[0].textContent.toLowerCase();
-      const descText = row.cells[2].textContent.toLowerCase();
-      const styleText = row.cells[9].textContent.toLowerCase();
+      const descText = row.cells[3].textContent.toLowerCase();
+      const styleText = row.cells[10].textContent.toLowerCase();
 
       const match =
         nameText.includes(filter) ||
