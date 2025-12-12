@@ -2,6 +2,8 @@
 export async function fetchReservables(client, filters = {}) {
   // Prépare les params en respectant le nouveau RPC
   const params = {
+    p_name: filters.p_name ?? null,
+    p_size: filters.p_size ?? null,
     p_type: filters.p_type ?? null,
     p_category_ids: Array.isArray(filters.p_category_ids) && filters.p_category_ids.length
       ? filters.p_category_ids
@@ -30,7 +32,8 @@ export async function fetchReservables(client, filters = {}) {
 
     // 🔹 privacy minimum (ENUM)
     p_privacy_min: filters.p_privacy_min ?? null,
-    p_offset: filters.p_offset ?? null
+    p_offset: filters.p_offset ?? 0,
+    p_limit: filters.p_limit ?? 200
   };
 
   const { data, error } = await client.rpc('get_reservables', params);

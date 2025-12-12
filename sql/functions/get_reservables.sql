@@ -1,8 +1,10 @@
 CREATE OR REPLACE FUNCTION inventory.get_reservables(
+    p_name TEXT DEFAULT NULL,
     p_type inventory.reservable_type DEFAULT NULL,
     p_category_ids INT[] DEFAULT NULL,
     p_subcategory_ids INT[] DEFAULT NULL,
     p_gender inventory.reservable_gender[] DEFAULT NULL,
+    p_size TEXT DEFAULT NULL,
     p_style_ids INT[] DEFAULT NULL,
     p_status_ids inventory.reservable_status[] DEFAULT NULL,
     p_start_date TIMESTAMP DEFAULT NULL,
@@ -10,7 +12,8 @@ CREATE OR REPLACE FUNCTION inventory.get_reservables(
     p_is_in_stock BOOLEAN DEFAULT NULL,
     p_privacy_min inventory.privacy_type DEFAULT NULL,
     p_color_ids INT[] DEFAULT NULL,
-    p_offset INT DEFAULT 0
+    p_offset INT DEFAULT 0,
+    p_limit INT DEFAULT 200
 )
 RETURNS TABLE (
     id INT,
@@ -106,7 +109,8 @@ BEGIN
         AND (p_subcategory_ids IS NULL OR r.subcategory_id = ANY(p_subcategory_ids))
         AND (p_gender IS NULL OR r.gender = ANY(p_gender))
         AND (p_status_ids IS NULL OR r.status = ANY(p_status_ids))
-
+        AND (p_name IS NULL OR r.name ILIKE '%' || p_name || '%')    
+        AND (p_size IS NULL OR r.size = p_size)
         AND (
             p_privacy_min IS NULL
             OR array_position(ARRAY['hidden','private','public']::text[], r.privacy::text)
@@ -152,7 +156,6 @@ BEGIN
              r.manager_id, m.name, r.size
 
     ORDER BY r.updated_at DESC
-    LIMIT 200 OFFSET p_offset;
-
+    LIMIT p_limit OFFSET p_offset;
 END;
 $$;

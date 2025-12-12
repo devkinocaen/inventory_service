@@ -19,27 +19,42 @@
     </div>
 
 
+    <!-- Pagination -->
+    <div class="pagination-controls">
+      <button id="prev-page-btn">◀️</button>
+
+      <div class="pagination-range">
+        <span id="pagination-min">0</span>
+        &nbsp;–&nbsp;
+        <span id="pagination-max">0</span>
+      </div>
+
+      <button id="next-page-btn">▶️</button>
+    </div>
+
+    
   <!-- Tableau de stock -->
   <div class="table-wrapper">
     <table id="stock_table">
-      <thead>
-            <tr>
-              <th class="sortable">Nom</th>
-              <th class="preview">Aperçu</th>
-              <th class="sortable">Taille</th>
-              <th class="sortable">Description</th>
-              <th class="sortable">Genre</th>
-              <th class="sortable">Prix / jour</th>
-              <th class="sortable">Statut</th>
-              <th class="sortable">Qualité</th>
-              <th class="sortable">Catégorie</th>
-              <th class="sortable">Sous-catégorie</th>
-              <th>Styles</th>
-              <th>Editer</th>
-              <th>Photos</th>
-              <th>Supprimer</th>
-        </tr>
-      </thead>
+        <thead>
+          <tr>
+            <th class="sortable" data-field="name" data-label="Nom">Nom</th>
+            <th class="preview" data-field="preview">Aperçu</th>
+            <th class="sortable" data-field="size" data-label="Taille">Taille</th>
+            <th class="sortable" data-field="description" data-label="Description">Description</th>
+            <th class="sortable" data-field="gender" data-label="Genre">Genre</th>
+            <th class="sortable" data-field="price_per_day" data-label="Prix / jour">Prix / jour</th>
+            <th class="sortable" data-field="status" data-label="Statut">Statut</th>
+            <th class="sortable" data-field="quality" data-label="Qualité">Qualité</th>
+            <th class="sortable" data-field="category" data-label="Catégorie">Catégorie</th>
+            <th class="sortable" data-label="Sous-catégorie">Sous-catégorie</th>
+            <th class="sortable" data-field="styles" data-label="Styles">Styles</th>
+            <th data-field="edit">Editer</th>
+            <th data-field="photos">Photos</th>
+            <th data-field="delete">Supprimer</th>
+          </tr>
+        </thead>
+
       <tbody>
         <!-- lignes dynamiques ici -->
       </tbody>

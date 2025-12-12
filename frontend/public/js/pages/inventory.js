@@ -4,9 +4,7 @@ import {
     fetchCategories,
     fetchSubcategories,
     updateReservable,
-    createReservable,
-    deleteReservable,
-    generateUniqueId
+    deleteReservable
 } from '../libs/sql/index.js';
 
 import { formatServerError } from '../libs/helpers.js';
@@ -33,6 +31,20 @@ const QUALITY_MAP = {
   'très abîmé': 'Très abîmé',
   'inutilisable': 'Inutilisable'
 };
+
+let activeFilters = {
+  name: null,
+  styles: null,
+  size: null,
+  quality: null,
+  gender: null,
+  category: null
+  // ajoute d'autres colonnes si besoin
+};
+
+
+const LIMIT=200
+let offset = 0
 
 const client = await initClient();
 let currentItems = [];
@@ -188,13 +200,14 @@ export async function refreshPreviewCell(client, rowElement, photos) {
 // ========== Initialisation ==========
 export async function init() {
   try {
-      const items = await fetchReservables(client,  {p_privacy_min: 'hidden'});
-      categories = await fetchCategories(client);
-      await loadAllSubCategories();
 
-    renderStockTable(items);
-    initSortableColumns();
-    setupLookupFilter();
+    categories = await fetchCategories(client);
+    await loadAllSubCategories();
+
+    await reloadPage();
+    
+    initFilterableHeaders();
+    setupPaginationButtons();
   } catch (err) {
     console.error('[inventory] Erreur lors de l’initialisation :', formatServerError(err.message));
   }
@@ -456,9 +469,7 @@ function setupDeleteButtons() {
         // Retirer de currentItems
         currentItems = currentItems.filter(i => i.id !== itemId);
 
-       // alert(`✅ L'item "${itemName}" (ID: ${itemId}) a été supprimé avec succès !`);
-       showToast("✅ L'item '${itemName}' (ID: ${itemId}) a été supprimé", 'success');
-
+        showToast(`✅ L'item '${itemName}' (ID: ${itemId}) a été supprimé`, 'success');
         console.log(`[inventory] Item ${itemName} (ID: ${itemId}) supprimé`);
       } catch (err) {
         alert('Erreur lors de la suppression : ' + formatServerError(err));
@@ -535,11 +546,44 @@ function setupEditButtons() {
   });
 }
 
-function refreshTable() {
-  fetchReservables(client, { p_privacy_min: 'hidden' })
-    .then(items => renderStockTable(items))
-    .catch(err => console.error('[inventory] Erreur refresh table:', formatServerError(err)));
+
+async function refreshTable() {
+  try {
+    const items = await fetchFilteredReservables(offset, LIMIT);
+    renderStockTable(items);
+  } catch (err) {
+    console.error('[inventory] Erreur refresh table:', formatServerError(err));
+  }
 }
+
+
+async function reloadPage() {
+  try {
+    const items = await fetchFilteredReservables(offset, LIMIT);
+    renderStockTable(items);
+
+    document.getElementById('pagination-min').textContent = offset;
+    document.getElementById('pagination-max').textContent = offset + items.length;
+    document.getElementById('prev-page-btn').disabled = offset === 0;
+    document.getElementById('next-page-btn').disabled = items.length < LIMIT;
+
+    initSortableColumns();
+    setupLookupFilter();
+  } catch (err) {
+    console.error('[inventory] reloadPage error:', formatServerError(err.message));
+  }
+}
+
+async function applyFilters() {
+  try {
+    offset = 0; // reset pagination
+    const items = await fetchFilteredReservables(offset, LIMIT);
+    renderStockTable(items);
+  } catch (err) {
+    console.error('[inventory] applyFilters error', formatServerError(err));
+  }
+}
+
 
 function updateTableRow(item) {
   const tbody = document.querySelector('#stock_table tbody');
@@ -694,4 +738,155 @@ function showSpinner() {
 function hideSpinner() {
   const spinner = document.getElementById('upload-spinner');
   if (spinner) spinner.style.display = 'none';
+}
+
+
+function setupPaginationButtons() {
+    const btnPrev = document.getElementById('prev-page-btn');
+    const btnNext = document.getElementById('next-page-btn');
+    const spanMin = document.getElementById('pagination-min');
+    const spanMax = document.getElementById('pagination-max');
+
+    if (!btnPrev || !btnNext || !spanMin || !spanMax) return;
+
+    btnPrev.addEventListener('click', async () => {
+        if (offset === 0) return;
+
+        offset = Math.max(0, offset - LIMIT);
+        await reloadPage();
+    });
+
+    btnNext.addEventListener('click', async () => {
+        offset += LIMIT;
+        await reloadPage();
+    });
+}
+
+
+/**
+ * Prépare le payload filtres + effectue le fetchReservables
+ * @param {number} offset
+ * @param {number} limit
+ * @returns {Promise<Array>} liste des items
+ */
+async function fetchFilteredReservables(offset = 0, limit = LIMIT) {
+  const filtersPayload = {};
+
+  if (activeFilters.name) filtersPayload.p_name = activeFilters.name;
+  if (activeFilters.styles) filtersPayload.p_style_ids = Array.isArray(activeFilters.styles) ? activeFilters.styles : [activeFilters.styles];
+  if (activeFilters.size) filtersPayload.p_size = activeFilters.size;
+  if (activeFilters.quality) filtersPayload.p_quality = activeFilters.quality;
+  if (activeFilters.gender) filtersPayload.p_gender = Array.isArray(activeFilters.gender) ? activeFilters.gender : [activeFilters.gender];
+  if (activeFilters.category) filtersPayload.p_category_ids = Array.isArray(activeFilters.category) ? activeFilters.category : [activeFilters.category];
+
+  return fetchReservables(client, {
+    p_privacy_min: 'hidden',
+    p_offset: offset,
+    p_limit: limit,
+    ...filtersPayload
+  });
+}
+
+
+function initFilterableHeaders() {
+  const headers = document.querySelectorAll('#stock_table th');
+  headers.forEach(th => {
+    const field = th.dataset.field;
+    if (!['name','styles','size','quality','gender','category'].includes(field)) return;
+
+    th.addEventListener('dblclick', async () => {
+      th.innerHTML = '';
+      let inputOrSelect;
+
+        if (['gender','quality','category'].includes(field)) {
+            inputOrSelect = document.createElement('select');
+            
+            // Option "Champs vide" pour réinitialiser le filtre
+            const emptyOption = document.createElement('option');
+            emptyOption.value = '';
+            emptyOption.textContent = 'Tout';
+            inputOrSelect.appendChild(emptyOption);
+            
+            let options = [];
+            if (field === 'gender') options = Object.keys(GENDER_MAP);
+            if (field === 'quality') options = Object.keys(QUALITY_MAP);
+            if (field === 'category') options = categories;
+            
+            options.forEach(opt => {
+                const option = document.createElement('option');
+                
+                if (typeof opt === 'object') {
+                    option.value = opt.id;
+                    option.textContent = opt.name;
+                } else {
+                    option.value = opt;
+                    option.textContent =
+                    field === 'gender' ? GENDER_MAP[opt] :
+                    field === 'quality' ? QUALITY_MAP[opt] : opt;
+                }
+                
+                inputOrSelect.appendChild(option);
+            });
+            
+            // Au lieu du click sur option, utiliser change sur le select
+            inputOrSelect.addEventListener('change', async () => {
+                let value = inputOrSelect.value;
+                if (field === 'category') value = Number(value) || null;
+                if (!value) value = null;
+                
+                activeFilters[field] = value;
+                
+                // Affichage dans l'en-tête
+                th.textContent = th.dataset.label || field;
+                if (value !== null) {
+                    let displayValue = value;
+                    if (field === 'gender') displayValue = GENDER_MAP[value];
+                    if (field === 'quality') displayValue = QUALITY_MAP[value];
+                    if (field === 'category') displayValue = categories.find(c => c.id === value)?.name;
+                    th.textContent += ` [${displayValue}]`;
+                }
+                
+                await applyFilters();
+                
+                // Fermer le select
+                inputOrSelect.blur();
+            });
+        
+                    
+      } else {
+        inputOrSelect = document.createElement('input');
+        inputOrSelect.type = 'text';
+        inputOrSelect.value = activeFilters[field] || '';
+      }
+
+      th.appendChild(inputOrSelect);
+      inputOrSelect.focus();
+
+      const saveFilter = async () => {
+        let value = inputOrSelect.value;
+        if (['category'].includes(field)) value = Number(value) || null;
+        if (!value) value = null; // réinitialisation si "(Champs vide)" sélectionné
+
+        activeFilters[field] = value;
+
+        // Affichage dans l'en-tête
+        th.textContent = th.dataset.label || field;
+        if (value !== null) {
+          let displayValue = value;
+          if (field === 'gender') displayValue = GENDER_MAP[value];
+          if (field === 'quality') displayValue = QUALITY_MAP[value];
+          if (field === 'category') displayValue = categories.find(c => c.id === value)?.name;
+          th.textContent += ` [${displayValue}]`;
+        }
+
+        await applyFilters();
+      };
+
+      inputOrSelect.addEventListener('blur', saveFilter);
+      inputOrSelect.addEventListener('keydown', e => {
+        if (e.key === 'Enter') inputOrSelect.blur();
+        if (e.key === 'Escape') th.textContent = th.dataset.label || field;
+      });
+    });
+  });
 }

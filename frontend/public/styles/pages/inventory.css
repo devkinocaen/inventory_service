@@ -166,3 +166,47 @@ tr:nth-child(even) {
   cursor: pointer;
   object-fit: cover;
 }
+
+
+.pagination-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0 20px;
+}
+
+.pagination-controls button {
+  padding: 6px 12px;
+  background: #f4f4f4;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s, border 0.15s;
+}
+
+.pagination-controls button:hover {
+  background: #eaeaea;
+  border-color: #bfbfbf;
+}
+
+.pagination-controls button:active {
+  background: #dcdcdc;
+}
+
+.pagination-controls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pagination-range {
+  padding: 4px 10px;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #444;
+  min-width: 110px;
+  text-align: center;
+}
