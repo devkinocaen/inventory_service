@@ -210,3 +210,53 @@ tr:nth-child(even) {
   min-width: 110px;
   text-align: center;
 }
+
+.top-controls {
+  display: flex;
+  align-items: center;       /* aligne verticalement */
+  justify-content: space-between; /* espace les éléments */
+  gap: 1rem;                 /* espace entre search / add / pagination */
+  margin-bottom: 1rem;
+}
+
+.search-wrapper {
+  flex: 1;                /* prend tout l’espace restant */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-wrapper input {
+  flex: 1;                /* l’input prend tout l’espace disponible */
+  min-width: 600px;       /* largeur minimale */
+  padding: 6px 8px;
+  font-size: 1rem;
+  box-sizing: border-box; /* pour inclure padding dans la largeur */
+}
+
+
+.add-btn-wrapper button {
+  padding: 4px 12px;
+  font-size: 1.2rem;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pagination-range {
+  min-width: 60px;
+  text-align: center;
+}
+
+
+/* Colonnes filtrables : hover plus visible */
+th[data-field]:hover {
+  background-color: #f1f3f5; /* léger surlignage */
+  text-decoration: underline; /* discret */
+  cursor: pointer;
+  font-size: 1.10rem;        /* légèrement plus grand */
+  transition: all 0.15s ease; /* animation douce */
+}

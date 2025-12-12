@@ -7,31 +7,33 @@
 </head>
 <body>
     
-    <!-- Barre de recherche -->
-    <div>
-      <label for="lookup_item_name">Rechercher :</label>
-      <input type="text" id="lookup_item_name" name="lookup_item_name" />
-    </div>
-
-    <!-- Bouton d'ajout -->
-    <div class="add-btn-wrapper">
-      <button id="add-reservable-btn" class="add-reservable-btn">+</button>
-    </div>
-
-
-    <!-- Pagination -->
-    <div class="pagination-controls">
-      <button id="prev-page-btn">◀️</button>
-
-      <div class="pagination-range">
-        <span id="pagination-min">0</span>
-        &nbsp;–&nbsp;
-        <span id="pagination-max">0</span>
+    <div class="top-controls">
+      <!-- Barre de recherche -->
+      <div class="search-wrapper">
+        <label for="lookup_item_name">Rechercher :</label>
+        <input type="text" id="lookup_item_name" name="lookup_item_name" />
       </div>
 
-      <button id="next-page-btn">▶️</button>
+      <!-- Pagination -->
+      <div class="pagination-controls">
+        <button id="prev-page-btn">◀️</button>
+
+        <div class="pagination-range">
+          <span id="pagination-min">0</span>
+          &nbsp;–&nbsp;
+          <span id="pagination-max">0</span>
+        </div>
+
+        <button id="next-page-btn">▶️</button>
+      </div>
     </div>
 
+    
+    <!-- Bouton d'ajout -->
+    <div class="add-btn-wrapper">
+        <button id="add-reservable-btn" class="add-reservable-btn">+</button>
+    </div>
+    
     
   <!-- Tableau de stock -->
   <div class="table-wrapper">
@@ -49,9 +51,9 @@
             <th class="sortable" data-field="category" data-label="Catégorie">Catégorie</th>
             <th class="sortable" data-label="Sous-catégorie">Sous-catégorie</th>
             <th class="sortable" data-field="styles" data-label="Styles">Styles</th>
-            <th data-field="edit">Editer</th>
-            <th data-field="photos">Photos</th>
-            <th data-field="delete">Supprimer</th>
+            <th>Editer</th>
+            <th>Photos</th>
+            <th>Supprimer</th>
           </tr>
         </thead>
 
