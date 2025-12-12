@@ -836,6 +836,12 @@ function initFilterableHeaders() {
             
             inputOrSelect.appendChild(option);
         });
+            
+            
+            // ⬅️ pré-sélectionner l'option active
+        if (activeFilters[field] != null) {
+            inputOrSelect.value = String(activeFilters[field]);
+         }
         
         // Au lieu du click sur option, utiliser change sur le select
         inputOrSelect.addEventListener('change', async () => {
