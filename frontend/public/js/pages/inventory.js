@@ -407,21 +407,26 @@ function initSortableColumns() {
   const table = document.getElementById('stock_table');
   if (!table) return;
 
-  const headers = table.querySelectorAll('th.sortable');
   const tbody = table.querySelector('tbody');
+  if (!tbody) return;
 
-  headers.forEach((th, index) => {
+  const headers = table.querySelectorAll('th.sortable');
+
+  headers.forEach(th => {
     let asc = true; // sens du tri
     th.style.cursor = 'pointer';
+
+    // index réel de la colonne dans le tr
+    const columnIndex = Array.from(th.parentNode.children).indexOf(th);
 
     th.addEventListener('click', () => {
       const rows = Array.from(tbody.querySelectorAll('tr'));
 
       rows.sort((a, b) => {
-        const cellA = a.children[index].textContent.trim().toLowerCase();
-        const cellB = b.children[index].textContent.trim().toLowerCase();
+        const cellA = a.children[columnIndex]?.textContent.trim().toLowerCase() || '';
+        const cellB = b.children[columnIndex]?.textContent.trim().toLowerCase() || '';
 
-        // Nombre ?
+        // Vérifier si ce sont des nombres
         const numA = parseFloat(cellA.replace(',', '.'));
         const numB = parseFloat(cellB.replace(',', '.'));
         const bothNumbers = !isNaN(numA) && !isNaN(numB);
@@ -430,20 +435,18 @@ function initSortableColumns() {
           return asc ? numA - numB : numB - numA;
         }
 
-        // Texte
-        return asc
-          ? cellA.localeCompare(cellB)
-          : cellB.localeCompare(cellA);
+        return asc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
       });
 
       // Réinjecter les lignes triées
       tbody.innerHTML = '';
       rows.forEach(r => tbody.appendChild(r));
 
-      asc = !asc; // On inverse pour le clic suivant
+      asc = !asc; // inverser le sens pour le prochain clic
     });
   });
 }
+
 
 
 function setupDeleteButtons() {
