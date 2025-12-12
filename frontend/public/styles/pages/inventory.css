@@ -212,7 +212,6 @@ tr:nth-child(even) {
   text-align: center;
 }
 
-
 /* Colonnes filtrables : hover plus visible */
 th[data-field]:hover {
   background-color: #f1f3f5; /* léger surlignage */
@@ -221,7 +220,6 @@ th[data-field]:hover {
   font-size: 1.10rem;        /* légèrement plus grand */
   transition: all 0.15s ease; /* animation douce */
 }
-
 
 /* Bouton d’ajout d’un nouveau réservable */
 .add-btn-wrapper {
