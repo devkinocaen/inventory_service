@@ -423,15 +423,9 @@ function initSortableColumns() {
       const rows = Array.from(tbody.querySelectorAll('tr'));
 
       rows.sort((a, b) => {
-        let cellA = a.children[columnIndex]?.textContent.trim().toLowerCase() || '';
-        let cellB = b.children[columnIndex]?.textContent.trim().toLowerCase() || '';
-          
-          // 🔹 Supprimer les emojis ou caractères non ASCII imprimables
-          const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
-          cellA = cellA.replace(emojiRegex, '').trim();
-          cellB = cellB.replace(emojiRegex, '').trim();
-          
-          
+        const cellA = a.children[columnIndex]?.textContent.trim().toLowerCase() || '';
+        const cellB = b.children[columnIndex]?.textContent.trim().toLowerCase() || '';
+
         // Vérifier si ce sont des nombres
         const numA = parseFloat(cellA.replace(',', '.'));
         const numB = parseFloat(cellB.replace(',', '.'));
