@@ -35,10 +35,18 @@
   grid-template-columns: repeat(8, 1fr);
   grid-gap: 8px;
   overflow-y: auto;
-  margin-left: 0;
   position: relative;
   z-index: 1;
+
+  /* 👇 clé du comportement */
+  margin-left: 240px;
+  transition: margin-left 0.3s ease;
 }
+
+#cstm-filtersSidebar.cstm-collapsed ~ #cstm-main {
+  margin-left: 0;
+}
+
 
 /* ---- Cartes ---- */
 .cstm-card {

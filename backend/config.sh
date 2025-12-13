@@ -7,7 +7,6 @@ export GOOGLE_TOKEN_JSON_FOLDER=$ROOT_DIR/services/gcloud/secrets
 
 export FLASK_WITH_CRYPTO=1
 
-#export DB_PROVIDER="alwaysdata" # ou neon ou supabase
 : "${DB_PROVIDER:=alwaysdata}"
 export DB_PROVIDER
 
