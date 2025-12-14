@@ -20,6 +20,11 @@ CREATE TYPE inventory.reservable_status AS ENUM (
     'disponible', 'indisponible', 'en réparation', 'perdu', 'hors service'
 );
 
+CREATE TYPE inventory.booking_status AS ENUM (
+    'validé', 'à valider', 'annulé'
+);
+
+
 CREATE TYPE inventory.reservable_quality AS ENUM (
     'neuf', 'bon état', 'abîmé', 'très abîmé', 'inutilisable'
 );
@@ -207,6 +212,8 @@ CREATE TABLE inventory.booking_reference (
 -- ===========================
 CREATE TABLE inventory.reservable_booking (
     id SERIAL PRIMARY KEY,
+    
+    status inventory.booking_status NOT NULL DEFAULT 'à valider',
 
     -- Lot d'objets réservé
     reservable_batch_id INT NOT NULL
@@ -251,6 +258,8 @@ CREATE TABLE inventory.reservable_booking (
         reservable_batch_id WITH =,
         period WITH &&
     )
+    WHERE (status = 'validé')
+
 );
 
 
