@@ -6,7 +6,8 @@ import {
   upsertBookingReference,
   createBooking,
   isAvailable,
-  fetchAppConfig
+  fetchAppConfig,
+  validateBooking
 } from '../libs/sql/index.js';
  
 import {
@@ -14,6 +15,8 @@ import {
     formatDateForDatetimeLocal,
     roundDateByMinute
 } from '../libs/helpers.js';
+
+import { showToast } from '../libs/ui/toastMessage.js';
 
 import { displayImage } from '../libs/image_utils.js';
 
@@ -389,10 +392,34 @@ async function handleBookingValidate() {
       p_pickup_person_id: pickupPersonId,
       p_booking_reference_id: bookingReferenceId
     });
+ 
 
-    console.log('[Booking Modal] Réservation créée :', booking);
+      console.log('[Booking Modal] Réservation créée :', booking);
+  
+   // --------------------------------------
+   // Validation automatique sous conditions
+   // --------------------------------------
+   try {
+     const raw = localStorage.getItem('loggedUser');
+     const loggedUser = raw ? JSON.parse(raw) : null;
 
-    alert('Réservation créée avec succès !');
+     const canAutoValidate =
+       loggedUser &&
+       (loggedUser.role === 'admin' || loggedUser.role === 'dev') &&
+       String(loggedUser.personId) === String(bookingPersonId);
+
+     if (canAutoValidate) {
+       await validateBooking(client, booking.id);
+       showToast('✅ Réservation validée automatiquement', 'success');
+     } else {
+       showToast('🕓 Réservation créée (en attente de validation)', 'info');
+     }
+
+   } catch (e) {
+     console.warn('[Booking Modal] Échec validation automatique', e);
+     showToast('🕓 Réservation créée (validation manuelle requise)', 'info');
+   }
+
     closeBookingModal();
 
   } catch (err) {
