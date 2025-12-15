@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export COSTUMERIE_CAEN_DBHOST='ep-proud-darkness-agqej791-pooler.c-2.eu-central-1.aws.neon.tech'
+export COSTUMERIE_CAEN_DBHOST_DIRECT='ep-proud-darkness-agqej791.c-2.eu-central-1.aws.neon.tech'
+export COSTUMERIE_CAEN_DBPASSWORD="npg_mXkL9iDnbO5B"
