@@ -43,5 +43,20 @@
         "gdrive_backup_id": "13XECcKzvpRZzLv-GHJRhRcb-Ct34NUnv",
         "gdrive_costume_id": "165hdiLOejC-YhQMAdRshpKIBwQC2EA7c",
         "gdrive_token": "token_dev.json"
+    },
+    {
+        "baseid": "COSTUMERIE_JULIE_NEON",
+        "dbname": "neondb",
+        "basename": "La Fabrique à Personnages",
+        "issuer":"https://neon.com",
+        "host": "ep-proud-darkness-agqej791-pooler.c-2.eu-central-1.aws.neon.tech",
+        "port": 5432,
+        "user": "neondb_owner",
+        "password": "npg_mXkL9iDnbO5B",
+        "auth_role": "authenticated",
+        "anon_role": "anon",
+        "gdrive_backup_id": "1sjTkHvBOrq0Q5qtYRQ3ljf6205bZK2XW",
+        "gdrive_inventory_id": "1AuyCyvzZv0f50E7r8N_Y_M6nWWxxE7aX",
+        "gdrive_token": "token_julie.json"
     }
 ]
