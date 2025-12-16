@@ -22,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-        database: [COSTUMERIE_CAEN_NEON, COSTUMERIE_ALEX_NEON]
+        database: [COSTUMERIE_JULIE_NEON, COSTUMERIE_ALEX_NEON]
 
     steps:
       - name: Install dependencies

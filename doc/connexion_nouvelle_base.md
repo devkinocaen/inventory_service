@@ -151,7 +151,7 @@ Ces rôles permettent de gérer les accès RLS et les environnements applicatifs
 
 ## Étape 7 — Connecter Flask à la nouvelle base
 - Mettre à jour le service flask avec une version à jour de databases.json
-- Vérifier que le site web est bien référencé dans les variables CORS, dans la variable `ALLOWED_ORIGINS`de `backend/flasklib/config/py`
+- Vérifier que le site web est bien référencé dans les variables CORS, dans la variable `ALLOWED_ORIGINS`de `backend/flasklib/config.py`
 
 ---
 
