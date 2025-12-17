@@ -21,6 +21,7 @@ export async function createReservable(client, {
   status = 'disponible',
   quality = 'bon état',
   is_in_stock = true,
+  style_ids = null,
   color_ids = null,
   pattern_id = null
 }) {
@@ -51,6 +52,7 @@ export async function createReservable(client, {
     p_status: status,
     p_quality: quality,
     p_is_in_stock: is_in_stock,
+    p_style_ids: style_ids,
     p_color_ids: color_ids,
     p_pattern_id: pattern_id    // ✅ envoyé au RPC
   });

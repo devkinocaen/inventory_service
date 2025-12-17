@@ -240,8 +240,8 @@ export async function openReservableModal(reservableId, onSave = null) {
             '#rsb-res-size': currentReservable.size,
             '#rsb-res-price': currentReservable.price_per_day,
             '#rsb-res-description': currentReservable.description,
-            '#rsb-res-status': currentReservable.status || 'disponible',
-            '#rsb-res-quality': currentReservable.quality || 'neuf',
+            '#rsb-res-status': currentReservable.status || 'Disponible',
+            '#rsb-res-quality': currentReservable.quality || 'Neuf',
             '#rsb-res-category': currentReservable.category_id,
             '#rsb-res-subcategory': currentReservable.subcategory_id,
             '#rsb-res-owner': currentReservable.owner_id,
@@ -259,31 +259,40 @@ export async function openReservableModal(reservableId, onSave = null) {
     } else {
         document.getElementById('rsb-title').textContent = 'Créer un nouvel item';
 
+        // Reset tous les champs
         dialog.querySelectorAll('input, select, textarea').forEach(el => {
             if (el.type === 'radio') el.checked = false;
             else el.value = '';
         });
-        dialog.querySelector('#rsb-res-status').value = 'disponible';
-        dialog.querySelector('#rsb-res-quality').value = 'neuf';
-        dialog.querySelector('input[name="rsb-res-gender"][value="unisex"]').checked = true;
-        dialog.querySelector('input[name="rsb-res-privacy"][value="public"]').checked = true;
-        
-        
+
+        // 🔹 valeurs par défaut cohérentes avec la base
+        const statusEl = dialog.querySelector('#rsb-res-status');
+        if (statusEl) statusEl.value = 'disponible';
+
+        const qualityEl = dialog.querySelector('#rsb-res-quality');
+        if (qualityEl) qualityEl.value = 'bon état';
+
+        const genderEl = dialog.querySelector('input[name="rsb-res-gender"][value="unisex"]');
+        if (genderEl) genderEl.checked = true;
+
+        const privacyEl = dialog.querySelector('input[name="rsb-res-privacy"][value="public"]');
+        if (privacyEl) privacyEl.checked = true;
+
         // ================================
-        // Injecter les valeurs par défaut
+        // Injecter les valeurs par défaut depuis appConfig
         // ================================
         if (appConfig) {
-            if (appConfig.default_owner_id) {
-                dialog.querySelector('#rsb-res-owner').value = appConfig.default_owner_id;
-            }
-            if (appConfig.default_manager_id) {
-                dialog.querySelector('#rsb-res-manager').value = appConfig.default_manager_id;
-            }
-            if (appConfig.default_storage_location_id) {
-                dialog.querySelector('#rsb-res-storage').value = appConfig.default_storage_location_id;
-            }
+            const ownerEl = dialog.querySelector('#rsb-res-owner');
+            if (ownerEl && appConfig.default_owner_id) ownerEl.value = appConfig.default_owner_id;
+
+            const managerEl = dialog.querySelector('#rsb-res-manager');
+            if (managerEl && appConfig.default_manager_id) managerEl.value = appConfig.default_manager_id;
+
+            const storageEl = dialog.querySelector('#rsb-res-storage');
+            if (storageEl && appConfig.default_storage_location_id) storageEl.value = appConfig.default_storage_location_id;
         }
     }
+
     
     // 🔹 Ajouter écouteur ESCAPE
     const escListener = (e) => {
@@ -431,17 +440,16 @@ function renderPatternChips() {
     container.innerHTML = '';
 
     const selectedPatternId = currentReservable?.pattern_id || null;
-
     allPatterns.forEach(pattern => {
         const chip = document.createElement('div');
         chip.className = `rsb-pattern-chip ${pattern.css_class || ''}`; // css_class stocké en base
         chip.dataset.id = pattern.id;
         chip.textContent = pattern.name;
 
-        if (selectedPatternId === pattern.id) {
+        if (selectedPatternId === Number(pattern.id)) {
             chip.classList.add('active');
+            console.log ("classe active ajoutée")
         }
-
         chip.addEventListener('click', () => {
             container.querySelectorAll('.rsb-pattern-chip').forEach(c => c.classList.remove('active'));
             chip.classList.add('active');
