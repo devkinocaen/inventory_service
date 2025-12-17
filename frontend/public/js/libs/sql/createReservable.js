@@ -21,16 +21,17 @@ export async function createReservable(client, {
   status = 'disponible',
   quality = 'bon état',
   is_in_stock = true,
-  color_ids = null
+  color_ids = null,
+  pattern_id = null      // ✅ nouveau paramètre
 }) {
     
-    // 🔥 Normalisation : texte vide = null
-    if (typeof serial_id === 'string') {
-      serial_id = serial_id.trim();
-      if (serial_id === '') {
-        serial_id = null;
-      }
+  // 🔥 Normalisation : texte vide = null
+  if (typeof serial_id === 'string') {
+    serial_id = serial_id.trim();
+    if (serial_id === '') {
+      serial_id = null;
     }
+  }
 
   const { data, error } = await client.rpc('create_reservable', {
     p_name: name,
@@ -50,15 +51,9 @@ export async function createReservable(client, {
     p_status: status,
     p_quality: quality,
     p_is_in_stock: is_in_stock,
-    p_color_ids: color_ids
+    p_color_ids: color_ids,
+    p_pattern_id: pattern_id    // ✅ envoyé au RPC
   });
 
   if (error) {
-    console.error('[createReservable] Erreur serveur :', error);
-    throw new Error(error.message || 'Erreur lors de la création du réservable');
-  }
-
-  console.log('data in createReservable', data);
-
-  return single(data).create_reservable;
-}
+    console.e
