@@ -32,6 +32,8 @@ RETURNS TABLE (
     category_name TEXT,
     subcategory_id INT,
     subcategory_name TEXT,
+    pattern_id INT,
+    pattern_name TEXT,
     status TEXT,
     quality TEXT,
     is_in_stock BOOLEAN,
@@ -46,6 +48,7 @@ RETURNS TABLE (
     style_names TEXT[],
     colors JSONB
 )
+
 LANGUAGE plpgsql STABLE
 SECURITY DEFINER
 AS $$
@@ -67,6 +70,8 @@ BEGIN
         c.name::text AS category_name,
         r.subcategory_id,
         sc.name::text AS subcategory_name,
+        r.pattern_id,
+        p.name::text AS pattern_name,
         r.status::text AS status,
         r.quality::text AS quality,
         r.is_in_stock,
@@ -103,6 +108,7 @@ BEGIN
 
     LEFT JOIN inventory.reservable_color_link rc ON rc.reservable_id = r.id
     LEFT JOIN inventory.color c2 ON c2.id = rc.color_id
+    LEFT JOIN inventory.pattern p ON p.id = r.pattern_id
 
     WHERE
         (p_type IS NULL OR r.inventory_type = p_type)
@@ -151,7 +157,7 @@ BEGIN
             OR inventory.is_available(r.id, p_start_date, p_end_date)
         )
 
-    GROUP BY r.id, r.name, r.description, r.price_per_day, r.photos,
+    GROUP BY r.id, r.pattern_id, r.name, r.description, r.price_per_day, r.photos,
              r.gender, r.privacy, r.inventory_type, r.category_id,
              c.name, r.subcategory_id, sc.name, r.status, r.quality,
              r.storage_location_id, sl.name, r.owner_id, o.name,

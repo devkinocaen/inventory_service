@@ -57,9 +57,10 @@ TABLES = [
     # 🔹 Config globale
     "inventory.app_config",
 
-    # 🔹 Styles et couleurs
+    # 🔹 Styles, motifs et couleurs
     "inventory.reservable_style",
     "inventory.color",
+    "inventory.pattern",
 
     # 🔹 Catégories et sous-catégories
     "inventory.reservable_category",

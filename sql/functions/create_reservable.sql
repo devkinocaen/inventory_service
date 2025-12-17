@@ -8,6 +8,7 @@ CREATE OR REPLACE FUNCTION inventory.create_reservable(
     p_category_id INT DEFAULT NULL,
     p_subcategory_id INT DEFAULT NULL,
     p_size TEXT DEFAULT '',
+    p_pattern_id INT DEFAULT NULL,
     p_gender inventory.reservable_gender DEFAULT 'unisex',
     p_privacy inventory.privacy_type DEFAULT 'private',
     p_price_per_day DOUBLE PRECISION DEFAULT 0,
