@@ -1,0 +1,116 @@
+/* ================== rsb-pattern.css ================== */
+
+/* Préfixe utilisé : rsb-pattern- */
+
+.rsb-pattern-chip {
+  position: relative;
+  padding: 8px 14px;
+  border-radius: 16px;
+  border: 1px solid #ccc;
+  background-color: #f7f7f7;
+  font-size: 0.85rem;
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none;
+  display: inline-block;
+}
+
+.rsb-pattern-chip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  border-radius: 16px;
+}
+
+.rsb-pattern-chip:hover::before,
+.rsb-pattern-chip.active::before {
+  opacity: 0.2;
+}
+
+.rsb-pattern-chip.active {
+  border-color: #1976d2;
+  background-color: #eef4ff;
+  font-weight: bold;
+}
+
+/* ================== Patterns ================== */
+
+/* Uni → grille très claire */
+.rsb-pattern-plain::before {
+  background:
+    linear-gradient(to right, #ccc 1px, transparent 1px),
+    linear-gradient(to bottom, #ccc 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Rayures */
+.rsb-pattern-striped::before {
+  background: repeating-linear-gradient(
+    45deg,
+    #000 0 2px,
+    transparent 2px 6px
+  );
+}
+
+/* Pois */
+.rsb-pattern-dotted::before {
+  background:
+    radial-gradient(circle, #000 2px, transparent 1px);
+  background-size: 12px 12px;
+}
+
+/* Carreaux */
+.rsb-pattern-checkered::before {
+  background:
+    linear-gradient(#000 1px, transparent 1px),
+    linear-gradient(90deg, #000 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+/* Floral */
+.rsb-pattern-floral::before {
+  background:
+    radial-gradient(circle at 30% 30%, #000 1px, transparent 2px),
+    radial-gradient(circle at 70% 70%, #000 1px, transparent 2px);
+  background-size: 10px 10px;
+}
+
+/* Géométrique → LOSANGES */
+.rsb-pattern-geometric::before {
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #000 0 1px,
+      transparent 1px 10px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      #000 0 1px,
+      transparent 1px 10px
+    );
+  background-size: 14px 14px;
+}
+
+/* Animalier → TORTUE CSS */
+.rsb-pattern-animal::before {
+  background:
+    radial-gradient(circle at 50% 50%, #000 3px, transparent 4px), /* carapace */
+    radial-gradient(circle at 70% 50%, #000 1px, transparent 2px), /* tête */
+    radial-gradient(circle at 40% 30%, #000 1px, transparent 2px), /* pattes */
+    radial-gradient(circle at 40% 70%, #000 1px, transparent 2px),
+    radial-gradient(circle at 60% 30%, #000 1px, transparent 2px),
+    radial-gradient(circle at 60% 70%, #000 1px, transparent 2px);
+  background-size: 18px 18px;
+}
+
+/* Random imprimé */
+.rsb-pattern-random::before {
+  background:
+    radial-gradient(circle, #000 1px, transparent 3px),
+    linear-gradient(20deg, #000 1px, transparent 3px),
+    linear-gradient(-30deg, #000 1px, transparent 3px);
+  background-size: 12px 12px;
+  background-blend-mode: multiply;
+}

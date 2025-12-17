@@ -2,6 +2,7 @@ import { initClient } from '../libs/client.js';
 import {
     fetchReservableById,
     fetchColors,
+    fetchPatterns,
     updateReservable,
     createReservable,
     fetchCategories,
@@ -27,6 +28,7 @@ let organizations = [];
 let storageLocations = [];
 let onSaveCallback = null; // callback à appeler après sauvegarde
 let allColors = [];
+let allPatterns = [];
 
 // -----------------------------
 // Initialisation modal
@@ -46,13 +48,15 @@ export async function initReservableModal() {
         fetchedStyles,
         fetchedOrganizations,
         fetchedStorageLocations,
-        fetchedColors
+        fetchedColors,
+        fetchedPatterns
     ] = await Promise.all([
         fetchCategories(client),
         fetchStyles(client),
         fetchOrganizations(client),
         fetchStorageLocations(client),
-        fetchColors(client)
+        fetchColors(client),
+        fetchPatterns(client)
     ]);
 
     // 🔹 Stocker globalement
@@ -61,6 +65,7 @@ export async function initReservableModal() {
     organizations = fetchedOrganizations;
     storageLocations = fetchedStorageLocations;
     allColors = fetchedColors;
+    allPatterns = fetchedPatterns;
 
     // 🔹 Initialiser les selects
     await initCategorySelects();
@@ -68,6 +73,7 @@ export async function initReservableModal() {
     initOrganizationSelects();
     initStorageSelect();
     renderColorChips();
+    renderPatternChips();
 }
 
 
@@ -289,6 +295,8 @@ export async function openReservableModal(reservableId, onSave = null) {
     document.addEventListener('keydown', escListener);
 
     renderStyleChips();
+    renderPatternChips();
+
     modal.classList.remove('hidden');
     void dialog.offsetWidth;
     dialog.classList.add('show');
@@ -320,6 +328,7 @@ async function saveReservable(e) {
     const privacy = dialog.querySelector('input[name="rsb-res-privacy"]:checked')?.value;
     const style_ids = Array.from(dialog.querySelectorAll('#rsb-chips-style .rsb-chip')).map(c => Number(c.dataset.id));
     const color_ids = getSelectedColorIds();
+    const selectedPatternId = currentReservable?.pattern_id || null;
 
     const data = {
         id: currentReservable?.id || null,
@@ -340,7 +349,8 @@ async function saveReservable(e) {
         gender,
         privacy,
         style_ids,
-        color_ids
+        color_ids,
+        pattern_id: selectedPatternId
     };
 
     try {
@@ -409,6 +419,35 @@ function renderColorChips() {
         }
 
         chip.addEventListener('click', () => chip.classList.toggle('selected'));
+        container.appendChild(chip);
+    });
+}
+
+// -----------------------------
+// Motifs
+// -----------------------------
+function renderPatternChips() {
+    const container = dialog.querySelector('#rsb-chips-pattern');
+    container.innerHTML = '';
+
+    const selectedPatternId = currentReservable?.pattern_id || null;
+
+    allPatterns.forEach(pattern => {
+        const chip = document.createElement('div');
+        chip.className = `rsb-pattern-chip ${pattern.css_class || ''}`; // css_class stocké en base
+        chip.dataset.id = pattern.id;
+        chip.textContent = pattern.name;
+
+        if (selectedPatternId === pattern.id) {
+            chip.classList.add('active');
+        }
+
+        chip.addEventListener('click', () => {
+            container.querySelectorAll('.rsb-pattern-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            currentReservable.pattern_id = pattern.id;
+        });
+
         container.appendChild(chip);
     });
 }

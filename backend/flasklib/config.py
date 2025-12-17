@@ -97,7 +97,8 @@ SEQUENCES = [
     "reservable_batch_id_seq",
     "reservable_id_seq",
     "booking_reference_id_seq",
-    "reservable_booking_id_seq"
+    "reservable_booking_id_seq",
+    "reservable_pattern_id_seq"
 ]
 
 

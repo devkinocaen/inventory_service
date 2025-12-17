@@ -22,7 +22,7 @@ export async function createReservable(client, {
   quality = 'bon état',
   is_in_stock = true,
   color_ids = null,
-  pattern_id = null      // ✅ nouveau paramètre
+  pattern_id = null
 }) {
     
   // 🔥 Normalisation : texte vide = null
@@ -55,5 +55,10 @@ export async function createReservable(client, {
     p_pattern_id: pattern_id    // ✅ envoyé au RPC
   });
 
-  if (error) {
-    console.e
+    if (error) {
+      console.error('[createReservable] Erreur serveur :', error);
+      throw new Error(error.message || 'Erreur lors de la création du réservable');
+    }
+
+    return single(data).create_reservable;
+  }

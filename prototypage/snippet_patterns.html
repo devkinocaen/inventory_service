@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Pattern Chips</title>
+
+<style>
+  body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: #fafafa;
+    padding: 24px;
+  }
+
+  .pattern-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* =============== Base chip =============== */
+  .chip {
+    position: relative;
+    padding: 8px 14px;
+    border-radius: 16px;
+    border: 1px solid #ccc;
+    background-color: #f7f7f7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    overflow: hidden;
+    user-select: none;
+    transition: all 0.2s;
+  }
+
+  .chip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    border-radius: 16px;
+  }
+
+  .chip:hover::before,
+  .chip.active::before {
+    opacity: 0.2;
+  }
+
+  .chip.active {
+    border-color: #1976d2;
+    background-color: #eef4ff;
+    font-weight: bold; /* ✅ Texte en gras quand sélectionné */
+  }
+
+  /* =============== Patterns =============== */
+
+  /* Uni → grille très claire */
+  .pattern-plain::before {
+    background:
+      linear-gradient(to right, #ccc 1px, transparent 1px),
+      linear-gradient(to bottom, #ccc 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Rayures */
+  .pattern-striped::before {
+    background: repeating-linear-gradient(
+      45deg,
+      #000 0 2px,
+      transparent 2px 6px
+    );
+  }
+
+  /* Pois */
+  .pattern-dotted::before {
+    background:
+      radial-gradient(circle, #000 2px, transparent 1px);
+    background-size: 8px 8px;
+  }
+
+  /* Carreaux */
+  .pattern-checkered::before {
+    background:
+      linear-gradient(#000 1px, transparent 1px),
+      linear-gradient(90deg, #000 1px, transparent 1px);
+    background-size: 8px 8px;
+  }
+
+  /* Fleuri */
+  .pattern-floral::before {
+    background:
+      radial-gradient(circle at 30% 30%, #000 1px, transparent 2px),
+      radial-gradient(circle at 70% 70%, #000 1px, transparent 2px);
+    background-size: 10px 10px;
+  }
+
+  /* Géométrique → LOSANGES */
+  .pattern-geometric::before {
+    background:
+      repeating-linear-gradient(
+        45deg,
+        #000 0 1px,
+        transparent 1px 10px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        #000 0 1px,
+        transparent 1px 10px
+      );
+    background-size: 14px 14px;
+  }
+
+  /* Animalier → TORTUE CSS */
+  .pattern-animal::before {
+    background:
+      radial-gradient(circle at 50% 50%, #000 3px, transparent 4px), /* carapace */
+      radial-gradient(circle at 70% 50%, #000 1px, transparent 2px), /* tête */
+      radial-gradient(circle at 40% 30%, #000 1px, transparent 2px), /* pattes */
+      radial-gradient(circle at 40% 70%, #000 1px, transparent 2px),
+      radial-gradient(circle at 60% 30%, #000 1px, transparent 2px),
+      radial-gradient(circle at 60% 70%, #000 1px, transparent 2px);
+    background-size: 18px 18px;
+  }
+
+  /* ================== Imprimé Random ================== */
+  .pattern-random::before {
+    background:
+      radial-gradient(circle, #000 1px, transparent 3px),
+      linear-gradient(20deg, #000 1px, transparent 3px),
+      linear-gradient(-30deg, #000 1px, transparent 3px);
+    background-size: 12px 12px;
+    background-blend-mode: multiply;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="pattern-chips">
+  <button class="chip pattern-plain">Uni</button>
+  <button class="chip pattern-striped">Rayures</button>
+  <button class="chip pattern-dotted">Pois</button>
+  <button class="chip pattern-checkered">Carreaux</button>
+  <button class="chip pattern-floral">Floral</button>
+  <button class="chip pattern-geometric">Géométrique</button>
+  <button class="chip pattern-animal">Animalier</button>
+  <button class="chip pattern-random">Autre imprimé</button>
+</div>
+
+<script>
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('active');
+    });
+  });
+</script>
+
+</body>
+</html>

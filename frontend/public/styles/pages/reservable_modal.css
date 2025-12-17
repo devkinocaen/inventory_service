@@ -9,12 +9,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 3;                
+  z-index: 3;
 }
 .rsb-modal-content {
   background: white;
   padding: 24px;
-  width: 650px;
+  width: 900px;
   border-radius: 8px;
   max-height: 90vh;
   overflow-y: auto;
@@ -25,6 +25,13 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px 20px;
+}
+
+/* --- COLUMN --- */
+.rsb-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* --- LABELS & INPUTS --- */
@@ -51,8 +58,8 @@
 .rsb-radio-item {
   display: flex;
   align-items: center;
-  gap: 6px;               /* un peu plus d'espace */
-  padding: 4px 6px;       /* meilleure zone cliquable */
+  gap: 6px;
+  padding: 4px 6px;
   cursor: pointer;
 }
 
@@ -60,10 +67,9 @@
 .rsb-radio-item input[type="radio"] {
   width: 18px;
   height: 18px;
-  transform: scale(1.35); /* taille visuelle augmentée */
+  transform: scale(1.35);
   cursor: pointer;
 }
-
 
 /* --- CHIPS --- */
 .rsb-chips-container {
@@ -102,10 +108,10 @@
 }
 
 .rsb-modal-actions button {
-  padding: 10px 20px;           /* même padding pour tous */
-  min-width: 100px;             /* largeur minimum identique */
+  padding: 10px 20px;
+  min-width: 100px;
   cursor: pointer;
-  border-radius: 6px;           /* arrondi uniforme */
+  border-radius: 6px;
   font-weight: 600;
   font-size: 0.95em;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
@@ -117,7 +123,6 @@
   color: white;
   border: none;
 }
-
 #rsb-res-save:hover {
   background: #1a5fcc;
 }
@@ -128,17 +133,14 @@
   border: 1px solid #ccc;
   color: #333;
 }
-
 #rsb-res-cancel:hover {
   background: #e0e0e0;
   border-color: #bbb;
 }
-
 #rsb-res-cancel:active {
   background: #d6d6d6;
   border-color: #aaa;
 }
-
 
 /* --- FULL WIDTH --- */
 .rsb-full-width { grid-column: 1 / -1; }
@@ -147,7 +149,7 @@
 #rsb-modal-reservable input,
 #rsb-modal-reservable select,
 #rsb-modal-reservable textarea {
-  border: 1px solid #ddd !important; /* liseré gris clair forcé */
+  border: 1px solid #ddd !important;
   outline: none;
   border-radius: 4px;
   padding: 6px;
@@ -157,19 +159,17 @@
 #rsb-modal-reservable input:focus,
 #rsb-modal-reservable select:focus,
 #rsb-modal-reservable textarea:focus {
-  border-color: #bbb !important; /* accent légèrement plus foncé au focus */
+  border-color: #bbb !important;
 }
 
-
-/* Grille */
+/* --- GRILLE COULEURS --- */
 .rsb-grid-colors {
   display: grid;
-  grid-template-rows: repeat(3, 80px); /* 4 lignes */
-  grid-auto-flow: column;              /* remplissage par colonne */
+  grid-template-rows: repeat(3, 80px);
+  grid-auto-flow: column;
   gap: 10px;
   margin-top: 4px;
 }
-
 
 /* Chip rond */
 .rsb-grid-colors .rsb-chip {
@@ -179,14 +179,12 @@
   cursor: pointer;
   font-size: 0.75em;
   font-weight: 600;
-
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-
   padding: 4px;
-  border: 2px solid #ccc; /* Liseré gris pour non sélectionné */
+  border: 2px solid #ccc;
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -196,12 +194,16 @@
   box-shadow: 0 0 6px rgba(0,0,0,0.25);
 }
 
-/* --------------------------- */
-/* OPTION 2 — double anneau iOS style */
+/* Sélection */
 .rsb-grid-colors .rsb-chip.selected {
-  box-shadow:
-    0 0 0 6px #fff inset,  /* anneau intérieur plus épais */
-    0 0 0 6px #000;         /* anneau externe */
+  box-shadow: 0 0 0 6px #fff inset, 0 0 0 6px #000;
   transform: scale(1.05);
   border-color: transparent;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 750px) {
+  .rsb-grid-2 {
+    grid-template-columns: 1fr;
+  }
 }

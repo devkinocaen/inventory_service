@@ -4,6 +4,7 @@ import {
     fetchCategories,
     fetchColors,
     fetchSubcategories,
+    fetchPatterns,
     fetchStyles,
     fetchAppConfig
 } from '../libs/sql/index.js';
@@ -20,7 +21,7 @@ let appConfig = null;
 
 let currentItems = [];
 let selectedItems = [];
-let activeFilters = { category: [], subcategory: [], style: [], gender: [], color: [] };
+let activeFilters = { category: [], subcategory: [], style: [], gender: [], color: [], pattern: [] };
 let currentFilterStart = null;
 let currentFilterEnd = null;
 
@@ -28,7 +29,8 @@ let currentFilterEnd = null;
 let currentCategories = [];
 let currentSubcategories = [];
 let currentStyles = [];
-let currentColors = []; // variable globale
+let currentPatterns = [];
+let currentColors = [];
 
 const genderMap = {
   'Homme': 'male',
@@ -57,17 +59,27 @@ let lookupInput, lookupSizeInput;
  * Toggle filtre sélectionné
  */
 function toggleFilter(type, value) {
-  if (activeFilters[type].includes(value)) {
-    activeFilters[type] = activeFilters[type].filter(v => v !== value);
+  if (type === 'pattern') {
+    // Une seule pattern à la fois
+    if (activeFilters.pattern.includes(value)) {
+      activeFilters.pattern = []; // désélection si déjà sélectionnée
+    } else {
+      activeFilters.pattern = [value]; // remplace la sélection précédente
+    }
   } else {
-    activeFilters[type].push(value);
-    
-    // Si c'est une catégorie qui change, on reset les sous-catégories
-    if (type === 'category') {
-      activeFilters.subcategory = [];
+    if (activeFilters[type].includes(value)) {
+      activeFilters[type] = activeFilters[type].filter(v => v !== value);
+    } else {
+      activeFilters[type].push(value);
+
+      // Si c'est une catégorie qui change, on reset les sous-catégories
+      if (type === 'category') {
+        activeFilters.subcategory = [];
+      }
     }
   }
 }
+
 
 
 // Fonction utilitaire pour déterminer si une couleur est sombre ou claire
@@ -83,43 +95,57 @@ function isColorDark(hex) {
 }
 
 
-function renderFilterChips(categories, subcategories, styles, colors) {
+
+function renderFilterChips(categories, subcategories, styles, colors, patterns) {
   const categoryChips = document.getElementById('cstm-categoryChips');
   const subcatChips = document.getElementById('cstm-subcatChips');
   const styleChips = document.getElementById('cstm-styleChips');
   const genderChips = document.getElementById('cstm-genderChips');
   const colorChips = document.getElementById('cstm-colorChips');
-  if (!categoryChips || !subcatChips || !styleChips || !genderChips || !colorChips) return;
+  const patternChips = document.getElementById('cstm-patternChips');
+  if (!categoryChips || !subcatChips || !styleChips || !genderChips || !colorChips || !patternChips) return;
 
-  const makeChip = (name, type, colorHex=null) => {
-    const chip = document.createElement('div');
-    chip.textContent = name;
-    if (type == 'color') {
-      chip.className = 'color-chip' + (activeFilters[type].includes(name) ? ' selected' : '');
-          
-      if (colorHex) {
+    const makeChip = (name, type, colorHex = null, customClass = null) => {
+      const chip = document.createElement('div');
+      chip.textContent = name;
+
+      // Détermination de la classe
+      let baseClass;
+
+      if (type === 'color') {
+        baseClass = 'color-chip';
+      } else if (type === 'pattern') {
+        // Toujours inclure rsb-pattern-chip, puis la classe spécifique si présente
+        baseClass = 'rsb-pattern-chip';
+        if (customClass && customClass.trim()) baseClass += ' ' + customClass.trim();
+      } else {
+        baseClass = 'filter-chip';
+      }
+
+        chip.className = baseClass + (activeFilters[type].includes(name) ? ' active' : '');
+
+      // Styles spécifiques pour les couleurs
+      if (type === 'color' && colorHex) {
         chip.style.backgroundColor = colorHex;
         chip.style.color = isColorDark(colorHex) ? 'white' : 'black';
         chip.style.border = '1px solid #ccc';
       }
-    } else {
-       chip.className = 'filter-chip' + (activeFilters[type].includes(name) ? ' selected' : '');
-    }
 
+      chip.onclick = () => {
+        toggleFilter(type, name);
+        renderFilterChips(currentCategories, currentSubcategories, currentStyles, currentColors, currentPatterns);
+        fetchItemsAndRender();
+      };
 
-    chip.onclick = () => {
-      toggleFilter(type, name);              // met à jour activeFilters
-      renderFilterChips(currentCategories, currentSubcategories, currentStyles, currentColors); // rerender
-      fetchItemsAndRender();
+      return chip;
     };
 
-    return chip;
-  };
 
-  // ---- catégories, sous-catégories, styles, genres (inchangés) ----
+  // ---- Catégories ----
   categoryChips.innerHTML = '';
   categories.forEach(c => categoryChips.appendChild(makeChip(c.name, 'category')));
 
+  // ---- Sous-catégories filtrées par catégorie ----
   subcatChips.innerHTML = '';
   if (activeFilters.category.length > 0) {
     const filteredSubcats = subcategories.filter(sc =>
@@ -128,20 +154,30 @@ function renderFilterChips(categories, subcategories, styles, colors) {
     filteredSubcats.forEach(s => subcatChips.appendChild(makeChip(s.name, 'subcategory')));
   }
 
+  // ---- Styles ----
   styleChips.innerHTML = '';
   styles.forEach(s => styleChips.appendChild(makeChip(s.name, 'style')));
 
+  // ---- Patterns ----
+  patternChips.innerHTML = '';
+    patterns.forEach(p => {
+      const chip = makeChip(p.name, 'pattern', null, `rsb-pattern-chip ${p.css_class || ''}`);
+      patternChips.appendChild(chip);
+    });
+
+
+  // ---- Genres ----
   const genders = ['Homme', 'Femme', 'Unisexe'];
   genderChips.innerHTML = '';
   genders.forEach(g => genderChips.appendChild(makeChip(g, 'gender')));
 
-  // ---- chips couleurs ----
+  // ---- Couleurs ----
   colorChips.innerHTML = '';
   let row = document.createElement('div');
   row.className = 'chip-row';
   colors.forEach((c, idx) => {
     row.appendChild(makeChip(c.name, 'color', c.hex_code));
-    if ((idx+1) % 4 === 0) {
+    if ((idx + 1) % 4 === 0) {
       colorChips.appendChild(row);
       row = document.createElement('div');
       row.className = 'chip-row';
@@ -155,41 +191,52 @@ function renderFilterChips(categories, subcategories, styles, colors) {
  * Fetch les items depuis la base SQL selon les filtres sidebar
  */
 async function fetchItems() {
-    let filterStartDate = currentFilterStart ? formatDateForDatetimeLocal(currentFilterStart) : null;
-    let filterEndDate   = currentFilterEnd   ? formatDateForDatetimeLocal(currentFilterEnd)   : null;
-    
-    
+  let filterStartDate = currentFilterStart ? formatDateForDatetimeLocal(currentFilterStart) : null;
+  let filterEndDate   = currentFilterEnd   ? formatDateForDatetimeLocal(currentFilterEnd)   : null;
+
   if (filterStartDate && filterEndDate && new Date(filterStartDate) >= new Date(filterEndDate)) {
     alert('La date de fin doit être après la date de début');
     filterStartDate = null;
     filterEndDate = null;
   }
-console.log ('activeFilters', activeFilters)
+
+  console.log('activeFilters', activeFilters);
+
   const filters = {
     p_category_ids: activeFilters.category.length
       ? currentCategories
           .filter(c => activeFilters.category.includes(c.name))
           .map(c => c.id)
       : null,
+
     p_subcategory_ids: activeFilters.subcategory.length
       ? currentSubcategories
           .filter(sc => activeFilters.subcategory.includes(sc.name))
           .map(sc => sc.id)
       : null,
+
     p_style_ids: activeFilters.style.length
       ? currentStyles
           .filter(s => activeFilters.style.includes(s.name))
           .map(s => s.id)
       : null,
-      p_color_ids: activeFilters.color.length
-        ? currentColors
-            .filter(c => activeFilters.color.includes(c.name))
-            .map(c => c.id)
-        : null,
+
+    p_pattern_ids: activeFilters.pattern.length   // <-- ajout patterns
+      ? currentPatterns
+          .filter(p => activeFilters.pattern.includes(p.name))
+          .map(p => p.id)
+      : null,
+
+    p_color_ids: activeFilters.color.length
+      ? currentColors
+          .filter(c => activeFilters.color.includes(c.name))
+          .map(c => c.id)
+      : null,
 
     p_gender: activeFilters.gender.length
       ? activeFilters.gender.map(g => genderMap[g])
       : null,
+
     p_start_date: filterStartDate,
     p_end_date: filterEndDate,
     p_privacy_min: 'private',
@@ -197,7 +244,7 @@ console.log ('activeFilters', activeFilters)
   };
 
   try {
-      console.log ('filters', filters)
+    console.log('filters', filters);
     currentItems = await fetchReservables(client, filters);
   } catch (err) {
     console.error('[Collection] Erreur fetchReservables :', err);
@@ -292,12 +339,13 @@ async function fetchItemsAndRender() {
  */
 async function loadData() {
   try {
-    const [items, categories, subcategories, styles, colors] = await Promise.all([
+    const [items, categories, subcategories, styles, colors, patterns] = await Promise.all([
       fetchReservables(client, {p_privacy_min: 'private', p_status_ids: ['disponible']}),
       fetchCategories(client),
       fetchSubcategories(client),
       fetchStyles(client),
-      fetchColors(client)
+      fetchColors(client),
+      fetchPatterns(client)
     ]);
 
     currentItems = items;
@@ -305,9 +353,10 @@ async function loadData() {
     currentSubcategories = subcategories;
     currentStyles = styles;
     currentColors = colors;
+    currentPatterns = patterns;
 
     // <-- passer colors à renderFilterChips
-    renderFilterChips(categories, subcategories, styles, colors);
+    renderFilterChips(categories, subcategories, styles, colors, patterns);
     await renderItems();
   } catch (err) {
     const errMsg = formatServerError(err.message || err);

@@ -82,16 +82,11 @@ BEGIN
         r.manager_id,
         m.name::text AS manager_name,
         r.size::text,
-        array_agg(DISTINCT rs.id)   FILTER (WHERE rs.id IS NOT NULL) AS style_ids,
+        array_agg(DISTINCT rs.id) FILTER (WHERE rs.id IS NOT NULL) AS style_ids,
         array_agg(DISTINCT rs.name::text) FILTER (WHERE rs.name IS NOT NULL) AS style_names,
         COALESCE(
-            jsonb_agg(
-                DISTINCT jsonb_build_object(
-                    'id', c2.id,
-                    'name', c2.name,
-                    'hex_code', c2.hex_code
-                )
-            ) FILTER (WHERE c2.id IS NOT NULL),
+            jsonb_agg(DISTINCT jsonb_build_object('id', c2.id, 'name', c2.name, 'hex_code', c2.hex_code))
+            FILTER (WHERE c2.id IS NOT NULL),
             '[]'::jsonb
         ) AS colors
     FROM inventory.reservable r
@@ -114,7 +109,7 @@ BEGIN
         AND (p_name IS NULL OR r.name ILIKE '%' || p_name || '%')
         AND (p_size IS NULL OR r.size = p_size)
         AND (p_qualities IS NULL OR r.quality = ANY(p_qualities))
-        AND (p_pattern_ids IS NULL OR r.pattern_id = ANY(p_pattern_ids)) 
+        AND (p_pattern_ids IS NULL OR r.pattern_id = ANY(p_pattern_ids))
         AND (
             p_privacy_min IS NULL
             OR array_position(ARRAY['hidden','private','public']::text[], r.privacy::text)
@@ -124,10 +119,9 @@ BEGIN
         AND (
             p_style_ids IS NULL
             OR EXISTS (
-                SELECT 1
-                FROM inventory.reservable_style_link rsl2
+                SELECT 1 FROM inventory.reservable_style_link rsl2
                 WHERE rsl2.reservable_id = r.id
-                AND rsl2.style_id = ANY(p_style_ids)
+                  AND rsl2.style_id = ANY(p_style_ids)
             )
         )
         AND (
@@ -148,11 +142,11 @@ BEGIN
             OR p_end_date IS NULL
             OR inventory.is_available(r.id, p_start_date, p_end_date)
         )
-    GROUP BY r.id, r.pattern_id, r.name, r.description, r.price_per_day, r.photos,
-             r.gender, r.privacy, r.inventory_type, r.category_id,
-             c.name, r.subcategory_id, sc.name, r.status, r.quality,
-             r.storage_location_id, sl.name, r.owner_id, o.name,
-             r.manager_id, m.name, r.size
+    GROUP BY
+        r.id, r.pattern_id, p.name, r.name, r.serial_id, r.description, r.price_per_day, r.photos,
+        r.gender, r.privacy, r.inventory_type, r.category_id, c.name, r.subcategory_id, sc.name,
+        r.status, r.quality, r.is_in_stock, r.storage_location_id, sl.name,
+        r.owner_id, o.name, r.manager_id, m.name, r.size
     ORDER BY r.updated_at DESC
     LIMIT p_limit OFFSET p_offset;
 END;

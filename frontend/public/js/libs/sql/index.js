@@ -34,6 +34,7 @@ export { fetchReservableStatuses } from './fetchReservableStatuses.js';
 export { fetchReservableTypes } from './fetchReservableTypes.js';
 export { fetchCategories } from './fetchCategories.js';
 export { fetchColors } from './fetchColors.js';
+export { fetchPatterns } from './fetchPatterns.js';
 
 export { upsertCategory } from './upsertCategory.js';
 export { deleteCategory } from './deleteCategory.js';

@@ -117,7 +117,7 @@ CREATE TABLE inventory.reservable_subcategory (
 -- ===========================
 -- Couleurs
 -- ===========================
-CREATE TABLE color (
+CREATE TABLE inventory.color (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
     hex_code CHAR(7) NOT NULL UNIQUE  -- exemple : #FF5733
@@ -126,9 +126,10 @@ CREATE TABLE color (
 -- ===========================
 -- Motifs
 -- ===========================
-CREATE TABLE pattern (
+CREATE TABLE inventory.pattern (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE
+    name VARCHAR(50) NOT NULL UNIQUE,
+    css_class VARCHAR(50)
 );
 
 -- ===========================
