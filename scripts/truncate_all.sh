@@ -33,6 +33,7 @@ TABLES=(
   organization
   person
   color
+  pattern
   app_config
 )
 

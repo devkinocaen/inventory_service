@@ -124,6 +124,14 @@ CREATE TABLE color (
 );
 
 -- ===========================
+-- Motifs
+-- ===========================
+CREATE TABLE pattern (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- ===========================
 -- Objets réservable
 -- ===========================
 CREATE TABLE inventory.reservable (
@@ -143,6 +151,7 @@ CREATE TABLE inventory.reservable (
     privacy inventory.privacy_type DEFAULT 'private',
     price_per_day double precision DEFAULT 0,
     description TEXT DEFAULT '',
+    pattern_id INT REFERENCES inventory.pattern(id),
     photos JSONB DEFAULT '[]'::jsonb,
     is_in_stock BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),

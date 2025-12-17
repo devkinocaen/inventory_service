@@ -168,6 +168,20 @@ VALUES
 ON CONFLICT (name) DO NOTHING;
 
 -- ===========================================
+-- Motifs
+-- ===========================================
+INSERT INTO inventory.pattern (name)
+VALUES
+  ('Uni'),
+  ('Rayures'),
+  ('Carreaux'),
+  ('Pois'),
+  ('Floral'),
+  ('Imprimé')
+ON CONFLICT (name) DO NOTHING;
+
+
+-- ===========================================
 -- DONE ✅
 -- ===========================================
 

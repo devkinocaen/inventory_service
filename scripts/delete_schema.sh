@@ -24,6 +24,7 @@ tables=(
     "app_config"
     "person"
     "color"
+    "pattern"
     "organization"
     "organization_person"
     "storage_location"
