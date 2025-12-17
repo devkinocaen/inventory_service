@@ -37,7 +37,8 @@ ALLOWED_ORIGINS = [
     "https://inventory-service-bice.vercel.app",
     "https://costumeriejulie.vercel.app",
     "https://costumerie-julie.vercel.app",
-    "https://costumerie-alex.vercel.app"
+    "https://costumerie-alex.vercel.app",
+    "https://lafabriqueapersonnages.vercel.app"
 ]
 
 
@@ -56,9 +57,10 @@ TABLES = [
     # 🔹 Config globale
     "inventory.app_config",
 
-    # 🔹 Styles et couleurs
+    # 🔹 Styles, motifs et couleurs
     "inventory.reservable_style",
     "inventory.color",
+    "inventory.pattern",
 
     # 🔹 Catégories et sous-catégories
     "inventory.reservable_category",
@@ -95,7 +97,8 @@ SEQUENCES = [
     "reservable_batch_id_seq",
     "reservable_id_seq",
     "booking_reference_id_seq",
-    "reservable_booking_id_seq"
+    "reservable_booking_id_seq",
+    "reservable_pattern_id_seq"
 ]
 
 

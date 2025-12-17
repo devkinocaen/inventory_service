@@ -8,6 +8,7 @@ CREATE OR REPLACE FUNCTION inventory.create_reservable(
     p_category_id INT DEFAULT NULL,
     p_subcategory_id INT DEFAULT NULL,
     p_size TEXT DEFAULT '',
+    p_pattern_id INT DEFAULT NULL,
     p_gender inventory.reservable_gender DEFAULT 'unisex',
     p_privacy inventory.privacy_type DEFAULT 'private',
     p_price_per_day DOUBLE PRECISION DEFAULT 0,
@@ -16,6 +17,7 @@ CREATE OR REPLACE FUNCTION inventory.create_reservable(
     p_status inventory.reservable_status DEFAULT 'disponible',
     p_quality inventory.reservable_quality DEFAULT 'bon état',
     p_is_in_stock BOOLEAN DEFAULT TRUE,
+    p_style_ids INT[] DEFAULT NULL,
     p_color_ids INT[] DEFAULT NULL
 )
 RETURNS INT
@@ -42,6 +44,7 @@ BEGIN
         status,
         quality,
         is_in_stock,
+        pattern_id,
         created_at
     ) VALUES (
         p_name,
@@ -61,9 +64,17 @@ BEGIN
         p_status,
         p_quality,
         p_is_in_stock,
+        p_pattern_id,
         NOW()
     )
     RETURNING id INTO v_id;
+
+    -- 🔹 Ajouter les styles si fournis
+    IF p_style_ids IS NOT NULL THEN
+        INSERT INTO inventory.reservable_style_link (reservable_id, style_id)
+        SELECT v_id, unnest_id
+        FROM unnest(p_style_ids) AS unnest_id;
+    END IF;
 
     -- 🔹 Ajouter les couleurs si fournies
     IF p_color_ids IS NOT NULL THEN

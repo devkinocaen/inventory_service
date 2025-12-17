@@ -2,6 +2,7 @@ import { initClient } from '../libs/client.js';
 import {
     fetchReservableById,
     fetchColors,
+    fetchPatterns,
     updateReservable,
     createReservable,
     fetchCategories,
@@ -27,6 +28,7 @@ let organizations = [];
 let storageLocations = [];
 let onSaveCallback = null; // callback à appeler après sauvegarde
 let allColors = [];
+let allPatterns = [];
 
 // -----------------------------
 // Initialisation modal
@@ -46,13 +48,15 @@ export async function initReservableModal() {
         fetchedStyles,
         fetchedOrganizations,
         fetchedStorageLocations,
-        fetchedColors
+        fetchedColors,
+        fetchedPatterns
     ] = await Promise.all([
         fetchCategories(client),
         fetchStyles(client),
         fetchOrganizations(client),
         fetchStorageLocations(client),
-        fetchColors(client)
+        fetchColors(client),
+        fetchPatterns(client)
     ]);
 
     // 🔹 Stocker globalement
@@ -61,6 +65,7 @@ export async function initReservableModal() {
     organizations = fetchedOrganizations;
     storageLocations = fetchedStorageLocations;
     allColors = fetchedColors;
+    allPatterns = fetchedPatterns;
 
     // 🔹 Initialiser les selects
     await initCategorySelects();
@@ -68,6 +73,7 @@ export async function initReservableModal() {
     initOrganizationSelects();
     initStorageSelect();
     renderColorChips();
+    renderPatternChips();
 }
 
 
@@ -234,8 +240,8 @@ export async function openReservableModal(reservableId, onSave = null) {
             '#rsb-res-size': currentReservable.size,
             '#rsb-res-price': currentReservable.price_per_day,
             '#rsb-res-description': currentReservable.description,
-            '#rsb-res-status': currentReservable.status || 'disponible',
-            '#rsb-res-quality': currentReservable.quality || 'neuf',
+            '#rsb-res-status': currentReservable.status || 'Disponible',
+            '#rsb-res-quality': currentReservable.quality || 'Neuf',
             '#rsb-res-category': currentReservable.category_id,
             '#rsb-res-subcategory': currentReservable.subcategory_id,
             '#rsb-res-owner': currentReservable.owner_id,
@@ -253,31 +259,40 @@ export async function openReservableModal(reservableId, onSave = null) {
     } else {
         document.getElementById('rsb-title').textContent = 'Créer un nouvel item';
 
+        // Reset tous les champs
         dialog.querySelectorAll('input, select, textarea').forEach(el => {
             if (el.type === 'radio') el.checked = false;
             else el.value = '';
         });
-        dialog.querySelector('#rsb-res-status').value = 'disponible';
-        dialog.querySelector('#rsb-res-quality').value = 'neuf';
-        dialog.querySelector('input[name="rsb-res-gender"][value="unisex"]').checked = true;
-        dialog.querySelector('input[name="rsb-res-privacy"][value="public"]').checked = true;
-        
-        
+
+        // 🔹 valeurs par défaut cohérentes avec la base
+        const statusEl = dialog.querySelector('#rsb-res-status');
+        if (statusEl) statusEl.value = 'disponible';
+
+        const qualityEl = dialog.querySelector('#rsb-res-quality');
+        if (qualityEl) qualityEl.value = 'bon état';
+
+        const genderEl = dialog.querySelector('input[name="rsb-res-gender"][value="unisex"]');
+        if (genderEl) genderEl.checked = true;
+
+        const privacyEl = dialog.querySelector('input[name="rsb-res-privacy"][value="public"]');
+        if (privacyEl) privacyEl.checked = true;
+
         // ================================
-        // Injecter les valeurs par défaut
+        // Injecter les valeurs par défaut depuis appConfig
         // ================================
         if (appConfig) {
-            if (appConfig.default_owner_id) {
-                dialog.querySelector('#rsb-res-owner').value = appConfig.default_owner_id;
-            }
-            if (appConfig.default_manager_id) {
-                dialog.querySelector('#rsb-res-manager').value = appConfig.default_manager_id;
-            }
-            if (appConfig.default_storage_location_id) {
-                dialog.querySelector('#rsb-res-storage').value = appConfig.default_storage_location_id;
-            }
+            const ownerEl = dialog.querySelector('#rsb-res-owner');
+            if (ownerEl && appConfig.default_owner_id) ownerEl.value = appConfig.default_owner_id;
+
+            const managerEl = dialog.querySelector('#rsb-res-manager');
+            if (managerEl && appConfig.default_manager_id) managerEl.value = appConfig.default_manager_id;
+
+            const storageEl = dialog.querySelector('#rsb-res-storage');
+            if (storageEl && appConfig.default_storage_location_id) storageEl.value = appConfig.default_storage_location_id;
         }
     }
+
     
     // 🔹 Ajouter écouteur ESCAPE
     const escListener = (e) => {
@@ -289,6 +304,8 @@ export async function openReservableModal(reservableId, onSave = null) {
     document.addEventListener('keydown', escListener);
 
     renderStyleChips();
+    renderPatternChips();
+
     modal.classList.remove('hidden');
     void dialog.offsetWidth;
     dialog.classList.add('show');
@@ -320,6 +337,7 @@ async function saveReservable(e) {
     const privacy = dialog.querySelector('input[name="rsb-res-privacy"]:checked')?.value;
     const style_ids = Array.from(dialog.querySelectorAll('#rsb-chips-style .rsb-chip')).map(c => Number(c.dataset.id));
     const color_ids = getSelectedColorIds();
+    const selectedPatternId = currentReservable?.pattern_id || null;
 
     const data = {
         id: currentReservable?.id || null,
@@ -340,7 +358,8 @@ async function saveReservable(e) {
         gender,
         privacy,
         style_ids,
-        color_ids
+        color_ids,
+        pattern_id: selectedPatternId
     };
 
     try {
@@ -409,6 +428,34 @@ function renderColorChips() {
         }
 
         chip.addEventListener('click', () => chip.classList.toggle('selected'));
+        container.appendChild(chip);
+    });
+}
+
+// -----------------------------
+// Motifs
+// -----------------------------
+function renderPatternChips() {
+    const container = dialog.querySelector('#rsb-chips-pattern');
+    container.innerHTML = '';
+
+    const selectedPatternId = currentReservable?.pattern_id || null;
+    allPatterns.forEach(pattern => {
+        const chip = document.createElement('div');
+        chip.className = `rsb-pattern-chip ${pattern.css_class || ''}`; // css_class stocké en base
+        chip.dataset.id = pattern.id;
+        chip.textContent = pattern.name;
+
+        if (selectedPatternId === Number(pattern.id)) {
+            chip.classList.add('active');
+            console.log ("classe active ajoutée")
+        }
+        chip.addEventListener('click', () => {
+            container.querySelectorAll('.rsb-pattern-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            currentReservable.pattern_id = pattern.id;
+        });
+
         container.appendChild(chip);
     });
 }

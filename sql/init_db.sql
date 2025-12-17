@@ -168,6 +168,22 @@ VALUES
 ON CONFLICT (name) DO NOTHING;
 
 -- ===========================================
+-- Motifs
+-- ===========================================
+INSERT INTO inventory.pattern (name, css_class)
+VALUES
+  ('Uni', 'rsb-pattern-plain'),
+  ('Rayures', 'rsb-pattern-striped'),
+  ('Carreaux', 'rsb-pattern-checkered'),
+  ('Pois', 'rsb-pattern-dotted'),
+  ('Floral', 'rsb-pattern-floral'),
+  ('Animalier', 'rsb-pattern-animal'),
+  ('Géométrique', 'rsb-pattern-geometric'),
+  ('Autres imprimés', 'rsb-pattern-random')
+ON CONFLICT (name) DO NOTHING;
+
+
+-- ===========================================
 -- DONE ✅
 -- ===========================================
 

@@ -24,10 +24,12 @@ export async function fetchReservables(client, filters = {}) {
     p_status_ids: Array.isArray(filters.p_status_ids) && filters.p_status_ids.length
       ? filters.p_status_ids
       : null,
-
     // 🔹 nouveau : filtre par couleurs (vecteur d'IDs)
     p_color_ids: Array.isArray(filters.p_color_ids) && filters.p_color_ids.length
       ? filters.p_color_ids
+      : null,
+    p_pattern_ids: Array.isArray(filters.p_pattern_ids) && filters.p_pattern_ids.length
+      ? filters.p_pattern_ids
       : null,
 
     p_start_date: filters.p_start_date ?? null,
@@ -52,6 +54,8 @@ export async function fetchReservables(client, filters = {}) {
     name: item.name,
     serial_id: item.serial_id,
     description: item.description,
+    pattern_id: item.pattern_id,
+    pattern_name: item.pattern_name,
     price_per_day: item.price_per_day,
     photos: item.photos || [],
     gender: item.gender,

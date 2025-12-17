@@ -11,6 +11,8 @@ RETURNS TABLE (
     category_name TEXT,
     subcategory_id INT,
     subcategory_name TEXT,
+    pattern_id INT,
+    pattern_name TEXT,
     size TEXT,
     gender inventory.reservable_gender,
     privacy inventory.privacy_type,
@@ -40,6 +42,8 @@ AS $$
         c.name AS category_name,
         r.subcategory_id,
         s.name AS subcategory_name,
+        r.pattern_id,
+        p.name AS pattern_name,
         r.size,
         r.gender,
         r.privacy,
@@ -55,6 +59,7 @@ AS $$
     FROM inventory.reservable r
     LEFT JOIN inventory.reservable_category c ON c.id = r.category_id
     LEFT JOIN inventory.reservable_subcategory s ON s.id = r.subcategory_id
+    LEFT JOIN inventory.pattern p ON p.id = r.pattern_id
     LEFT JOIN (
         SELECT rs.reservable_id,
                ARRAY_AGG(rs.style_id) AS style_ids,
@@ -65,7 +70,13 @@ AS $$
     ) styles ON styles.reservable_id = r.id
     LEFT JOIN (
         SELECT rc.reservable_id,
-               JSONB_AGG(JSONB_BUILD_OBJECT('id', c2.id, 'name', c2.name, 'hex_code', c2.hex_code)) AS colors
+               JSONB_AGG(
+                   JSONB_BUILD_OBJECT(
+                       'id', c2.id,
+                       'name', c2.name,
+                       'hex_code', c2.hex_code
+                   )
+               ) AS colors
         FROM inventory.reservable_color_link rc
         LEFT JOIN inventory.color c2 ON c2.id = rc.color_id
         GROUP BY rc.reservable_id

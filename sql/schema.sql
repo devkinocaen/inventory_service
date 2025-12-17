@@ -122,10 +122,19 @@ CREATE TABLE inventory.reservable_subcategory (
 -- ===========================
 -- Couleurs
 -- ===========================
-CREATE TABLE color (
+CREATE TABLE inventory.color (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
     hex_code CHAR(7) NOT NULL UNIQUE  -- exemple : #FF5733
+);
+
+-- ===========================
+-- Motifs
+-- ===========================
+CREATE TABLE inventory.pattern (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    css_class VARCHAR(50)
 );
 
 -- ===========================
@@ -133,7 +142,7 @@ CREATE TABLE color (
 -- ===========================
 CREATE TABLE inventory.reservable (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(150) NOT NULL UNIQUE,
+    name VARCHAR(150) NOT NULL,
     serial_id VARCHAR(50) DEFAULT NULL UNIQUE,
     inventory_type inventory.reservable_type NOT NULL,
     status inventory.reservable_status NOT NULL DEFAULT 'disponible',
@@ -148,6 +157,7 @@ CREATE TABLE inventory.reservable (
     privacy inventory.privacy_type DEFAULT 'private',
     price_per_day double precision DEFAULT 0,
     description TEXT DEFAULT '',
+    pattern_id INT REFERENCES inventory.pattern(id),
     photos JSONB DEFAULT '[]'::jsonb,
     is_in_stock BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),

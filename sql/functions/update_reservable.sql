@@ -18,7 +18,8 @@ CREATE OR REPLACE FUNCTION inventory.update_reservable(
     p_quality inventory.reservable_quality DEFAULT NULL,
     p_is_in_stock BOOLEAN DEFAULT NULL,
     p_style_ids INT[] DEFAULT NULL,
-    p_color_ids INT[] DEFAULT NULL
+    p_color_ids INT[] DEFAULT NULL,
+    p_pattern_id INT DEFAULT NULL       
 )
 RETURNS VOID
 LANGUAGE plpgsql
@@ -83,7 +84,8 @@ BEGIN
         photos = COALESCE(p_photos, photos),
         status = COALESCE(p_status, status),
         quality = COALESCE(p_quality, quality),
-        is_in_stock = COALESCE(p_is_in_stock, is_in_stock)
+        is_in_stock = COALESCE(p_is_in_stock, is_in_stock),
+        pattern_id = COALESCE(p_pattern_id, pattern_id)
     WHERE id = p_id;
 
     -- Mise à jour des styles si fournis

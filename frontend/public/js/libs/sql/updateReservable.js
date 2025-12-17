@@ -23,16 +23,18 @@ export async function updateReservable(client, {
   quality = null,
   is_in_stock = null,
   style_ids = null,
-  color_ids = null
+  color_ids = null,
+  pattern_id = null
 }) {
     
-    // 🔥 Normalisation : texte vide = null
-    if (typeof serial_id === 'string') {
-      serial_id = serial_id.trim();
-      if (serial_id === '') {
-        serial_id = null;
-      }
+  // 🔥 Normalisation : texte vide = null
+  if (typeof serial_id === 'string') {
+    serial_id = serial_id.trim();
+    if (serial_id === '') {
+      serial_id = null;
     }
+  }
+
   const payload = {
     p_id: id,
     p_name: name,
@@ -53,7 +55,8 @@ export async function updateReservable(client, {
     p_quality: quality,
     p_is_in_stock: is_in_stock,
     p_color_ids: Array.isArray(color_ids) && color_ids.length ? color_ids : null,
-    p_style_ids: Array.isArray(style_ids) && style_ids.length ? style_ids : null
+    p_style_ids: Array.isArray(style_ids) && style_ids.length ? style_ids : null,
+    p_pattern_id: pattern_id  
   };
 
   console.log('payload', payload);
