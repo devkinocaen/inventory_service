@@ -3,11 +3,12 @@ CREATE OR REPLACE FUNCTION inventory.get_bookings(
   p_end   TIMESTAMP DEFAULT NULL,
   p_organization_ids INT[] DEFAULT NULL,
   p_category_ids INT[] DEFAULT NULL,
-  p_subcategory_ids INT[] DEFAULT NULL
+  p_subcategory_ids INT[] DEFAULT NULL,
+  p_statuses inventory.booking_status[] DEFAULT NULL
 )
 RETURNS TABLE (
   booking_id INT,
-  status inventory.booking_status
+  status inventory.booking_status,
   reservable_batch_id INT,
   batch_description TEXT,
   renter_organization_id INT,
@@ -18,7 +19,7 @@ RETURNS TABLE (
   booked_at TIMESTAMP,
   booking_person_id INT,
   booking_person_name TEXT,
-  reservables JSONB,
+  reservables JSONB
 )
 LANGUAGE sql STABLE
 AS $$
@@ -76,5 +77,6 @@ AS $$
           AND r.subcategory_id = ANY(p_subcategory_ids)
       )
     )
+    AND (p_statuses IS NULL OR b.status = ANY(p_statuses)) 
   ORDER BY b.start_date, b.id;
 $$;

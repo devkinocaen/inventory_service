@@ -9,6 +9,7 @@ export async function createAccount(
     phone = null,
     organization = null,
     address = null,
+    isIndividual = false,
     role = null
   } = {}
 ) {
@@ -19,6 +20,7 @@ export async function createAccount(
     p_phone: phone,
     p_organization_name: organization,
     p_organization_address: address,
+    p_is_individual: isIndividual,
     p_role: role
   };
 
@@ -29,5 +31,6 @@ export async function createAccount(
     throw error;
   }
 
-  return data || null; // { person_id, organization_id }
+  // data = array of rows returned by Postgres (plpgsql RETURN QUERY)
+  return data?.[0] || null; // { person_id, organization_id, created_user_id }
 }

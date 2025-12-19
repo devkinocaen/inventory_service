@@ -1,7 +1,7 @@
 /**
  * Récupère les organisations pour une personne donnée
  * @param {number} personId - ID de la personne
- * @returns {Promise<Array>} Liste des organisations avec rôle et référent
+ * @returns {Promise<Array>} Liste des organisations avec rôle, référent et nouveaux champs
  */
 export async function fetchOrganizationsByPersonId(client, personId) {
   if (!personId) throw new Error("personId est requis");
@@ -17,14 +17,17 @@ export async function fetchOrganizationsByPersonId(client, personId) {
       return [];
     }
 
-    // Retourne la liste ou tableau vide
-   return data.map(row => ({
+    // Retourne la liste ou tableau vide, avec nouveaux champs
+    return (data || []).map(row => ({
       id: row.id,
       name: row.name,
       address: row.address,
       referent_id: row.referent_id,
       referent_first_name: row.referent_first_name,
       referent_last_name: row.referent_last_name,
+      referent_phone: row.referent_phone,
+      is_individual: row.is_individual ?? false,
+      is_costume_renter: row.is_costume_renter ?? false,
       persons: row.persons
     }));
 

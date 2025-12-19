@@ -6,32 +6,34 @@ export async function updateBooking(
     id,
     start_date = null,
     end_date = null,
-    organization_id = null
+    organization_id = null,
+    status = null  // nouveau paramètre
   }
 ) {
   if (!id) throw new Error('[updateBooking] Booking ID manquant');
 
-  // Génération de la commande SQL prête à copier
+  // Génération de la commande SQL prête à copier pour debug
   const sqlLog = `
 SELECT * FROM inventory.update_booking(
     p_booking_id := ${id},
     p_start := ${start_date !== null ? `'${start_date}'` : 'NULL'},
     p_end := ${end_date !== null ? `'${end_date}'` : 'NULL'},
-    p_organization_id := ${organization_id !== null ? organization_id : 'NULL'}
+    p_organization_id := ${organization_id !== null ? organization_id : 'NULL'},
+    p_status := ${status !== null ? `'${status}'` : 'NULL'}
 );
   `.trim();
 
   console.log('[updateBooking] SQL prêt à copier :\n', sqlLog);
 
-  // Tous les paramètres sont envoyés, même si null
   const params = {
     p_booking_id: id,
     p_start: start_date,
     p_end: end_date,
-    p_organization_id: organization_id
+    p_organization_id: organization_id,
+    p_status: status
   };
-    
-    console.log('param updateBookings', params)
+
+  console.log('param updateBookings', params);
 
   const { data, error } = await client.rpc('update_booking', params);
 

@@ -8,7 +8,8 @@ export async function createBooking(client, params = {}) {
     p_pickup_person_id:       params.p_pickup_person_id ?? null,  // personne qui récupère le panier
     p_start_date:             params.p_start_date ?? null,
     p_end_date:               params.p_end_date ?? null,
-    p_booking_reference_id:   params.p_booking_reference_id ?? null  // toujours en dernier
+    p_booking_reference_id:   params.p_booking_reference_id ?? null, // toujours en dernier
+    p_status:                 params.p_status ?? 'à valider' // 'validé', 'à valider', ou 'annulé'
   };
 
   const { data, error } = await client.rpc('create_booking', rpcParams);
@@ -18,5 +19,6 @@ export async function createBooking(client, params = {}) {
     throw error;
   }
 
-  return data || null;
+  // RETURN QUERY renvoie un tableau, donc on retourne le premier élément
+  return data?.[0] || null;
 }

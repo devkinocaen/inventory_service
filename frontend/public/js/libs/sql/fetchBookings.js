@@ -5,7 +5,8 @@ import { single } from '../helpers.js';
  * @param {object} client - instance du client Neon/PostgreSQL
  * @param {object} params - filtres optionnels :
  *    { p_start, p_end, p_organization_id, p_organization_ids,
- *      p_category_id, p_category_ids, p_subcategory_id, p_subcategory_ids }
+ *      p_category_id, p_category_ids, p_subcategory_id, p_subcategory_ids,
+ *      p_status, p_statuses }
  * @returns {Promise<Array>} - tableau d'objets booking
  */
 export async function fetchBookings(client, params = {}) {
@@ -17,7 +18,9 @@ export async function fetchBookings(client, params = {}) {
     p_category_id = null,
     p_category_ids = null,
     p_subcategory_id = null,
-    p_subcategory_ids = null
+    p_subcategory_ids = null,
+    p_status = null,
+    p_statuses = null
   } = params;
 
   // 🔹 Contrôle d'exclusivité : soit ID simple, soit tableau, pas les deux
@@ -30,18 +33,23 @@ export async function fetchBookings(client, params = {}) {
   if (p_subcategory_id !== null && p_subcategory_ids !== null) {
     throw new Error("Ne passez pas à la fois p_subcategory_id et p_subcategory_ids");
   }
+  if (p_status !== null && p_statuses !== null) {
+    throw new Error("Ne passez pas à la fois p_status et p_statuses");
+  }
 
   // 🔹 Normalisation : transformer les ID simples en tableau
   const orgs = p_organization_ids ?? (p_organization_id !== null ? [p_organization_id] : null);
   const cats = p_category_ids ?? (p_category_id !== null ? [p_category_id] : null);
   const subcats = p_subcategory_ids ?? (p_subcategory_id !== null ? [p_subcategory_id] : null);
+  const statuses = p_statuses ?? (p_status !== null ? [p_status] : null);
 
   const { data, error } = await client.rpc('get_bookings', {
     p_start,
     p_end,
     p_organization_ids: orgs,
     p_category_ids: cats,
-    p_subcategory_ids: subcats
+    p_subcategory_ids: subcats,
+    p_statuses: statuses // <-- nouveau paramètre SQL
   });
 
   if (error) {
@@ -62,6 +70,7 @@ export async function fetchBookings(client, params = {}) {
     start_date: row.start_date,
     end_date: row.end_date,
     booked_at: row.booked_at,
+    status: row.status,
     reservables: row.reservables || []
   }));
 }

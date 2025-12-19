@@ -54,10 +54,13 @@ export { fetchBookings } from './fetchBookings.js';
 export { fetchBookingById } from './fetchBookingById.js';
 export { updateBooking } from './updateBooking.js';
 export { deleteBooking } from './deleteBooking.js';
+export { cancelBooking } from './cancelBooking.js';
+export { validateBooking } from './validateBooking.js';
 export { upsertBookingReference } from './upsertBookingReference.js';
 export { fetchPlanningMatrix } from './fetchPlanningMatrix.js';
 export { fetchAvailability } from './fetchAvailability.js';
 export { isAvailable } from './isAvailable.js';
+
 
 // ==========================
 // BATCHES

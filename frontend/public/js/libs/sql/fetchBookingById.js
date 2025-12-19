@@ -7,9 +7,9 @@ export async function fetchBookingById(client, id) {
         console.log('raw data', data);
 
         if (!data || data.length === 0) return null;
-
-        // data[0] = { get_booking_by_id: { booking: ..., batch: ... } }
-        const bookingObj = Object.values(data[0])[0]; // récupère directement { booking, batch }
+        
+        // récupère directement { booking, batch }
+        const bookingObj = Object.values(data[0])[0];
         return bookingObj;
 
     } catch (err) {
