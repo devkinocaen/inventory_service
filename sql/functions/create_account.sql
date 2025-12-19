@@ -5,6 +5,7 @@ CREATE OR REPLACE FUNCTION inventory.create_account(
     p_phone TEXT,
     p_organization_name TEXT,
     p_organization_address TEXT,
+    p_is_individual BOOLEAN,
     p_role TEXT DEFAULT 'viewer',
     p_password TEXT DEFAULT 'temporaryPassword123'
 )
@@ -58,7 +59,6 @@ BEGIN
     SET raw_user_meta_data = COALESCE(auth.user_profiles.raw_user_meta_data, '{}'::jsonb)
                             || EXCLUDED.raw_user_meta_data;
 
-
     ---------------------------------------------------------
     -- Vérifier si l'email est déjà associé à une personne
     ---------------------------------------------------------
@@ -90,15 +90,17 @@ BEGIN
     ---------------------------------------------------------
     -- Upsert organisation via upsert_organization
     ---------------------------------------------------------
-    SELECT uo.id INTO v_org_id
+    SELECT uo.org_id INTO v_org_id
     FROM inventory.upsert_organization(
         p_name := p_organization_name,
         p_referent_id := v_person_id,
         p_address := p_organization_address,
+        p_is_individual := p_is_individual,
+        p_is_costume_renter := FALSE,
         p_person_roles := jsonb_build_array(
             jsonb_build_object('person_id', v_person_id, 'role', p_role)
         )
-    ) AS uo(id INT);
+    ) AS uo(org_id INT, org_name TEXT, org_address TEXT, org_referent_id INT, is_individual BOOLEAN, is_costume_renter BOOLEAN);
 
     ---------------------------------------------------------
     -- Retourner les identifiants

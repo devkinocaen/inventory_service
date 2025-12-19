@@ -7,6 +7,7 @@ AS $$
 DECLARE
     v_status inventory.booking_status;
 BEGIN
+    -- Verrouiller la réservation
     SELECT status
     INTO v_status
     FROM inventory.reservable_booking
@@ -21,8 +22,12 @@ BEGIN
         RAISE EXCEPTION 'La réservation % est déjà annulée', p_booking_id;
     END IF;
 
+    -- Passer le statut à 'annulé'
     UPDATE inventory.reservable_booking
     SET status = 'annulé'
     WHERE id = p_booking_id;
+
+    -- ⚠️ Les réservables sont automatiquement libérés
+    --     car les fonctions de disponibilité ne considèrent que les réservations validées.
 END;
 $$;

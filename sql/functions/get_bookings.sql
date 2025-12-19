@@ -7,6 +7,7 @@ CREATE OR REPLACE FUNCTION inventory.get_bookings(
 )
 RETURNS TABLE (
   booking_id INT,
+  status inventory.booking_status
   reservable_batch_id INT,
   batch_description TEXT,
   renter_organization_id INT,
@@ -17,12 +18,13 @@ RETURNS TABLE (
   booked_at TIMESTAMP,
   booking_person_id INT,
   booking_person_name TEXT,
-  reservables JSONB
+  reservables JSONB,
 )
 LANGUAGE sql STABLE
 AS $$
   SELECT
     b.id,
+    b.status,
     b.reservable_batch_id,
     rb.description,
     b.renter_organization_id,

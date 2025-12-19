@@ -51,7 +51,9 @@ CREATE TABLE inventory.organization (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL UNIQUE,
     address VARCHAR(200),
-    referent_id INT REFERENCES inventory.person(id) ON DELETE SET NULL
+    referent_id INT REFERENCES inventory.person(id) ON DELETE SET NULL,
+    is_individual BOOLEAN NOT NULL DEFAULT FALSE,  -- TRUE si particulier
+    is_costume_renter BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- ===========================

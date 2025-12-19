@@ -37,15 +37,17 @@ BEGIN
         RETURN FALSE;
     END IF;
 
-    -- Vérifier aucune réservation qui chevauche
+    -- Vérifier aucune réservation qui chevauche (uniquement pour les bookings validés)
     SELECT COUNT(*)
     INTO overlap_count
     FROM inventory.reservable_booking rb
     JOIN inventory.reservable_batch_link rbl
       ON rb.reservable_batch_id = rbl.batch_id
     WHERE rbl.reservable_id = p_reservable_id
-      AND rb.period && tsrange(p_start_date, p_end_date, '[]');
+      AND rb.period && tsrange(p_start_date, p_end_date, '[]')
+      AND rb.status = 'validé';  -- ← condition ajoutée
 
     RETURN overlap_count = 0;
+
 END;
 $$;

@@ -1,4 +1,6 @@
-CREATE OR REPLACE FUNCTION inventory.get_organizations()
+CREATE OR REPLACE FUNCTION inventory.get_organizations(
+    p_is_costume_renter BOOLEAN DEFAULT NULL
+)
 RETURNS TABLE(
     id INT,
     name TEXT,
@@ -7,6 +9,8 @@ RETURNS TABLE(
     referent_first_name TEXT,
     referent_last_name TEXT,
     referent_phone TEXT,
+    is_individual BOOLEAN,
+    is_costume_renter BOOLEAN,
     persons JSONB
 )
 LANGUAGE plpgsql
@@ -22,6 +26,8 @@ BEGIN
         pr.first_name::TEXT AS referent_first_name,
         pr.last_name::TEXT AS referent_last_name,
         pr.phone::TEXT AS referent_phone,
+        o.is_individual,
+        o.is_costume_renter,
         (
             SELECT COALESCE(
                 JSONB_AGG(
@@ -58,6 +64,7 @@ BEGIN
         ) AS persons
     FROM inventory.organization o
     LEFT JOIN inventory.person pr ON pr.id = o.referent_id
+    WHERE p_is_costume_renter IS NULL OR o.is_costume_renter = p_is_costume_renter
     ORDER BY o.name;
 END;
 $$;

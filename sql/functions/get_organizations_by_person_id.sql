@@ -9,6 +9,8 @@ RETURNS TABLE (
     referent_first_name TEXT,
     referent_last_name TEXT,
     referent_phone TEXT,
+    is_individual BOOLEAN,
+    is_costume_renter BOOLEAN,
     persons JSONB
 )
 LANGUAGE plpgsql
@@ -24,6 +26,8 @@ BEGIN
         pr.first_name::TEXT AS referent_first_name,
         pr.last_name::TEXT AS referent_last_name,
         pr.phone::TEXT AS referent_phone,
+        o.is_individual,
+        o.is_costume_renter,
         (
             SELECT COALESCE(
                 JSONB_AGG(

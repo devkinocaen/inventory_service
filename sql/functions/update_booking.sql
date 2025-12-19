@@ -2,7 +2,8 @@ CREATE OR REPLACE FUNCTION inventory.update_booking(
     p_booking_id INT,
     p_start TIMESTAMP DEFAULT NULL,
     p_end TIMESTAMP DEFAULT NULL,
-    p_organization_id INT DEFAULT NULL
+    p_organization_id INT DEFAULT NULL,
+    p_status inventory.booking_status DEFAULT NULL  -- ← ajout du paramètre status
 )
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -22,7 +23,8 @@ BEGIN
     SET
         start_date = COALESCE(p_start, start_date),
         end_date = COALESCE(p_end, end_date),
-        renter_organization_id = COALESCE(p_organization_id, renter_organization_id)
+        renter_organization_id = COALESCE(p_organization_id, renter_organization_id),
+        status = COALESCE(p_status, status)  -- ← mise à jour du statut si fourni
     WHERE id = p_booking_id;
 
     RETURN TRUE;
