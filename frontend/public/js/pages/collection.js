@@ -385,11 +385,27 @@ export async function init() {
     // --- Vérifie si connexion anonyme ---
     const loggedUser = JSON.parse(localStorage.getItem('loggedUser') || '{}');
     const isAnonymous = loggedUser?.role === 'anonymous';
-    
+    const isViewer = loggedUser?.role === 'viewer';
+    const isIndividual = false;
+    console.log('loggedUser', loggedUser)
+    if (isViewer){
+        if (loggedUser.personId) {
+          const orgs = await fetchOrganizationsByPersonId(client, logged.personId);
+            console.log ('orgs', orgs)
+            if (orgs.length == 1) {
+                if (orgs[0].is_individual) {
+                    isIndividual = true
+                }
+            }
+        }
+    }
+
     if (isAnonymous) {
       // Masque les boutons
       if (cartToggle) cartToggle.style.display = 'none';
       if (orgToggle) orgToggle.style.display = 'none';
+    } else if (isIndividual){
+         orgToggle.style.display = 'none';
     }
     
     
@@ -435,6 +451,11 @@ export async function init() {
         alert("⚠️ Connexion requise pour accéder au panier !");
         return;
       }
+     if (isIndividual) {
+       // Affiche un toast
+       alert("⚠️ Module naccessible pour un particulier");
+       return;
+     }
     const itemsForModal = selectedItems.map(id => {
       const item = currentItems.find(i => i.id === id);
       return item ? {

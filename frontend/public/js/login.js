@@ -293,6 +293,8 @@ if (!dbSelect) {
         if (client) {
           try {
             const person = await fetchPersonByEmail(client, userEmail);
+             console.log ("userEmail", userEmail)
+            console.log ("fetchPersonByEmail", fetchPersonByEmail)
             if (person && !isNaN(Number(person.id))) {
               personId = person.id;
               firstName = person.first_name;
@@ -301,6 +303,10 @@ if (!dbSelect) {
               console.log("utilisateur identifié:", firstName, lastName, person);
             } else {
               console.log("utilisateur NON identifié (aucune correspondance)");
+              alert('Email non reconnu : ' + email);
+              submitBtn.disabled = false;
+              submitBtn.textContent = "Se connecter";
+              return;
             }
 
           } catch (err) {
