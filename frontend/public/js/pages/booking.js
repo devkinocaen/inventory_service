@@ -151,6 +151,8 @@ async function renderBookingTable(bookings) {
 
           // 🔹 Met à jour le bouton Check‑in/Check‑out en fonction du nouveau statut
           const row = tdStatus.closest('tr');
+          styleBookingRow(row, newStatus);
+
           const btnCheck = row.querySelector('.btn-check-stock');
           const batchId = Number(btnCheck.dataset.batchId);
           const stockStatus = batchStatusesMap.get(batchId);
@@ -224,6 +226,8 @@ async function renderBookingTable(bookings) {
     tr.appendChild(tdDelete);
 
     // Ajout ligne au tableau
+    styleBookingRow(tr, b.status);
+
     tbody.appendChild(tr);
   }
 
@@ -421,7 +425,7 @@ async function onCheckStockClick(e) {
       if (confirm("Tous les objets sont sortis. Voulez-vous les rentrer ?")) {
         await setBatchInStock(client, batchId, true);
       //  alert('Batch rentré dans le stock.');
-          showToast('✅ `Lot rentré du stock`', 'success');
+          showToast('✅ `Lot rentré dand le stock`', 'success');
 
       }
     } else {
@@ -479,7 +483,7 @@ export async function init() {
 
 function updateCheckButtonLabel(btn, stockStatus, bookingStatus) {
   if (bookingStatus !== 'validé') {
-    btn.textContent = '—';
+    btn.textContent = 'inactif';
     btn.disabled = true;
     return;
   }
@@ -589,4 +593,33 @@ function initSortableColumns(selector = '#bookings_table') {
 }
 
 
+function styleBookingRow(tr, status) {
+  if (!tr) return;
+
+  tr.style.fontStyle = '';
+  tr.style.color = '';
+  tr.style.backgroundColor = '';
+
+  switch (status) {
+    case 'annulé':
+      tr.style.fontStyle = 'italic';
+      tr.style.color = '#333';          // gris sombre
+      tr.style.backgroundColor = '#eee'; // gris clair
+      break;
+    case 'à valider':
+      tr.style.fontStyle = 'normal';
+      tr.style.color = '#000';
+      tr.style.backgroundColor = '#d0e7ff'; // bleu clair
+      break;
+    case 'validé':
+      tr.style.fontStyle = 'normal';
+      tr.style.color = '#000';
+      tr.style.backgroundColor = '#d4f4dd'; // vert clair
+      break;
+    default:
+      tr.style.fontStyle = 'normal';
+      tr.style.color = '';
+      tr.style.backgroundColor = '';
+  }
+}
 

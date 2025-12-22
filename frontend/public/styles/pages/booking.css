@@ -221,3 +221,30 @@ dialog.modal {
 }
 th.sortable.asc::after { content: " ▲"; }
 th.sortable.desc::after { content: " ▼"; }
+
+
+/* ======== Rows according to status ======== */
+#bookings_table tr.status-cancelled {
+  background-color: #e0e0e0;   /* light grey */
+  color: #555;                 /* dark grey */
+  font-style: italic;
+}
+
+#bookings_table tr.status-pending {
+  background-color: #cce5ff;   /* light blue */
+  color: #004085;              /* darker text for contrast */
+}
+
+#bookings_table tr.status-validated {
+  background-color: #d4edda;   /* light green */
+  color: #155724;              /* dark green text */
+}
+
+/* ⚠️ Ensure text in inputs remains readable */
+#bookings_table tr.status-cancelled input,
+#bookings_table tr.status-pending input,
+#bookings_table tr.status-validated input {
+  background-color: inherit;
+  color: inherit;
+  font-style: inherit;
+}
