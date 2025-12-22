@@ -3,7 +3,7 @@
     {
       "file": "$BASE_PATH/pages/collection.html",
       "title": "Collection",
-      "user": "admin,dev,viewer",
+      "user": "admin,dev,viewer,anonymous",
       "scripts": [
           "../js/pages/collection.js"
       ]

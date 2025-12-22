@@ -141,6 +141,55 @@ def login(database_id=None):
                 pass
 
 
+def anonymous_login(database_id=None):
+    logger.debug("Anonymous login attempt for database: %s", database_id)
+
+    # 🔹 Récupère config base
+    db_config = get_db_config(database_id.upper() if database_id else "")
+    auth_role = db_config.get("auth_role", "authenticated")
+    jwt_audience = auth_role
+    jwt_issuer = db_config.get("issuer", "https://fallback.issuer")
+
+    try:
+        now = datetime.now(timezone.utc)
+
+        # ⏳ TTL court pour l’anonyme (ex: 30 min)
+        exp = now + timedelta(minutes=30)
+
+        claims = {
+            # Pas d’utilisateur réel
+            "sub": "anonymous",
+            "role": auth_role,  # ⚠️ DOIT rester "authenticated"
+            "app_metadata": {
+                "role": "anonymous"
+            },
+            "aud": jwt_audience,
+            "iss": jwt_issuer,
+            "iat": int(now.timestamp()),
+            "exp": int(exp.timestamp())
+        }
+
+        token = jwt.encode(claims, JWT_SECRET, algorithm="HS256")
+        if isinstance(token, bytes):
+            token = token.decode("utf-8")
+
+        logger.info("Anonymous login successful")
+
+        return jsonify({
+            "access_token": token,
+            "token_type": "bearer",
+            "expires_in": 1800,
+            "user": {
+                "id": None,
+                "role": "anonymous"
+            }
+        }), 200
+
+    except Exception as e:
+        logger.exception("Anonymous login failed")
+        return jsonify({"error": "Anonymous login failed"}), 500
+
+
 def verify(database_id=None):
     data = request.get_json(force=True) or {}
     token = data.get("token")

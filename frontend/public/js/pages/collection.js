@@ -382,6 +382,17 @@ export async function init() {
   lookupInput = document.getElementById('cstm-lookupInput');
   lookupSizeInput = document.getElementById('cstm-lookupSizeInput');
 
+    // --- Vérifie si connexion anonyme ---
+    const loggedUser = JSON.parse(localStorage.getItem('loggedUser') || '{}');
+    const isAnonymous = loggedUser?.role === 'anonymous';
+    
+    if (isAnonymous) {
+      // Masque les boutons
+      if (cartToggle) cartToggle.style.display = 'none';
+      if (orgToggle) orgToggle.style.display = 'none';
+    }
+    
+    
   if (!document.getElementById('cstm-cartBottom')) {
     const bottomCart = document.createElement('div');
     bottomCart.id = 'cstm-cartBottom';
@@ -395,9 +406,14 @@ export async function init() {
   });
 
   cartToggle.addEventListener('click', async () => {
+  if (isAnonymous) {
+    // Affiche un toast
+    alert("⚠️ Connexion requise pour accéder au panier !");
+    return;
+  }
+  
     const itemsForModal = selectedItems.map(id => {
       const item = currentItems.find(i => i.id === id);
-        console.log ('item', item)
       return item ? {
         id: item.id,
         name: item.name,
@@ -414,6 +430,11 @@ export async function init() {
   });
 
   orgToggle.addEventListener('click', async () => {
+      if (isAnonymous) {
+        // Affiche un toast
+        alert("⚠️ Connexion requise pour accéder au panier !");
+        return;
+      }
     const itemsForModal = selectedItems.map(id => {
       const item = currentItems.find(i => i.id === id);
       return item ? {

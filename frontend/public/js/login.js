@@ -50,6 +50,7 @@ if (bandeauImg) {
 
 const loginForm = document.getElementById("login-form");
 const submitBtn = loginForm?.querySelector("button[type=submit]");
+const anonymousLoginBtn = document.getElementById("anonymous-login");
 
 if (!loginForm || !submitBtn) {
   console.error("❌ Formulaire ou bouton introuvable !");
@@ -117,6 +118,72 @@ if (!dbSelect) {
       console.log("🌐 Base sélectionnée :", selectedDb);
     }
   });
+
+    if (anonymousLoginBtn) {
+      anonymousLoginBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+      // 🔹 Vérifie si l'auth n'est pas bypassée
+      console.log('(window.ENV', window.ENV)
+      if (window.ENV?.ANON_AUTH) {
+        console.warn("⚠️ Auth désactivée (ANON_AUTH), connexion anonyme ignorée");
+        alert("La connexion anonyme est désactivée.");
+        return;
+      }
+
+        console.log("👤 tentative connexion anonyme");
+
+        // 🔹 Vérifie la base
+        const selectedDb = window.ENV?.SELECTED_DB || dbSelect?.value;
+        if (!selectedDb) {
+          alert("❌ Sélectionnez d'abord une base");
+          return;
+        }
+
+        try {
+          // 🔹 Reset complet (comme un vrai login)
+          resetSession();
+
+          // 🔹 Stocke la base AVANT l'appel
+          localStorage.setItem("currentDataBase", selectedDb);
+
+          // 🔹 Initialisation client si nécessaire
+          const client = await initClient();
+
+          // 🔹 Appel backend → JWT anonyme
+          const accessToken = await client.anonymousSignIn();
+
+          // 🔹 Session utilisateur cohérente
+          const loggedUser = {
+            email: null,
+            role: "anonymous",
+            firstName: "Invité",
+            lastName: "",
+            personId: null,
+            accessToken,
+            isAnonymous: true,
+            loginAt: new Date().toISOString()
+          };
+
+          localStorage.setItem("loggedUser", JSON.stringify(loggedUser));
+
+          console.log("✅ Connexion anonyme réussie", loggedUser);
+
+          // 🔹 Redirection
+          const redirectUrl =
+            getRedirectByRole("anonymous") ||
+            getRedirectByRole("anon") ||
+            "/index.html";
+
+          window.location.href = redirectUrl;
+
+        } catch (err) {
+          console.error("❌ Erreur connexion anonyme :", err);
+          alert("Impossible de se connecter anonymement.");
+        }
+      });
+    }
+
 }
 
 
@@ -185,9 +252,9 @@ if (!dbSelect) {
       }
 
       try {
-        // ⚠️ Mode NO_AUTH pour tests
-        if (window.ENV?.NO_AUTH) {
-          console.warn("⚠️ NO_AUTH activé → connexion anonyme");
+        // ⚠️ Mode ANON_AUTH pour tests
+        if (window.ENV?.ANON_AUTH) {
+          console.warn("⚠️ ANON_AUTH activé → connexion anonyme");
           const redirectUrl = getRedirectByRole('');
           window.location.href = redirectUrl;
           return;
@@ -230,7 +297,6 @@ if (!dbSelect) {
         if (client) {
           try {
             const person = await fetchPersonByEmail(client, userEmail);
-console.log ("person", person, 'from mail: ', userEmail)
             if (person && !isNaN(Number(person.id))) {
               personId = person.id;
               firstName = person.first_name;

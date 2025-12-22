@@ -51,6 +51,40 @@ token: null, // JWT stocké après login
 
       return data.databases;
     },
+    
+    
+    // ==============================
+    // Auth anonymous sign-in
+    // ==============================
+    async anonymousSignIn() {
+      const idBase = localStorage.getItem("currentDataBase");
+      if (!idBase) {
+        alert("❌ Aucun identifiant de base défini !");
+        throw new Error("Aucun identifiant de base défini");
+      }
+
+      const res = await fetch(`${this.baseUrl}/anonymous_login/${idBase}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Anonymous login failed: ${decodeUnicode(text)}`);
+      }
+
+      const data = await res.json();
+
+      if (!data?.access_token) {
+        console.error("❌ Anonymous login failed: no token returned");
+        throw new Error("Anonymous login failed: no token returned");
+      }
+
+      this.token = data.access_token;
+
+      console.log("👤 Connexion anonyme réussie");
+      return this.token;
+    },
 
     // ==============================
     // Auth sign-in
@@ -192,7 +226,7 @@ token: null, // JWT stocké après login
      // ==============================
      // Vérification du token avant appels
      // ==============================
-        ensureValidToken(useExpirationDate = false) {
+    ensureValidToken(useExpirationDate = false) {
         if (!this.token) {
              const stored = JSON.parse(localStorage.getItem("loggedUser") || "{}");
              this.token = stored?.accessToken || null;

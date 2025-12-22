@@ -19,7 +19,7 @@ export const ROLES = {
       'participant_skill',
     ],
   },
-  prod: {
+  anon: {
     canRead: 'all',
     canWrite: [
       'app_config',
@@ -31,27 +31,6 @@ export const ROLES = {
       'shooting',
       'editing_station_booking',
       'equipment_booking'
-    ],
-  },
-  lab: {
-    canRead: 'all',
-    canWrite: [
-      'app_config',
-      'participant',
-      'participant_session',
-      'participant_skill',
-      'project',
-      'editing_station',
-      'editing_station_booking',
-    ],
-  },
-  mag: {
-    canRead: 'all',
-    canWrite: [
-      'app_config',
-      'project',
-      'equipment',
-      'equipment_booking',
     ],
   },
   viewer: {

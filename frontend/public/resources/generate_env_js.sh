@@ -20,7 +20,7 @@ window.ENV = {
   APP_VERSION: "${APP_VERSION}",
   DB_CLIENT: "${DB_CLIENT}",
   BASE_PATH: "${BASE_PATH}",
-
+  ANON_AUTH: true,
   // Variables spécifiques à chaque site Vercel
   DB_NAME: "${EXPORTER_DB_NAME}",
   HEADER_IMAGE_URL: "${HEADER_IMAGE_URL}",
