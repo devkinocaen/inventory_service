@@ -142,3 +142,25 @@
 .booking-actions .btn-delete:hover {
   background-color: #a71d2a;
 }
+
+.booking-cancelled {
+  color: #666;
+  font-style: italic;
+}
+
+.booking-actions button {
+  margin-right: 6px;
+}
+
+.booking-card.booking-cancelled {
+  background-color: #f2f2f2;
+}
+
+.booking-card.booking-cancelled * {
+  color: #666;
+  font-style: italic;
+}
+
+.booking-card.booking-cancelled button {
+  display: none;
+}

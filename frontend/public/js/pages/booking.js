@@ -12,6 +12,7 @@ import {
 import { formatServerError, formatDateTime } from '../libs/helpers.js';
 import { initClient } from '../libs/client.js';
 import { openBatchModal } from '../modals/batch_modal.js';
+import { showToast } from '../libs/ui/toastMessage.js';
 
 // -----------------------------
 // Client & état
@@ -107,29 +108,101 @@ async function renderBookingTable(bookings) {
       .join(', ');
     tr.appendChild(tdItems);
 
+    // Nouvelle colonne : statut
+    const tdStatus = document.createElement('td');
+    tdStatus.className = 'status';
+    tdStatus.textContent = b.status || '—';
+
+    // Double clic pour activer édition
+    tdStatus.addEventListener('dblclick', () => {
+      // Si un select est déjà présent, ne rien faire
+      if (tdStatus.querySelector('select')) return;
+
+      const select = document.createElement('select');
+      select.dataset.bookingId = b.booking_id;
+
+      const options = ['à valider', 'validé', 'annulé'];
+      options.forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt;
+        o.textContent = opt;
+        if (opt === b.status) o.selected = true;
+        select.appendChild(o);
+      });
+
+      // Remplacer le texte par le select
+      tdStatus.textContent = '';
+      tdStatus.appendChild(select);
+
+      // Focus sur le select
+      select.focus();
+
+      // Quand le select change, updateBooking et revenir au texte
+      select.addEventListener('change', async () => {
+        const newStatus = select.value;
+        const bookingId = Number(select.dataset.bookingId);
+        try {
+          await updateBooking(client, { id: bookingId, status: newStatus });
+          // Mettre à jour la cellule
+          tdStatus.textContent = newStatus;
+          // mettre à jour localement dans currentBookings
+          const bk = currentBookings.find(bk => bk.booking_id === bookingId);
+          if (bk) bk.status = newStatus;
+
+          // 🔹 Met à jour le bouton Check‑in/Check‑out en fonction du nouveau statut
+          const row = tdStatus.closest('tr');
+          const btnCheck = row.querySelector('.btn-check-stock');
+          const batchId = Number(btnCheck.dataset.batchId);
+          const stockStatus = batchStatusesMap.get(batchId);
+          updateCheckButtonLabel(btnCheck, stockStatus, newStatus);
+
+                              
+        } catch (err) {
+          console.error('Erreur updateBooking statut :', err);
+          alert('Impossible de mettre à jour le statut. Consultez la console.');
+          tdStatus.textContent = b.status || '—';
+        }
+      });
+
+      // Si focus perdu sans changement, revenir au texte
+      select.addEventListener('blur', () => {
+        tdStatus.textContent = b.status || '—';
+      });
+    });
+
+    tr.appendChild(tdStatus);
+
+
     // Bouton check stock
     const tdBtn = document.createElement('td');
     const btnCheck = document.createElement('button');
     btnCheck.className = 'btn-check-stock';
     btnCheck.dataset.batchId = b.reservable_batch_id;
-    const status = batchStatusesMap.get(Number(b.reservable_batch_id));
-    if (status === 'in_stock') {
-      btnCheck.textContent = 'Sortir';
-      btnCheck.disabled = false;
-    } else if (status === 'out') {
-      btnCheck.textContent = 'Rentrer';
-      btnCheck.disabled = false;
-    } else if (status === 'mixed') {
-      btnCheck.textContent = 'Indéterminé';
-      btnCheck.disabled = true;
+
+    // 🔹 Activation seulement si statut = 'validé'
+    const stockStatus = batchStatusesMap.get(Number(b.reservable_batch_id));
+    if (b.status === 'validé') {
+      if (stockStatus === 'in_stock') {
+        btnCheck.textContent = 'Sortir';
+        btnCheck.disabled = false;
+      } else if (stockStatus === 'out') {
+        btnCheck.textContent = 'Rentrer';
+        btnCheck.disabled = false;
+      } else if (stockStatus === 'mixed') {
+        btnCheck.textContent = 'Indéterminé';
+        btnCheck.disabled = true;
+      } else {
+        btnCheck.textContent = 'inactif';
+        btnCheck.disabled = true;
+      }
     } else {
-      btnCheck.textContent = '—';
+      btnCheck.textContent = 'inactif';
       btnCheck.disabled = true;
     }
+
     btnCheck.addEventListener('click', onCheckStockClick);
     tdBtn.appendChild(btnCheck);
     tr.appendChild(tdBtn);
-
     // Bouton éditer
     const tdEdit = document.createElement('td');
     const btnEdit = document.createElement('button');
@@ -158,6 +231,7 @@ async function renderBookingTable(bookings) {
   setupBookingLookupFilter();
   bindBookingDateInputs();
 }
+
 
 // -----------------------------
 // Écouteurs pour inputs start/end
@@ -328,30 +402,43 @@ async function onCheckStockClick(e) {
   if (!batchId) return;
 
   try {
-      const stockStatus = batchStatusesMap.get(batchId);
+    let stockStatus = batchStatusesMap.get(batchId);
 
-      if (stockStatus === 'in_stock') {
+    // Récupérer le booking associé
+    const row = btn.closest('tr');
+    const bookingId = Number(row.querySelector('td.start')?.dataset.id);
+    const booking = currentBookings.find(b => b.booking_id === bookingId);
+    const bookingStatus = booking?.status || '';
+
+    if (stockStatus === 'in_stock') {
       if (confirm("Tous les objets sont en stock. Voulez-vous les sortir ?")) {
         await setBatchInStock(client, batchId, false);
-        alert('Batch sorti du stock.');
-          await updateCheckButtonLabel(btn, batchId);
+        //alert('Batch sorti du stock.');
+        showToast('✅ `Lot sorti du stock`', 'success');
 
       }
     } else if (stockStatus === 'out') {
       if (confirm("Tous les objets sont sortis. Voulez-vous les rentrer ?")) {
         await setBatchInStock(client, batchId, true);
-        alert('Batch rentré dans le stock.');
-          await updateCheckButtonLabel(btn, batchId);
+      //  alert('Batch rentré dans le stock.');
+          showToast('✅ `Lot rentré du stock`', 'success');
+
       }
     } else {
       alert('Le batch contient des objets mixtes ou indisponibles. Action impossible.');
+      return;
     }
 
-//    await refreshTable();
-      const statuses = await fetchBatchStatuses(client);
-      batchStatusesMap = new Map(statuses.map(s => [Number(s.batch_id), s.status]));
-      await refreshAllCheckButtons();
+    // Mettre à jour le statut du batch
+    const statuses = await fetchBatchStatuses(client);
+    batchStatusesMap = new Map(statuses.map(s => [Number(s.batch_id), s.status]));
+    stockStatus = batchStatusesMap.get(batchId);
 
+    // Met à jour uniquement ce bouton
+    updateCheckButtonLabel(btn, stockStatus, bookingStatus);
+
+    // Met à jour tous les autres boutons
+    await refreshAllCheckButtons();
 
   } catch (err) {
     console.error('Erreur check-in/check-out:', err);
@@ -390,16 +477,20 @@ export async function init() {
 }
 
 
-function updateCheckButtonLabel(btn, batchId) {
-  const status = batchStatusesMap.get(batchId);
+function updateCheckButtonLabel(btn, stockStatus, bookingStatus) {
+  if (bookingStatus !== 'validé') {
+    btn.textContent = '—';
+    btn.disabled = true;
+    return;
+  }
 
-  if (status === 'in_stock') {
+  if (stockStatus === 'in_stock') {
     btn.textContent = 'Sortir';
     btn.disabled = false;
-  } else if (status === 'out') {
+  } else if (stockStatus === 'out') {
     btn.textContent = 'Rentrer';
     btn.disabled = false;
-  } else if (status === 'mixed') {
+  } else if (stockStatus === 'mixed') {
     btn.textContent = 'Indéterminé';
     btn.disabled = true;
   } else {
@@ -407,7 +498,6 @@ function updateCheckButtonLabel(btn, batchId) {
     btn.disabled = true;
   }
 }
-
 
 // Met à jour uniquement tous les boutons Check-in/Check-out
 async function refreshAllCheckButtons() {
@@ -417,21 +507,16 @@ async function refreshAllCheckButtons() {
     const batchId = Number(btn.dataset.batchId);
     if (!batchId) continue;
 
-    const status = batchStatusesMap.get(batchId);
+    const stockStatus = batchStatusesMap.get(batchId);
 
-    if (status === 'in_stock') {
-      btn.textContent = 'Sortir';
-      btn.disabled = false;
-    } else if (status === 'out') {
-      btn.textContent = 'Rentrer';
-      btn.disabled = false;
-    } else if (status === 'mixed') {
-      btn.textContent = 'Indéterminé';
-      btn.disabled = true;
-    } else {
-      btn.textContent = '—';
-      btn.disabled = true;
-    }
+    // Récupérer la ligne correspondante et le booking
+    const row = btn.closest('tr');
+    const bookingId = Number(row.querySelector('td.start')?.dataset.id);
+    const booking = currentBookings.find(b => b.booking_id === bookingId);
+    const bookingStatus = booking?.status || '';
+
+    // Met à jour le bouton en fonction du stock et du statut du booking
+    updateCheckButtonLabel(btn, stockStatus, bookingStatus);
   }
 }
 
@@ -502,3 +587,6 @@ function initSortableColumns(selector = '#bookings_table') {
     });
   });
 }
+
+
+
