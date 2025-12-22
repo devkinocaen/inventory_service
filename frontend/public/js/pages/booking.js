@@ -494,7 +494,7 @@ function updateCheckButtonLabel(btn, stockStatus, bookingStatus) {
     btn.textContent = 'Indéterminé';
     btn.disabled = true;
   } else {
-    btn.textContent = '—';
+    btn.textContent = 'invalide';
     btn.disabled = true;
   }
 }
