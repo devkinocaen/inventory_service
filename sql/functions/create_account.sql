@@ -100,7 +100,7 @@ BEGIN
         p_person_roles := jsonb_build_array(
             jsonb_build_object('person_id', v_person_id, 'role', p_role)
         )
-    ) AS uo(org_id INT, org_name TEXT, org_address TEXT, org_referent_id INT, is_individual BOOLEAN, is_costume_renter BOOLEAN);
+    ) AS uo;
 
     ---------------------------------------------------------
     -- Retourner les identifiants

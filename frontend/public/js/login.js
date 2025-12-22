@@ -124,11 +124,10 @@ if (!dbSelect) {
         e.preventDefault();
 
       // 🔹 Vérifie si l'auth n'est pas bypassée
-      console.log('(window.ENV', window.ENV)
-      if (window.ENV?.ANON_AUTH) {
-        console.warn("⚠️ Auth désactivée (ANON_AUTH), connexion anonyme ignorée");
-        alert("La connexion anonyme est désactivée.");
-        return;
+      if (!window.ENV?.ANON_AUTH) {
+          // ANON_AUTH n'existe pas ou vaut false/0 => refuser
+          alert("La connexion anonyme est désactivée.");
+          return;
       }
 
         console.log("👤 tentative connexion anonyme");
@@ -170,11 +169,7 @@ if (!dbSelect) {
           console.log("✅ Connexion anonyme réussie", loggedUser);
 
           // 🔹 Redirection
-          const redirectUrl =
-            getRedirectByRole("anonymous") ||
-            getRedirectByRole("anon") ||
-            "/index.html";
-
+          const redirectUrl = getRedirectByRole("anonymous");
           window.location.href = redirectUrl;
 
         } catch (err) {
@@ -253,13 +248,14 @@ if (!dbSelect) {
 
       try {
         // ⚠️ Mode ANON_AUTH pour tests
-        if (window.ENV?.ANON_AUTH) {
+ /*       if (window.ENV?.ANON_AUTH) {
           console.warn("⚠️ ANON_AUTH activé → connexion anonyme");
           const redirectUrl = getRedirectByRole('');
-          window.location.href = redirectUrl;
+        //  window.location.href = redirectUrl;
+            console.log(`➡️ Redirection ANONYME vers : ${redirectUrl}`);
           return;
         }
-
+*/
         // 🔹 Réinitialisation complète avant nouveau login
         resetSession();
 
@@ -328,7 +324,7 @@ if (!dbSelect) {
           accessToken,
           loginAt: new Date().toISOString()
         }));
-          const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
+        const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
 
         // 🔹 Redirection
         const redirectUrl = getRedirectByRole(role);
@@ -362,8 +358,32 @@ const switchToLoginBtn = document.getElementById("switch-to-login");
 const createFields = document.querySelectorAll(".create-field");
 //const passwordBlock = document.getElementById("password-block");
 const mainSubmitBtn = document.getElementById("main-submit");
-
+const isIndividualCheckbox = document.getElementById("is_individual");
+const orgInput = document.getElementById("organisation");
+const roleInput = document.getElementById("role");
 let mode = "login"; // login | create
+
+
+if (isIndividualCheckbox && orgInput && roleInput) {
+  isIndividualCheckbox.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      // particulier → vide et verrouille les champs
+      orgInput.value = "";
+      roleInput.value = "";
+      orgInput.disabled = true;
+      roleInput.disabled = true;
+      roleInput.hidden = true;
+      orgInput.hidden = true;
+    } else {
+      // sinon → réactive
+      orgInput.disabled = false;
+      roleInput.disabled = false;
+      roleInput.hidden = false;
+      orgInput.hidden = false;
+    }
+  });
+}
+
 
 function updateFormMode() {
   if (mode === "create") {
@@ -429,11 +449,14 @@ loginForm.addEventListener("submit", async (e) => {
     role: document.getElementById("role")?.value.trim() || "viewer",
     password: document.getElementById("password")?.value || "",
     passwordConfirm: document.getElementById("passwordConfirm")?.value || "",
-    base: document.getElementById("database")?.value || ""
+    base: document.getElementById("database")?.value || "",
+    isIndividual: isIndividualCheckbox.checked
+
+
   };
 
   // 🔍 Vérifications obligatoires
-  if (!data.prenom || !data.nom || !data.organisation || !data.base) {
+  if (!data.prenom || !data.nom || (!data.organisation  && !data.isIndividual) || !data.base) {
     alert("❌ Merci de remplir tous les champs obligatoires.");
     return;
   }
@@ -461,6 +484,7 @@ loginForm.addEventListener("submit", async (e) => {
       phone: data.telephone,
       organization: data.organisation,
       address: data.address,
+      isIndividual: data.isIndividual,
       role: data.role
     });
 

@@ -91,7 +91,6 @@ onReady(() => {
     console.log ('user', user)
     
   const db = localStorage.getItem('currentDataBase');
-  const userRole = user.role || '';
 
   if (user && db) {
     let displayName = user.role;
@@ -104,11 +103,13 @@ onReady(() => {
   }
   // 🔹 Gestion du bouton "se déconnecter"
   const signoutBtn = document.getElementById('signout');
+
   if (signoutBtn) {
     signoutBtn.addEventListener('click', () => {
       console.log('🔒 Déconnexion de l’utilisateur...');
       localStorage.removeItem('loggedUser');
       window.location.href = resolvePath('$BASE_PATH/index.html');
+        console.log(" window.location.href",  window.location.href )
     });
   }
     

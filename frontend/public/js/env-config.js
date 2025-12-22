@@ -3,7 +3,7 @@ window.ENV = {
   APP_VERSION: "ValidateBooking",
   DB_CLIENT: "",
   BASE_PATH: "",
-  NO_AUTH: true,
+  ANON_AUTH: true,
   // Variables spécifiques à chaque site Vercel
   DB_NAME: "",
   HEADER_IMAGE_URL: "/images/bandeau_costumerie_julie.png",

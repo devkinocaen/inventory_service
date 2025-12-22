@@ -238,7 +238,6 @@ def check_get_function_prototype_exists(conn):
             ) from e
 
 
-
 def signup(database_id=None):
     data = request.get_json(force=True) or {}
     db_config = get_db_config(database_id.upper() if database_id else "")
@@ -253,6 +252,7 @@ def signup(database_id=None):
     address = data.get("address")
     organization = data.get("organization")
     role = data.get("role") or "viewer"
+    is_individual = data.get("isIndividual", False) 
 
     if not email or not password:
         return jsonify({"error": "Email and password required"}), 400
@@ -270,12 +270,12 @@ def signup(database_id=None):
         cur.execute("""
             SELECT person_id, organization_id, created_user_id
             FROM inventory.create_account(
-                %s::text, %s::text, %s::text, %s::text, %s::text, %s::text, %s::text, %s::text
+                %s::text, %s::text, %s::text, %s::text, %s::text, %s::text, %s::boolean, %s::text, %s::text
             )
-        """, (first_name, last_name, email, phone, organization, address, role, password))
+        """, (first_name, last_name, email, phone, organization, address, is_individual, role, password))
+
 
         person_id, organization_id, created_user_id = cur.fetchone()
-
 
         cur.execute("RELEASE SAVEPOINT sp_signup;")
         conn.commit()
@@ -308,7 +308,8 @@ def signup(database_id=None):
                 "first_name": first_name,
                 "last_name": last_name,
                 "person_id": person_id,
-                "organization_id": organization_id
+                "organization_id": organization_id,
+                "isIndividual": is_individual   # ✅ retour front si besoin
             }
         }), 200
 
@@ -321,4 +322,3 @@ def signup(database_id=None):
     finally:
         if conn:
             conn.close()
-

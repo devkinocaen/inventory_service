@@ -147,3 +147,20 @@ button:disabled {
     font-size: 1.2rem;
   }
 }
+
+/* Label avec checkbox alignée à gauche */
+#create-field-individual label {
+  display: flex;
+  align-items: center;    /* aligne verticalement texte + checkbox */
+  justify-content: flex-start; /* alignement à gauche */
+  gap: 0.5em;             /* espace entre checkbox et texte */
+  font-size: 1rem;        /* taille du texte */
+}
+
+/* Agrandir la checkbox */
+#create-field-individual input[type="checkbox"] {
+  width: 20px;    /* largeur */
+  height: 20px;   /* hauteur */
+  accent-color: #007bff; /* couleur de la coche (optionnel) */
+  cursor: pointer;        /* joli curseur */
+}

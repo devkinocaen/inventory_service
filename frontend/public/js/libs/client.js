@@ -159,7 +159,8 @@ token: null, // JWT stocké après login
       phone,
       organization,
       address,
-      role
+      role,
+      isIndividual = false   // ✅ virgule ajoutée
     }) {
       // 1) Vérifier la base sélectionnée
       const databaseId = localStorage.getItem("currentDataBase");
@@ -169,57 +170,54 @@ token: null, // JWT stocké après login
       }
 
       // 2) Vérifications simples
-      if (!firstName || !lastName || !organization || !email || !password) {
+        if (!firstName || !lastName || (!organization && !isIndividual) || !email || !password) {
         throw new Error(
-          "Prénom, nom, email, mot de passe et organisation sont obligatoires."
+          "Prénom, nom, email, mot de passe sont obligatoires."
         );
       }
 
       try {
-
         // 3) Appel à la route backend /signup
-          const res = await fetch(`${baseUrl}/signup/${databaseId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              firstName,
-              lastName,
-              email,
-              password,
-              phone,
-              organization,
-              address,
-              role,
-            }),
-          });
+        const res = await fetch(`${baseUrl}/signup/${databaseId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            email,
+            password,
+            phone,
+            organization,
+            address,
+            role,
+            isIndividual      // ✅ enlever '= false' ici
+          }),
+        });
 
-          let data;
-          try {
-            data = await res.json(); // essaie de parser JSON
-          } catch (err) {
-            data = null; // réponse non-JSON
-          }
+        let data;
+        try {
+          data = await res.json(); // essaie de parser JSON
+        } catch (err) {
+          data = null; // réponse non-JSON
+        }
 
-          if (!res.ok) {
-            console.log("❌ Signup error response:", data || await res.text());
-            throw new Error((data && data.error) || `HTTP ${res.status} ${res.statusText}`);
-          }
+        if (!res.ok) {
+          console.log("❌ Signup error response:", data || await res.text());
+          throw new Error((data && data.error) || `HTTP ${res.status} ${res.statusText}`);
+        }
 
-          console.log("📦 Compte créé via backend signup:", data);
-          return data;
-
+        console.log("📦 Compte créé via backend signup:", data);
+        return data;
 
       } catch (err) {
-          let msg = "Erreur interne pendant l'appel réseau";
-          if (err?.message) msg = err.message;
-          else if (typeof err === "string") msg = err;
-          else msg = JSON.stringify(err, null, 2);
+        let msg = "Erreur interne pendant l'appel réseau";
+        if (err?.message) msg = err.message;
+        else if (typeof err === "string") msg = err;
+        else msg = JSON.stringify(err, null, 2);
 
-          throw new Error(`Fetch error: ${msg}`);
+        throw new Error(`Fetch error: ${msg}`);
       }
-    },
-    
-    
+    }, 
     
 
                          
