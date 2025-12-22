@@ -1,6 +1,6 @@
 window.ENV = {
   APP_NAME: "Costumerie",
-  APP_VERSION: "ValidateBooking",
+  APP_VERSION: "dev",
   DB_CLIENT: "",
   BASE_PATH: "",
   ANON_AUTH: true,

@@ -1,6 +1,8 @@
-export async function fetchOrganizations(client) {
+export async function fetchOrganizations(client, isCostumeRenter = false) {
  
-  const { data, error } = await client.rpc('get_organizations', {});
+  const { data, error } = await client.rpc('get_organizations', {
+       p_is_costume_renter: isCostumeRenter});
+    
   if (error) {
     console.error('[fetchOrganizations] Erreur serveur :', error);
     return [];
