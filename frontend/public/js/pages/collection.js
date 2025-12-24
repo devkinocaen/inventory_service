@@ -411,7 +411,6 @@ export async function init() {
     if (isViewer){
         if (loggedUser.personId) {
           const orgs = await fetchOrganizationsByPersonId(client, loggedUser.personId);
-            console.log ('orgs', orgs)
             if (orgs.length == 1) {
                 if (orgs[0].is_individual) {
                     isIndividual = true

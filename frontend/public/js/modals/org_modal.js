@@ -2,6 +2,8 @@
 import { initClient } from '../libs/client.js';
 import {
   fetchPersonByName,
+  fetchPersonById,
+  fetchOrganizationsByPersonId,
   fetchOrganizations,
   upsertOrganization,
   upsertPerson,
@@ -174,7 +176,22 @@ const orgModal = (() => {
   // -----------------------------
   async function loadOrganizations() {
     if (!client) client = await initClient();
-    organizations = await fetchOrganizations(client);
+                              
+      // --- Vérifie si connexion anonyme ---
+      const loggedUser = JSON.parse(localStorage.getItem('loggedUser') || '{}');
+      const isViewer = loggedUser?.role === 'viewer';
+      const isAnonymous = loggedUser?.role === 'anonymous';
+      console.log('loggedUser', loggedUser)
+      if (isViewer){
+          if (loggedUser.personId)
+            organizations = await fetchOrganizationsByPersonId(client, loggedUser.personId);
+      } else if (!isAnonymous) {
+          organizations = await fetchOrganizations(client, false);
+      } else {
+          alert ('utilisateur inconnu')
+          return;
+      }
+                  
     if (!orgSelect) return;
     orgSelect.innerHTML = '<option value="">-- Choisir une organisation --</option>';
     organizations.forEach(o => {
@@ -183,6 +200,9 @@ const orgModal = (() => {
       opt.textContent = o.name;
       orgSelect.appendChild(opt);
     });
+     if (organizations.length == 1)
+     selectOrganization(organizations[0].id);
+
   }
 
   // -----------------------------
@@ -196,7 +216,8 @@ const orgModal = (() => {
 
     orgNameInput.value = org.name || '';
     orgAddressInput.value = org.address || '';
-
+console.log ('addPersonRow', org)
+    const person =  fetchPersonById
     if (org.referent_id) {
       addPersonRow({
         id: org.referent_id,

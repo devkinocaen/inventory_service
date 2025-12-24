@@ -26,6 +26,7 @@ export async function fetchOrganizationsByPersonId(client, personId) {
       referent_first_name: row.referent_first_name,
       referent_last_name: row.referent_last_name,
       referent_phone: row.referent_phone,
+      referent_email: row.referent_email,
       is_individual: row.is_individual ?? false,
       is_costume_renter: row.is_costume_renter ?? false,
       persons: row.persons
