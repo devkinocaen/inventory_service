@@ -103,33 +103,54 @@ function renderAvailableReservables(reservables) {
         const div = document.createElement('div');
         div.classList.add('reservable-item');
         div.dataset.id = r.id;
+        div.style.cursor = 'pointer';
+        div.style.display = 'inline-block';
+        div.style.margin = '4px';
+        div.style.textAlign = 'center';
+        div.style.width = '80px';
 
-        const img = document.createElement('img');
-        img.src = r.photos?.[0]?.url || 'https://placehold.co/80x80?text=+';
-        img.style.width = '80px';
-        img.style.height = '80px';
-        img.style.objectFit = 'cover';
-        img.style.borderRadius = '4px';
+        // Container pour l'image
+        const imgContainer = document.createElement('div');
+        imgContainer.style.width = '80px';
+        imgContainer.style.height = '80px';
+        imgContainer.style.borderRadius = '4px';
+        imgContainer.style.overflow = 'hidden';
+        imgContainer.style.backgroundColor = '#eee';
+        div.appendChild(imgContainer);
 
+        // Affichage de l'image via displayImage ou placeholder
+        const firstPhoto = Array.isArray(r.photos) && r.photos.length > 0 ? r.photos[0] : null;
+        if (firstPhoto?.url) {
+            displayImage(client, imgContainer, firstPhoto.url, {
+                width: '80px',
+                height: '80px',
+                withPreview: true
+            });
+        } else {
+            imgContainer.innerHTML = `
+                <img
+                  src="https://placehold.co/80x80?text=+"
+                  style="width:100%;height:100%;object-fit:cover"
+                >
+            `;
+        }
+
+        // Nom en dessous
         const name = document.createElement('div');
         name.textContent = r.name;
         name.style.marginTop = '4px';
         name.style.fontSize = '0.9rem';
-
-        div.appendChild(img);
         div.appendChild(name);
 
         // clic pour sélectionner / ajouter
         div.addEventListener('click', () => {
-                             
-        if (currentMode === 'edit') {
-            // toggle visuel sélectionné
-            div.classList.toggle('selected');
+            if (currentMode === 'edit') {
+                // toggle visuel sélectionné
+                div.classList.toggle('selected');
 
-            // ← AJOUT DIRECT
-            const id = Number(div.dataset.id);
-            const reservable = availableReservables.find(r => r.id === id);
-            if (!reservable) return;
+                const id = Number(div.dataset.id);
+                const reservable = availableReservables.find(r => r.id === id);
+                if (!reservable) return;
 
                 if (!currentBatch.reservables.some(i => i.id === id)) {
                     currentBatch.reservables.push(reservable);
