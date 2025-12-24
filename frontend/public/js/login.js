@@ -293,7 +293,6 @@ if (!dbSelect) {
         if (client) {
           try {
             const person = await fetchPersonByEmail(client, userEmail);
-             console.log ("userEmail", userEmail)
             console.log ("fetchPersonByEmail", fetchPersonByEmail)
             if (person && !isNaN(Number(person.id))) {
               personId = person.id;
