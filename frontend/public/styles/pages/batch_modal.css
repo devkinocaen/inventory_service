@@ -98,29 +98,29 @@
   padding: 0.6rem 0.8rem;
   border: 1px solid #ccc;
   text-align: left;
-  vertical-align: middle; /* centre le contenu verticalement */
+  vertical-align: middle;
 }
 
 /* Centrage du contenu des td */
 .batch-table td div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Colonne Aperçu : largeur fixe */
 .batch-table td:nth-child(2) {
-    width: 70px;       /* largeur de la colonne Aperçu */
-    text-align: center;
+  width: 70px;
+  text-align: center;
 }
 
 /* Conteneur image dans Aperçu */
 .batch-table td:nth-child(2) div {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* En-têtes */
@@ -145,20 +145,60 @@
 }
 
 .batch-add-search {
-  flex: 2;
+  flex: 0 0 auto;
   padding: 0.5rem 0.8rem;
   border-radius: 8px;
   border: 1px solid #999;
 }
 
+/* Grid des réservables */
 .batch-add-select {
-  flex: 3;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  padding: 5px;
   border-radius: 8px;
   border: 1.5px solid #999;
   background: #fafafa;
-  height: 120px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
+/* Chaque item de la grille */
+.batch-add-select .reservable-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.batch-add-select .reservable-item:hover {
+  border-color: #4a90e2;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.batch-add-select .reservable-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.batch-add-select .reservable-item div {
+  font-size: 0.85rem;
+  color: #333;
+  word-break: break-word;
+}
+
+/* 🔹 Bouton Ajouter */
 .batch-add-btn {
   flex: 1;
   padding: 0.6rem;
@@ -224,37 +264,37 @@
 
 /* 🔹 Boutons d'action des items */
 .batch-item-action {
-    padding: 0.4rem 0.8rem;
-    border-radius: 8px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-    min-width: 80px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  min-width: 80px;
 }
 
 .batch-item-action.rentrer {
-    background-color: #4CAF50;
-    color: white;
+  background-color: #4CAF50;
+  color: white;
 }
 
 .batch-item-action.rentrer:hover {
-    background-color: #45a049;
+  background-color: #45a049;
 }
 
 .batch-item-action.sortir {
-    background-color: #0077ff;
-    color: white;
+  background-color: #0077ff;
+  color: white;
 }
 
 .batch-item-action.sortir:hover {
-    background-color: #005fcc;
+  background-color: #005fcc;
 }
 
 .batch-item-action.indisponible {
-    background-color: #ccc;
-    color: #666;
-    cursor: not-allowed;
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
 }
 
 /* 🔹 Booking items */
@@ -283,7 +323,14 @@
 .booking-items-container::-webkit-scrollbar {
   display: none;
 }
+
 .booking-items-container {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.batch-add-select .reservable-item.selected {
+  border-color: #4a90e2; /* couleur du focus */
+  box-shadow: 0 0 8px rgba(74,144,226,0.5);
+  background-color: #e6f0ff; /* léger fond bleu pour montrer la sélection */
 }

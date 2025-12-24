@@ -15,11 +15,19 @@ import { displayImage } from '../libs/image_utils.js';
 let currentMode = 'edit'; // ← nouvelle variable globale pour le mode ('edit' ou 'viewer')
 
 let client;
-let modal, dialog, cancelBtn, saveBtn, addBtn;
+let modal, dialog, cancelBtn, saveBtn;
 let currentBatch = null;
 let currentBooking = null;
 let availableReservables = [];
 let currentModalCallback = null;
+
+
+
+function formatLocalForInput(date) {
+    const pad = n => n.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 /* -------------------------------------------------------
    Chargement du HTML du modal
 ------------------------------------------------------- */
@@ -42,7 +50,7 @@ export async function loadBatchModal() {
 
     cancelBtn = dialog.querySelector('#batch-cancel');
     saveBtn   = dialog.querySelector('#batch-save');
-    addBtn    = dialog.querySelector('#add-reservable');
+ //   addBtn    = dialog.querySelector('#add-reservable');
 
  const batchAddSection = document.getElementById('batch-add-section');
     if (batchAddSection && currentMode === 'viewer') {
@@ -65,11 +73,6 @@ function bindBatchEvents() {
         saveBtn.dataset.bound = 'true';
         saveBtn.addEventListener('click', saveBatch);
     }
-
-    if (addBtn && !addBtn.dataset.bound) {
-        addBtn.dataset.bound = 'true';
-        addBtn.addEventListener('click', addSelectedReservable);
-    }
 }
 
 /* -------------------------------------------------------
@@ -89,32 +92,68 @@ export async function initBatchModal() {
 async function loadAvailableReservables() {
     availableReservables = await fetchReservables(client);
 
-    const select = dialog.querySelector('#available-reservables');
-    if (!select) throw new Error('Select #available-reservables introuvable');
-
-    populateSelect(select, availableReservables, 'id', 'name', 'Sélectionnez un item');
+    renderAvailableReservables(availableReservables);
 }
+
+function renderAvailableReservables(reservables) {
+    const container = document.getElementById('available-reservables');
+    container.innerHTML = '';
+
+    reservables.forEach(r => {
+        const div = document.createElement('div');
+        div.classList.add('reservable-item');
+        div.dataset.id = r.id;
+
+        const img = document.createElement('img');
+        img.src = r.photos?.[0]?.url || 'https://placehold.co/80x80?text=+';
+        img.style.width = '80px';
+        img.style.height = '80px';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '4px';
+
+        const name = document.createElement('div');
+        name.textContent = r.name;
+        name.style.marginTop = '4px';
+        name.style.fontSize = '0.9rem';
+
+        div.appendChild(img);
+        div.appendChild(name);
+
+        // clic pour sélectionner / ajouter
+        div.addEventListener('click', () => {
+                             
+        if (currentMode === 'edit') {
+            // toggle visuel sélectionné
+            div.classList.toggle('selected');
+
+            // ← AJOUT DIRECT
+            const id = Number(div.dataset.id);
+            const reservable = availableReservables.find(r => r.id === id);
+            if (!reservable) return;
+
+                if (!currentBatch.reservables.some(i => i.id === id)) {
+                    currentBatch.reservables.push(reservable);
+                    renderBatchItems();
+                }
+            }
+        });
+
+        container.appendChild(div);
+    });
+}
+
 
 /* -------------------------------------------------------
    Filtre dynamique du select
 ------------------------------------------------------- */
 function setupAvailableSearch() {
     const search = dialog.querySelector('#available-search');
-    const select = dialog.querySelector('#available-reservables');
-    if (!search || !select) return;
+    if (!search) return;
 
     search.addEventListener('input', () => {
         const q = search.value.trim().toLowerCase();
-        select.innerHTML = '';
-
-        availableReservables
-            .filter(r => r.name.toLowerCase().includes(q))
-            .forEach(r => {
-                const opt = document.createElement('option');
-                opt.value = r.id;
-                opt.textContent = r.name;
-                select.appendChild(opt);
-            });
+        const filtered = availableReservables.filter(r => r.name.toLowerCase().includes(q));
+        renderAvailableReservables(filtered);
     });
 }
 
@@ -149,11 +188,9 @@ export async function openBatchModal(bookingId, onClose, mode = 'edit') {
 
     // Activer / désactiver éléments selon le mode
     if (mode === 'viewer') {
-        addBtn.style.display = 'none';
         dialog.querySelector('#batch-start-date').disabled = true;
         dialog.querySelector('#batch-end-date').disabled = true;
     } else {
-        addBtn.style.display = 'inline-block';
         dialog.querySelector('#batch-start-date').disabled = false;
         dialog.querySelector('#batch-end-date').disabled = false;
     }
@@ -325,30 +362,6 @@ function renderBatchItems() {
     if (descInput) descInput.disabled = false; // renommage toujours possible
 }
 
-
-/* -------------------------------------------------------
-   Ajouter un item depuis le select
-------------------------------------------------------- */
-function addSelectedReservable() {
-    if (currentMode === 'viewer') return; // interdit l'ajout
-
-    const select = dialog.querySelector('#available-reservables');
-    const id = Number(select.value);
-    if (!id) return;
-
-    const reservable = availableReservables.find(r => r.id === id);
-    if (!reservable) return;
-
-    if (!currentBatch.reservables.some(i => i.id === id)) {
-        currentBatch.reservables.push(reservable);
-        renderBatchItems();
-    }
-}
-
-function formatLocalForInput(date) {
-    const pad = n => n.toString().padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
 
 /* -------------------------------------------------------
    Sauvegarde
