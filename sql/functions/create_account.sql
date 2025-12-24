@@ -79,11 +79,11 @@ BEGIN
     ---------------------------------------------------------
     -- Vérifier si la personne existe par prénom + nom
     ---------------------------------------------------------
-    SELECT id INTO v_person_id
-    FROM inventory.person
-    WHERE lower(unaccent(first_name)) = lower(unaccent(p_first_name))
-      AND lower(unaccent(last_name))  = lower(unaccent(p_last_name))
-    LIMIT 1;
+--    SELECT id INTO v_person_id
+--    FROM inventory.person
+--    WHERE lower(unaccent(first_name)) = lower(unaccent(p_first_name))
+--      AND lower(unaccent(last_name))  = lower(unaccent(p_last_name))
+--    LIMIT 1;
 
     IF v_person_id IS NULL THEN
         INSERT INTO inventory.person(first_name, last_name, email, phone)

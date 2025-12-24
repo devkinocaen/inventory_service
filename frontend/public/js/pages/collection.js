@@ -106,24 +106,30 @@ function renderFilterChips(categories, subcategories, styles, colors, patterns) 
   const patternChips = document.getElementById('cstm-patternChips');
   if (!categoryChips || !subcatChips || !styleChips || !genderChips || !colorChips || !patternChips) return;
 
-    const makeChip = (name, type, colorHex = null, customClass = null) => {
+    const makeChip = (label, type, value, colorHex = null, customClass = null) => {
       const chip = document.createElement('div');
-      chip.textContent = name;
+      chip.textContent = label;
 
-      // Détermination de la classe
+      // Détermination de la classe de base
       let baseClass;
 
       if (type === 'color') {
         baseClass = 'color-chip';
       } else if (type === 'pattern') {
-        // Toujours inclure rsb-pattern-chip, puis la classe spécifique si présente
         baseClass = 'rsb-pattern-chip';
-        if (customClass && customClass.trim()) baseClass += ' ' + customClass.trim();
+        if (customClass && customClass.trim()) {
+          baseClass += ' ' + customClass.trim();
+        }
       } else {
         baseClass = 'filter-chip';
       }
 
-        chip.className = baseClass + (activeFilters[type].includes(name) ? ' active' : '');
+      // État actif (IMPORTANT : on compare avec value, pas label)
+      if (activeFilters[type]?.includes(value)) {
+        baseClass += ' selected';
+      }
+
+      chip.className = baseClass;
 
       // Styles spécifiques pour les couleurs
       if (type === 'color' && colorHex) {
@@ -133,8 +139,14 @@ function renderFilterChips(categories, subcategories, styles, colors, patterns) 
       }
 
       chip.onclick = () => {
-        toggleFilter(type, name);
-        renderFilterChips(currentCategories, currentSubcategories, currentStyles, currentColors, currentPatterns);
+        toggleFilter(type, value);
+        renderFilterChips(
+          currentCategories,
+          currentSubcategories,
+          currentStyles,
+          currentColors,
+          currentPatterns
+        );
         fetchItemsAndRender();
       };
 
@@ -142,9 +154,12 @@ function renderFilterChips(categories, subcategories, styles, colors, patterns) 
     };
 
 
+
   // ---- Catégories ----
   categoryChips.innerHTML = '';
-  categories.forEach(c => categoryChips.appendChild(makeChip(c.name, 'category')));
+  categories.forEach(c =>
+    categoryChips.appendChild(makeChip(c.name, 'category', c.name))
+  );
 
   // ---- Sous-catégories filtrées par catégorie ----
   subcatChips.innerHTML = '';
@@ -152,32 +167,37 @@ function renderFilterChips(categories, subcategories, styles, colors, patterns) 
     const filteredSubcats = subcategories.filter(sc =>
       activeFilters.category.includes(sc.category_name)
     );
-    filteredSubcats.forEach(s => subcatChips.appendChild(makeChip(s.name, 'subcategory')));
-  }
+    filteredSubcats.forEach(s =>
+      subcatChips.appendChild(makeChip(s.name, 'subcategory', s.name))
+    );  }
 
   // ---- Styles ----
   styleChips.innerHTML = '';
-  styles.forEach(s => styleChips.appendChild(makeChip(s.name, 'style')));
-
+  styles.forEach(s =>
+    styleChips.appendChild(makeChip(s.name, 'style', s.name))
+  );
   // ---- Patterns ----
   patternChips.innerHTML = '';
-    patterns.forEach(p => {
-      const chip = makeChip(p.name, 'pattern', null, `rsb-pattern-chip ${p.css_class || ''}`);
-      patternChips.appendChild(chip);
-    });
+  patterns.forEach(p => {
+    const chip = makeChip(
+      p.name, 'pattern',  p.id, null, p.css_class
+    );
+    patternChips.appendChild(chip);
+  });
 
 
   // ---- Genres ----
   const genders = ['Homme', 'Femme', 'Unisexe'];
   genderChips.innerHTML = '';
-  genders.forEach(g => genderChips.appendChild(makeChip(g, 'gender')));
-
+  genders.forEach(g =>
+    genderChips.appendChild(makeChip(g, 'gender', g))
+  );
   // ---- Couleurs ----
   colorChips.innerHTML = '';
   let row = document.createElement('div');
   row.className = 'chip-row';
   colors.forEach((c, idx) => {
-    row.appendChild(makeChip(c.name, 'color', c.hex_code));
+    row.appendChild(makeChip(c.name, 'color', c.id, c.hex_code));
     if ((idx + 1) % 4 === 0) {
       colorChips.appendChild(row);
       row = document.createElement('div');
@@ -222,15 +242,15 @@ async function fetchItems() {
           .map(s => s.id)
       : null,
 
-    p_pattern_ids: activeFilters.pattern.length   // <-- ajout patterns
-      ? currentPatterns
-          .filter(p => activeFilters.pattern.includes(p.name))
-          .map(p => p.id)
-      : null,
+    p_pattern_ids: activeFilters.pattern.length
+    ? currentPatterns
+        .filter(p => activeFilters.pattern.includes(p.id))
+        .map(p => p.id)
+    : null,
 
-    p_color_ids: activeFilters.color.length
+      p_color_ids: activeFilters.color.length
       ? currentColors
-          .filter(c => activeFilters.color.includes(c.name))
+          .filter(c => activeFilters.color.includes(c.id))
           .map(c => c.id)
       : null,
 
@@ -387,7 +407,7 @@ export async function init() {
     const loggedUser = JSON.parse(localStorage.getItem('loggedUser') || '{}');
     const isAnonymous = loggedUser?.role === 'anonymous';
     const isViewer = loggedUser?.role === 'viewer';
-    const isIndividual = false;
+    let isIndividual = false;
     if (isViewer){
         if (loggedUser.personId) {
           const orgs = await fetchOrganizationsByPersonId(client, loggedUser.personId);
