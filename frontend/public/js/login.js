@@ -290,10 +290,9 @@ if (!dbSelect) {
         console.log ('claims', claims)
         console.log ('userEmail', userEmail)
                              
-        if (client) {
+        if (client && role == 'viewer') {
           try {
             const person = await fetchPersonByEmail(client, userEmail);
-            console.log ("fetchPersonByEmail", fetchPersonByEmail)
             if (person && !isNaN(Number(person.id))) {
               personId = person.id;
               firstName = person.first_name;
