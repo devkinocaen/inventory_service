@@ -38,13 +38,17 @@
       <h3 class="batch-add-title">Ajouter des items</h3>
       <div class="batch-add-container">
           <input type="text" id="available-search" placeholder="Rechercher..." class="batch-add-search">
-          <!-- ancien select -->
-          <!-- <select id="available-reservables" size="5" class="batch-add-select"></select> -->
           
-          <!-- nouveau container pour les vignettes -->
           <div id="available-reservables" class="batch-add-select"></div>
+          
+          <!-- Pagination -->
 
-          <!-- button id="add-reservable" class="batch-add-btn">➕ Ajouter</button -->
+           <div id="available-pagination" style="text-align:center; margin-top:10px;">
+               <button id="available-prev-btn">◀</button>
+               <span id="available-pagination-info"></span>
+               <button id="available-next-btn">▶</button>
+           </div>
+
       </div>
     </div>
 

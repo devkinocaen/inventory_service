@@ -334,3 +334,40 @@
   box-shadow: 0 0 8px rgba(74,144,226,0.5);
   background-color: #e6f0ff; /* léger fond bleu pour montrer la sélection */
 }
+
+/* 🔹 Pagination */
+#available-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+#available-pagination button {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #999;
+  background-color: #fff;
+  color: #333;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#available-pagination button:hover {
+  background-color: #f0f0f0;
+  border-color: #4a90e2;
+}
+
+#available-pagination button:disabled {
+  background-color: #eee;
+  color: #999;
+  cursor: not-allowed;
+}
+
+#available-pagination-info {
+  min-width: 50px;
+  text-align: center;
+  font-weight: 500;
+}

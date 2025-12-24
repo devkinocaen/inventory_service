@@ -7,7 +7,7 @@ import {
     updateBooking,
     updateReservable
 } from '../libs/sql/index.js';
-import { populateSelect } from '../libs/ui/populateSelect.js';
+
 import { formatServerError } from '../libs/helpers.js';
 import { displayImage } from '../libs/image_utils.js';
 
@@ -20,6 +20,10 @@ let currentBatch = null;
 let currentBooking = null;
 let availableReservables = [];
 let currentModalCallback = null;
+
+let currentPage = 1;
+let pageSize = 50; // nombre d’items par page
+let totalItems = 0; // récupéré depuis le RPC si possible
 
 
 
@@ -50,7 +54,6 @@ export async function loadBatchModal() {
 
     cancelBtn = dialog.querySelector('#batch-cancel');
     saveBtn   = dialog.querySelector('#batch-save');
- //   addBtn    = dialog.querySelector('#add-reservable');
 
  const batchAddSection = document.getElementById('batch-add-section');
     if (batchAddSection && currentMode === 'viewer') {
@@ -58,6 +61,7 @@ export async function loadBatchModal() {
     }
     
     bindBatchEvents();
+    bindPaginationEvents();
 }
 
 /* -------------------------------------------------------
@@ -82,101 +86,43 @@ export async function initBatchModal() {
     if (!client) client = await initClient();
     await loadBatchModal();
 
-    await loadAvailableReservables();
-    setupAvailableSearch();
+    await loadAvailableReservablesPage(1);
 }
 
 /* -------------------------------------------------------
    Charger la liste des réservables
 ------------------------------------------------------- */
-async function loadAvailableReservables() {
-    availableReservables = await fetchReservables(client);
+async function loadAvailableReservablesPage(page = 1, searchQuery = '') {
+    if (!client) client = await initClient();
 
-    renderAvailableReservables(availableReservables);
+    const offset = (page - 1) * pageSize;
+
+    // Appel RPC avec pagination
+    const filters = {};
+    if (searchQuery) filters.p_name = searchQuery;
+
+    filters.p_offset = offset;
+    filters.p_limit = pageSize;
+
+    const reservables = await fetchReservables(client, filters);
+
+    availableReservables = reservables;
+    renderAvailableReservables(reservables);
+
+    currentPage = page;
+
+    // 🔹 Mettre à jour l’affichage de la page
+    const info = document.getElementById('available-pagination-info');
+    info.textContent = `Page ${currentPage}`; // optionnel: tu peux rajouter totalItems si disponible
+
+    // 🔹 Activer/désactiver les boutons
+    const prevBtn = document.getElementById('available-prev-btn');
+    const nextBtn = document.getElementById('available-next-btn');
+
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = reservables.length < pageSize; // si moins que pageSize, dernière page
 }
 
-function renderAvailableReservables(reservables) {
-    const container = document.getElementById('available-reservables');
-    container.innerHTML = '';
-
-    reservables.forEach(r => {
-        const div = document.createElement('div');
-        div.classList.add('reservable-item');
-        div.dataset.id = r.id;
-        div.style.cursor = 'pointer';
-        div.style.display = 'inline-block';
-        div.style.margin = '4px';
-        div.style.textAlign = 'center';
-        div.style.width = '80px';
-
-        // Container pour l'image
-        const imgContainer = document.createElement('div');
-        imgContainer.style.width = '80px';
-        imgContainer.style.height = '80px';
-        imgContainer.style.borderRadius = '4px';
-        imgContainer.style.overflow = 'hidden';
-        imgContainer.style.backgroundColor = '#eee';
-        div.appendChild(imgContainer);
-
-        // Affichage de l'image via displayImage ou placeholder
-        const firstPhoto = Array.isArray(r.photos) && r.photos.length > 0 ? r.photos[0] : null;
-        if (firstPhoto?.url) {
-            displayImage(client, imgContainer, firstPhoto.url, {
-                width: '80px',
-                height: '80px',
-                withPreview: true
-            });
-        } else {
-            imgContainer.innerHTML = `
-                <img
-                  src="https://placehold.co/80x80?text=+"
-                  style="width:100%;height:100%;object-fit:cover"
-                >
-            `;
-        }
-
-        // Nom en dessous
-        const name = document.createElement('div');
-        name.textContent = r.name;
-        name.style.marginTop = '4px';
-        name.style.fontSize = '0.9rem';
-        div.appendChild(name);
-
-        // clic pour sélectionner / ajouter
-        div.addEventListener('click', () => {
-            if (currentMode === 'edit') {
-                // toggle visuel sélectionné
-                div.classList.toggle('selected');
-
-                const id = Number(div.dataset.id);
-                const reservable = availableReservables.find(r => r.id === id);
-                if (!reservable) return;
-
-                if (!currentBatch.reservables.some(i => i.id === id)) {
-                    currentBatch.reservables.push(reservable);
-                    renderBatchItems();
-                }
-            }
-        });
-
-        container.appendChild(div);
-    });
-}
-
-
-/* -------------------------------------------------------
-   Filtre dynamique du select
-------------------------------------------------------- */
-function setupAvailableSearch() {
-    const search = dialog.querySelector('#available-search');
-    if (!search) return;
-
-    search.addEventListener('input', () => {
-        const q = search.value.trim().toLowerCase();
-        const filtered = availableReservables.filter(r => r.name.toLowerCase().includes(q));
-        renderAvailableReservables(filtered);
-    });
-}
 
 /* -------------------------------------------------------
    Ouverture du modal
@@ -384,6 +330,34 @@ function renderBatchItems() {
 }
 
 
+function bindPaginationEvents() {
+    const prevBtn = dialog.querySelector('#available-prev-btn');
+    const nextBtn = dialog.querySelector('#available-next-btn');
+    const searchInput = dialog.querySelector('#available-search');
+
+    if (prevBtn && !prevBtn.dataset.bound) {
+        prevBtn.dataset.bound = 'true';
+        prevBtn.addEventListener('click', () => {
+            loadAvailableReservablesPage(currentPage - 1, searchInput.value.trim());
+        });
+    }
+
+    if (nextBtn && !nextBtn.dataset.bound) {
+        nextBtn.dataset.bound = 'true';
+        nextBtn.addEventListener('click', () => {
+            loadAvailableReservablesPage(currentPage + 1, searchInput.value.trim());
+        });
+    }
+
+    if (searchInput && !searchInput.dataset.bound) {
+        searchInput.dataset.bound = 'true';
+        searchInput.addEventListener('input', () => {
+            loadAvailableReservablesPage(1, searchInput.value.trim());
+        });
+    }
+}
+
+
 /* -------------------------------------------------------
    Sauvegarde
 ------------------------------------------------------- */
@@ -442,4 +416,73 @@ function validateBatchDates() {
     }
 
     return { startDate, endDate };
+}
+
+
+function renderAvailableReservables(reservables) {
+    const container = document.getElementById('available-reservables');
+    container.innerHTML = '';
+
+    reservables.forEach(r => {
+        const div = document.createElement('div');
+        div.classList.add('reservable-item');
+        div.dataset.id = r.id;
+        div.style.cursor = 'pointer';
+        div.style.display = 'inline-block';
+        div.style.margin = '4px';
+        div.style.textAlign = 'center';
+        div.style.width = '80px';
+
+        // Container pour l'image
+        const imgContainer = document.createElement('div');
+        imgContainer.style.width = '80px';
+        imgContainer.style.height = '80px';
+        imgContainer.style.borderRadius = '4px';
+        imgContainer.style.overflow = 'hidden';
+        imgContainer.style.backgroundColor = '#eee';
+        div.appendChild(imgContainer);
+
+        // Affichage de l'image via displayImage ou placeholder
+        const firstPhoto = Array.isArray(r.photos) && r.photos.length > 0 ? r.photos[0] : null;
+        if (firstPhoto?.url) {
+            displayImage(client, imgContainer, firstPhoto.url, {
+                width: '80px',
+                height: '80px',
+                withPreview: true
+            });
+        } else {
+            imgContainer.innerHTML = `
+                <img
+                  src="https://placehold.co/80x80?text=+"
+                  style="width:100%;height:100%;object-fit:cover"
+                >
+            `;
+        }
+
+        // Nom en dessous
+        const name = document.createElement('div');
+        name.textContent = r.name;
+        name.style.marginTop = '4px';
+        name.style.fontSize = '0.9rem';
+        div.appendChild(name);
+
+        // clic pour sélectionner / ajouter
+        div.addEventListener('click', () => {
+            if (currentMode === 'edit') {
+                // toggle visuel sélectionné
+                div.classList.toggle('selected');
+
+                const id = Number(div.dataset.id);
+                const reservable = availableReservables.find(r => r.id === id);
+                if (!reservable) return;
+
+                if (!currentBatch.reservables.some(i => i.id === id)) {
+                    currentBatch.reservables.push(reservable);
+                    renderBatchItems();
+                }
+            }
+        });
+
+        container.appendChild(div);
+    });
 }
