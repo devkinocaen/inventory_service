@@ -43,9 +43,6 @@
   color: #333;
 }
 
-
-
-
 /* 🔹 Form row (ID, Description, Dates) */
 .batch-form-row {
   display: flex;
@@ -101,8 +98,32 @@
   padding: 0.6rem 0.8rem;
   border: 1px solid #ccc;
   text-align: left;
+  vertical-align: middle; /* centre le contenu verticalement */
 }
 
+/* Centrage du contenu des td */
+.batch-table td div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Colonne Aperçu : largeur fixe */
+.batch-table td:nth-child(2) {
+    width: 70px;       /* largeur de la colonne Aperçu */
+    text-align: center;
+}
+
+/* Conteneur image dans Aperçu */
+.batch-table td:nth-child(2) div {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* En-têtes */
 .batch-table th {
   background: #f7f7f7;
   font-weight: 600;
@@ -111,13 +132,13 @@
 /* 🔹 Ajouter des items */
 .batch-add-container {
   display: flex;
-  flex-direction: column; /* juste la direction */
+  flex-direction: column;
   gap: 0.5rem;
   margin-top: 1rem;
 }
 
 .batch-add-title {
-  margin-top: 2rem; /* espace au-dessus de “Ajouter des items” */
+  margin-top: 2rem;
   font-weight: 600;
   font-size: 1.1rem;
   color: #333;
@@ -192,15 +213,14 @@
 
 /* Ligne ID + Description */
 #batch-id {
-  width: 10ch; /* largeur fixe pour environ 5 caractères */
-  flex: 0 0 auto; /* ne se réduit pas ni ne s’étire */
+  width: 10ch;
+  flex: 0 0 auto;
 }
 
 #batch-description {
-  flex: 1; /* prend tout le reste de la ligne */
-  min-width: 0; /* permet de réduire si la fenêtre est petite */
+  flex: 1;
+  min-width: 0;
 }
-
 
 /* 🔹 Boutons d'action des items */
 .batch-item-action {
@@ -213,7 +233,6 @@
     min-width: 80px;
 }
 
-/* Rentrer → vert */
 .batch-item-action.rentrer {
     background-color: #4CAF50;
     color: white;
@@ -223,7 +242,6 @@
     background-color: #45a049;
 }
 
-/* Sortir → bleu */
 .batch-item-action.sortir {
     background-color: #0077ff;
     color: white;
@@ -233,12 +251,13 @@
     background-color: #005fcc;
 }
 
-/* Indisponible → gris */
 .batch-item-action.indisponible {
     background-color: #ccc;
     color: #666;
     cursor: not-allowed;
 }
+
+/* 🔹 Booking items */
 .booking-items-container {
   display: flex;
   overflow-x: auto;
@@ -261,7 +280,6 @@
   margin-bottom: 5px;
 }
 
-/* Masquer scrollbar mais scrollable */
 .booking-items-container::-webkit-scrollbar {
   display: none;
 }

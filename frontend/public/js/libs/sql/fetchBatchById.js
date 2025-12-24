@@ -1,13 +1,15 @@
-// récupère un batch par ID avec ses reservables
+// récupère un batch par ID avec ses reservables (incluant photos)
 export async function fetchBatchById(client, id) {
-    console.log ('id', id)
+    console.log('id', id);
     if (!id) return null;
+
     try {
         const { data, error } = await client.rpc('get_batch_by_id', { p_batch_id: id });
         if (error) throw error;
 
         // si aucun reservable, data est vide ou 1 ligne avec reservable_id null
         if (!data || data.length === 0) return null;
+
         const batchInfo = {
             id: data[0].batch_id,
             description: data[0].batch_description,
@@ -18,9 +20,11 @@ export async function fetchBatchById(client, id) {
                     name: r.reservable_name,
                     size: r.reservable_size,
                     status: r.reservable_status,
-                    is_in_stock: r.reservable_in_stock
+                    is_in_stock: r.reservable_in_stock,
+                    photos: r.reservable_photos || []  // <- ajout des photos
                 }))
         };
+
         return batchInfo;
     } catch (err) {
         console.error('[fetchBatchById]', err);

@@ -9,7 +9,8 @@ RETURNS TABLE(
     reservable_name TEXT,
     reservable_size TEXT,
     reservable_status inventory.reservable_status,
-    reservable_in_stock BOOLEAN
+    reservable_in_stock BOOLEAN,
+    reservable_photos JSONB
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -20,7 +21,8 @@ BEGIN
         r.name::TEXT AS reservable_name,
         r.size::TEXT AS reservable_size,
         r.status::inventory.reservable_status AS reservable_status,
-        r.is_in_stock::BOOLEAN AS reservable_in_stock
+        r.is_in_stock::BOOLEAN AS reservable_in_stock,
+        r.photos AS reservable_photos
     FROM inventory.reservable_batch b
     LEFT JOIN inventory.reservable_batch_link bl ON bl.batch_id = b.id
     LEFT JOIN inventory.reservable r ON r.id = bl.reservable_id

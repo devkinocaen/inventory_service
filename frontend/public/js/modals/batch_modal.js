@@ -9,6 +9,7 @@ import {
 } from '../libs/sql/index.js';
 import { populateSelect } from '../libs/ui/populateSelect.js';
 import { formatServerError } from '../libs/helpers.js';
+import { displayImage } from '../libs/image_utils.js';
 
 
 let currentMode = 'edit'; // ← nouvelle variable globale pour le mode ('edit' ou 'viewer')
@@ -210,11 +211,50 @@ function renderBatchItems() {
     if (!currentBatch.reservables.length) return;
 
     currentBatch.reservables.forEach(item => {
+                                     
         const tr = document.createElement('tr');
 
         const nameTd = document.createElement('td');
         nameTd.textContent = item.name;
+                                     
+         const previewTd = document.createElement('td');
 
+         const imgContainer = document.createElement('div');
+         imgContainer.style.width = '60px';
+         imgContainer.style.height = '60px';
+         imgContainer.style.flex = '0 0 auto'; // pour éviter qu'il rétrécisse
+         imgContainer.style.overflow = 'hidden';
+         imgContainer.style.borderRadius = '4px';
+         imgContainer.style.backgroundColor = '#eee';
+
+
+         // mettre une image par défaut immédiatement
+         const placeholder = document.createElement('img');
+         placeholder.src = 'https://placehold.co/60x60?text=+';
+         placeholder.style.width = '100%';
+         placeholder.style.height = '100%';
+         placeholder.style.objectFit = 'cover';
+         imgContainer.appendChild(placeholder);
+
+         previewTd.appendChild(imgContainer);
+            
+         const firstPhoto = Array.isArray(item.photos) && item.photos.length > 0 ? item.photos[0] : null;
+
+         if (firstPhoto?.url) {
+             displayImage(client, imgContainer, firstPhoto.url, {
+                 width: '60px',
+                 height: '60px',
+                 withPreview: true
+             });
+         } else {
+             imgContainer.innerHTML = `
+                 <img
+                   src="https://placehold.co/60x60?text=+"
+                   style="width:100%;height:100%;object-fit:cover"
+                 >
+             `;
+         }
+                                     
         const sizeTd = document.createElement('td');
         sizeTd.textContent = item.size || '-';
 
@@ -273,6 +313,7 @@ function renderBatchItems() {
         deleteTd.appendChild(deleteBtn);
 
         tr.appendChild(nameTd);
+        tr.appendChild(previewTd);
         tr.appendChild(sizeTd);
         tr.appendChild(actionTd);
         tr.appendChild(deleteTd);
