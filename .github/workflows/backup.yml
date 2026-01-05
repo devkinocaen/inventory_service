@@ -11,9 +11,10 @@ on:
         required: true
         type: string
         default: "https://inventory-service.alwaysdata.net"
+
 env:
-    # ✅ Valeur par défaut utilisée quand l'action est lancée automatiquement (cron)
-    FLASK_URL_DEFAULT: "https://inventory-service.alwaysdata.net"
+  # Valeur par défaut utilisée quand l'action est lancée automatiquement (cron)
+  FLASK_URL_DEFAULT: "https://inventory-service.alwaysdata.net"
 
 jobs:
   backup:
@@ -33,39 +34,31 @@ jobs:
       - name: Print date
         run: date
 
-      - name: Set credentials and URL
+      - name: Set environment variables
         run: |
-          DB_NAME=${{ matrix.database }}
-          DB_PREFIX=${DB_NAME^^}
-          SERVER_INPUT="${{ github.event.inputs.server || env.FLASK_URL_DEFAULT }}"
-
-          # ❗ Pas de fallback, si SERVER_INPUT n’est pas fourni → erreur
-          if [ -z "$SERVER_INPUT" ]; then
-            echo "❌ SERVER_INPUT non défini (paramètre 'server' manquant)"
-            exit 1
-          fi
-
-          echo "DB_NAME=$DB_NAME" >> $GITHUB_ENV
-          echo "FLASK_URL_BASE=$SERVER_INPUT" >> $GITHUB_ENV
-
-          if [[ "$DB_NAME" == COSTUMERIE_CAEN* ]]; then
-            echo "USER_EMAIL=${{ secrets.COSTUMERIE_CAEN_USER_EMAIL }}" >> $GITHUB_ENV
-            echo "USER_PASSWORD=${{ secrets.COSTUMERIE_CAEN_USER_PASSWORD }}" >> $GITHUB_ENV
-            echo "USER_PASSWORD is set? [$( [ -n "$USER_PASSWORD" ] && echo yes || echo no )]"
-          elif [[ "$DB_NAME" == COSTUMERIE_JULIE* ]]; then
-            echo "USER_EMAIL=${{ secrets.COSTUMERIE_JULIE_USER_EMAIL }}" >> $GITHUB_ENV
-            echo "USER_PASSWORD=${{ secrets.COSTUMERIE_JULIE_USER_PASSWORD }}" >> $GITHUB_ENV
-            echo "USER_PASSWORD is set? [$( [ -n "$USER_PASSWORD" ] && echo yes || echo no )]"
-          elif [[ "$DB_NAME" == COSTUMERIE_ALEX* ]]; then
-            echo "USER_EMAIL=${{ secrets.COSTUMERIE_ALEX_USER_EMAIL }}" >> $GITHUB_ENV
-            echo "USER_PASSWORD=${{ secrets.COSTUMERIE_ALEX_USER_PASSWORD }}" >> $GITHUB_ENV
-            echo "USER_PASSWORD is set? [$( [ -n "$USER_PASSWORD" ] && echo yes || echo no )]"
-          fi
+          echo "DB_NAME=${{ matrix.database }}" >> $GITHUB_ENV
+          echo "FLASK_URL_BASE=${{ github.event.inputs.server || env.FLASK_URL_DEFAULT }}" >> $GITHUB_ENV
 
       - name: Get JWT Token from Flask
         id: get_token
         run: |
           set -euo pipefail
+
+          # Choix des credentials selon la base
+          if [[ "$DB_NAME" == COSTUMERIE_CAEN* ]]; then
+            USER_EMAIL="${{ secrets.COSTUMERIE_CAEN_USER_EMAIL }}"
+            USER_PASSWORD="${{ secrets.COSTUMERIE_CAEN_USER_PASSWORD }}"
+          elif [[ "$DB_NAME" == COSTUMERIE_JULIE* ]]; then
+            USER_EMAIL="${{ secrets.COSTUMERIE_JULIE_USER_EMAIL }}"
+            USER_PASSWORD="${{ secrets.COSTUMERIE_JULIE_USER_PASSWORD }}"
+          elif [[ "$DB_NAME" == COSTUMERIE_ALEX* ]]; then
+            USER_EMAIL="${{ secrets.COSTUMERIE_ALEX_USER_EMAIL }}"
+            USER_PASSWORD="${{ secrets.COSTUMERIE_ALEX_USER_PASSWORD }}"
+          else
+            echo "❌ DB_NAME inconnu: $DB_NAME"
+            exit 1
+          fi
+
           echo "Requesting token for database $DB_NAME..."
           RESPONSE=$(curl --noproxy "*" -s -X POST "$FLASK_URL_BASE/login/$DB_NAME" \
             -H "Content-Type: application/json" \
@@ -104,4 +97,3 @@ jobs:
           else
             echo "❌ Backup failed for $DB_NAME! Response: $RESPONSE"
             exit 1
-          fi
