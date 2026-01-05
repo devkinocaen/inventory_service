@@ -5,5 +5,6 @@ export COSTUMERIE_JULIE_DBHOST_DIRECT='ep-proud-darkness-agqej791.c-2.eu-central
 export COSTUMERIE_JULIE_DBPASSWORD="npg_mXkL9iDnbO5B"
 
 #compte google
+#website: Lafabriqueapersonnages.vercel.app
 #usr: julie.pro.costumerie@gmail.com
 #mdp: Jpc@2026

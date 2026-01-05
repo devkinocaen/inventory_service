@@ -6,7 +6,7 @@ import { formatServerError } from '../helpers.js';
  */
 export async function realignSequences(client) {
     console.log('🔹 Realignement des séquences...');
-    await client.rpc('realign_sequences'); // appelle la fonction PL/pgSQL
+    await client.rpc('realign_sequences', { p_schema: 'inventory' });
     console.log('✅ Séquences réalignées avec succès.');
     return true;
 }

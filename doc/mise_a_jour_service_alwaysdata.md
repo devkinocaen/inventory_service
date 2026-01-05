@@ -44,7 +44,7 @@ Dans la configuration du site AlwaysData, section "Paramètres supplémentaires 
 
 Dans le dépôt GitHub, ajoute les secrets suivants :
 
-- AD_SSH_KEY : la clé privée SSH générée (id_ed25519)
+- AD_SSH_KEY : la clé privée SSH générée (contenu entier du fichier id_ed25519)
 - AD_USER : ton identifiant AlwaysData
 - AD_HOST : le host SSH AlwaysData
 

@@ -12,6 +12,9 @@ on:
         required: true
         default: '0.1.1'
 
+env:
+  APP_PATH: "/home/inventory-service/inventory_service"
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -38,23 +41,34 @@ jobs:
           fi
           echo "Branch to deploy: $BRANCH_TO_DEPLOY"
           echo "BRANCH_TO_DEPLOY=$BRANCH_TO_DEPLOY" >> $GITHUB_ENV
-
+        
+        
       - name: Update code on AlwaysData
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ secrets.AD_USER }}@${{ secrets.AD_HOST }} "
-            set -e  # arrêter en cas d'erreur
-            cd /home/inventory-service/inventory_service || { echo 'Dossier /home/inventory-service/inventory_service introuvable'; exit 1; }
+            set -e
+            cd \"${APP_PATH}\" || { echo 'Dossier introuvable: ${APP_PATH}'; exit 1; }
             git fetch origin
-            git checkout $BRANCH_TO_DEPLOY || { echo 'Impossible de checkout la branche'; exit 1; }
-            git pull origin $BRANCH_TO_DEPLOY || { echo 'Impossible de faire git pull'; exit 1; }
-            # Forcer le reload du service Flask
+            git checkout $BRANCH_TO_DEPLOY
+            git pull origin $BRANCH_TO_DEPLOY
             touch backend/passenger_wsgi.py
           "
 
-      - name: Install Python dependencies
+      - name: Install Python dependencies in venv
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ secrets.AD_USER }}@${{ secrets.AD_HOST }} "
-            cd /home/inventory-service/inventory_service/backend
-            python3 -m pip install --upgrade pip
-            pip install -r requirements.txt
+            set -e
+            cd \"${APP_PATH}/backend\" || exit 1
+
+            # Crée le venv si il n'existe pas
+            if [ ! -d venv ]; then
+              python3.12 -m venv venv
+              echo '✅ Virtualenv créé'
+            fi
+
+            # Active le venv et installe les dépendances
+            source venv/bin/activate
+            ./venv/bin/pip install --upgrade pip
+            ./venv/bin/pip install -r requirements.txt
           "
+

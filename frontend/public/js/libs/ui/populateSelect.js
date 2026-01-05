@@ -26,7 +26,7 @@ export function populateSelect(
   selectElement.innerHTML = '';
  let placeholderOption =  null;
   if (placeholder) {
-    const placeholderOption = document.createElement('option');
+    placeholderOption = document.createElement('option');
     placeholderOption.value = '';
     placeholderOption.textContent = placeholder;
     if (disablePlaceholder) placeholderOption.disabled = true;
