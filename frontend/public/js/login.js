@@ -61,6 +61,8 @@ if (!loginForm || !submitBtn) {
 
 // stocke la base
 const dbSelect = document.getElementById("database");
+const labelDbSelect  = document.querySelector('label[for="database"]');
+
 if (!dbSelect) {
   console.error("❌ Sélecteur de base introuvable !");
 } else {
@@ -84,11 +86,15 @@ if (!dbSelect) {
           dbSelect.appendChild(option);
 
           dbSelect.value = matched.baseid;
-          dbSelect.disabled = true; // verrouille le select
           window.ENV.SELECTED_DB = matched.baseid;
+
+          dbSelect.disabled = true; // verrouille le select
+          dbSelect.hidden = true; // masque le select
+          labelDbSelect.style.display  = 'none';
 
           console.log(`🌐 Base forcée à ${matched.baseid} (${matched.basename})`);
         } else {
+          dbSelect.disabled = false
           console.warn(`⚠️ DB_NAME=${window.ENV.DB_NAME} non trouvée dans les bases disponibles`);
         }
       } else {
@@ -100,6 +106,7 @@ if (!dbSelect) {
           dbSelect.appendChild(option);
         });
 
+        dbSelect.disabled = false
         window.ENV.SELECTED_DB = dbSelect.value;
         console.log("🌐 Bases chargées :", databases.map(b => b.baseid));
       }

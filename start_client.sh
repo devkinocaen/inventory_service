@@ -21,6 +21,8 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 
+# export EXPORTER_DB_NAME=COSTUMERIE_CAEN_NEON
+
 # ===========================================
 # Charger la config commune
 # ===========================================

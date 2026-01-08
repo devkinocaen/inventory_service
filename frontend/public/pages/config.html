@@ -8,40 +8,36 @@
 </head>
 <body class="config-session-page">
   <div class="config-session-container">
-
-
-
     <hr />
+        <h2>Gestion des catégories et styles</h2>
 
-  <h2>Gestion des catégories et styles</h2>
+        <div class="section-box three-columns">
 
-    <div class="section-box three-columns">
+          <!-- Styles -->
+          <div>
+            <h3>Styles</h3>
+            <input type="text" id="styleInput" placeholder="Ajouter un style...">
+            <button class="record-button" id="btnAddStyle">Ajouter</button>
+            <div id="styleList" class="list-block"></div>
+          </div>
 
-      <!-- Styles -->
-      <div>
-        <h3>Styles</h3>
-        <input type="text" id="styleInput" placeholder="Ajouter un style...">
-        <button class="record-button" id="btnAddStyle">Ajouter</button>
-        <div id="styleList" class="list-block"></div>
-      </div>
+          <!-- Catégories -->
+          <div>
+            <h3>Catégories</h3>
+            <input type="text" id="categoryInput" placeholder="Ajouter une catégorie...">
+            <button class="record-button" id="btnAddCategory">Ajouter</button>
+            <div id="categoryList" class="list-block"></div>
+          </div>
 
-      <!-- Catégories -->
-      <div>
-        <h3>Catégories</h3>
-        <input type="text" id="categoryInput" placeholder="Ajouter une catégorie...">
-        <button class="record-button" id="btnAddCategory">Ajouter</button>
-        <div id="categoryList" class="list-block"></div>
-      </div>
+          <!-- Sous-catégories -->
+          <div>
+            <h3>Sous-catégories</h3>
+            <input type="text" id="subCategoryInput" placeholder="Ajouter une sous-catégorie...">
+            <button class="record-button" id="btnAddSubCategory">Ajouter</button>
+            <div id="subCategoryList" class="list-block"><i>Sélectionnez une catégorie</i></div>
+          </div>
 
-      <!-- Sous-catégories -->
-      <div>
-        <h3>Sous-catégories</h3>
-        <input type="text" id="subCategoryInput" placeholder="Ajouter une sous-catégorie...">
-        <button class="record-button" id="btnAddSubCategory">Ajouter</button>
-        <div id="subCategoryList" class="list-block"><i>Sélectionnez une catégorie</i></div>
-      </div>
-
-    </div>
+        </div>
       <hr />
 
     <h2>Gestion des lieux de stockage</h2>
@@ -56,12 +52,6 @@
 
     <!-- Liste des lieux (remplie dynamiquement) -->
     <ul id="storage-list" class="storage-list">
-      <!-- Exemple de rendu (à générer en JS) :
-      <li data-id="123">
-        <span class="storage-label">Nom — Adresse</span>
-        <button class="delete-storage-btn">Supprimer</button>
-      </li>
-      -->
     </ul>
     </div>
     <hr />
